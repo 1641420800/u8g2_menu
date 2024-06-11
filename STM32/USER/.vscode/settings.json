@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "iic_oled.h": "c",
+        "gpio.h": "c",
+        "u8g2_menu.h": "c",
+        "stm32f10x.h": "c",
+        "u8g2.h": "c",
+        "string.h": "c",
+        "stdarg.h": "c"
+    }
+}
