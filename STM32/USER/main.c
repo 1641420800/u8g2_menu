@@ -13,8 +13,7 @@ u8g2_menu_t u8g2_menu;
 uint16_t u8g2_menuValue;
 void menuItem()
 {
-	u8g2_MenuItemValue(MENU_V_uint16,&u8g2_menuValue,1,0,10);
-	// u8g2_MenuItemValue_int(&u8g2_menuValue,1,0,10);
+	u8g2_MenuItemValue_uint16(&u8g2_menuValue,1,0,10);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"%d",u8g2_menuValue);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello");
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello");
