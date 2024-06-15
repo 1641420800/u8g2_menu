@@ -727,6 +727,16 @@
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\U8g2_user\u8g2_menu.c</FilePath>
             </File>
+            <File>
+              <FileName>u8g2_meun_selector.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\U8g2_user\u8g2_meun_selector.c</FilePath>
+            </File>
+            <File>
+              <FileName>u8g2_meun_effect.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\U8g2_user\u8g2_meun_effect.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

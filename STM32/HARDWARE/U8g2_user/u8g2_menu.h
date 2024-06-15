@@ -6,14 +6,19 @@
 #include <string.h>
 #include <stdio.h>
 
+#define U8G2_MENU_VERSION "1.0.0"
+#define U8G2_MENU_DEBUG 1
+
+typedef struct u8g2_menu_effect_struct u8g2_menu_effect_t;
 typedef struct u8g2_menu_struct u8g2_menu_t;
 typedef union u8g2_menu_value_uniom u8g2_menu_value_t;
 
 typedef enum
 {
-	MENU_Fix = 0,
-	MENU_Writable,
-	MENU_WritableSelect
+	MENU_None = 0,		// 未选中
+	MENU_Fix,			// 固定
+	MENU_Writable,		// 可编辑
+	MENU_WritableSelect // 可编辑+选择
 } MENU_Attribute_t;
 typedef enum
 {
@@ -124,12 +129,20 @@ union u8g2_menu_value_uniom
 	struct u8g2_menu_button_struct button;
 };
 
+struct u8g2_menu_effect_struct
+{
+	u8g2_int_t (*u8g2_menuEffectExpandc)(u8g2_menu_t *u8g2_menu);
+	u8g2_int_t (*u8g2_menuEffectShrink)(u8g2_menu_t *u8g2_menu);
+	u8g2_int_t (*u8g2_menuEffectMoveItem)(u8g2_menu_t *u8g2_menu);
+	u8g2_int_t (*u8g2_menuEffectMoveSelector)(u8g2_menu_t *u8g2_menu);
+};
 struct u8g2_menu_struct
 {
 	u8g2_t *u8g2; // 简化参数用的
 
-	menuItem_t menuItem;		 // 绘制表项的实际函数
-	menuSelector_t menuSelector; // 绘制选择展示器的实际函数
+	menuItem_t menuItem;		   // 绘制表项的实际函数
+	menuSelector_t menuSelector;   // 绘制选择展示器的实际函数
+	u8g2_menu_effect_t menuEffect; // 绘制效果
 
 	MENU_V_type_t u8g2_menuValueType;
 	u8g2_menu_value_t u8g2_menuValue;
@@ -139,22 +152,20 @@ struct u8g2_menu_struct
 
 	u8g2_uint_t currentDrawItem; // 当前绘制的项
 
-
-	u8g2_int_t currentItemLog; // 记录的当前选中的项
+	u8g2_int_t currentItemLog;	// 记录的当前选中的项
 	u8g2_int_t positionOffset;	// 位置偏移
-	u8g2_int_t _positionOffset;	// 位置偏移
-
+	u8g2_int_t _positionOffset; // 位置偏移
 
 	// 当前的位置信息
-	u8g2_uint_t currentX;
-	u8g2_uint_t currentY;
-	u8g2_uint_t currentWidth;
-	u8g2_uint_t currentHeight;
-	u8g2_uint_t currentItemWidth;
-	u8g2_uint_t currentItemHeight;
-	u8g2_uint_t currentDrawItemHeight;
+	u8g2_int_t currentX;
+	u8g2_int_t currentY;
+	u8g2_int_t currentWidth;
+	u8g2_int_t currentHeight;
+	u8g2_int_t currentItemWidth;
+	u8g2_int_t currentItemHeight;
+	u8g2_int_t currentDrawItemHeight;
 
-	u8g2_uint_t currentContentWidth;
+	u8g2_int_t currentContentWidth;
 
 	MENU_Attribute_t currentAttribute; // 当前可调属性
 
@@ -178,12 +189,29 @@ struct u8g2_menu_struct
  *  3. 图片显示
  *  4. 无选择器选项
  *  5. 调整动画选项
- *  6. 合并绑定附加值
+ *  6. 合并绑定附加值 - 已分配至分支
  *  7. 添加选定后调整的开关附加值
  *  8. 添加离开某项 和 进入某项的回调函数
- * 
+ *  9. 分离菜单项
+ * 		- 字符串
+ * 		- 滑块条
+ * 		- 图片
+ * 			- 图片
+ * 			- 折线图
+ * 			- 柱状图
+ * 			- 仪表盘
+ * 			- 散点图
+ * 		- 输入框
+ * 			- 密码框
+ * 		- 子菜单(可以是特殊的按钮)
+ * 	10. 添加时间概念 优化动画基准
+ * 	11. 抽象动画管理器 把动画相关的变量统一管理
+ * 	12. 抽象菜单项管理器 把菜单项相关的变量统一管理
+ * 	13. 使用循环缓冲区分离按键操作 抽象按键操作管理器 扩充键值
  */
- 
+
+/* =============================== | u8g2_meun.c | =============================== */
+
 // 创建菜单 自定义选择展示器
 void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t menuItem, menuSelector_t menuSelector);
 
@@ -192,12 +220,6 @@ void u8g2_CreateMenu(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t menuItem);
 
 // 切换表项
 void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_t menuItem);
-
-// 切换选择器
-void u8g2_MenuReplaceSelector(u8g2_menu_t *u8g2_menu, menuSelector_t menuSelector);
-
-// 默认的选择展示器
-void u8g2_MenuSelector(u8g2_menu_t *u8g2_menu);
 
 // 滑块条
 void u8g2_DrawVSliderBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, float schedule, float proportion);
@@ -240,7 +262,24 @@ u8g2_int_t u8g2_MenuGetItemSelect(u8g2_menu_t *u8g2_menu);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+// 菜单按键
 void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue);
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+// 切换选择器
+void u8g2_MenuReplaceSelector(u8g2_menu_t *u8g2_menu, menuSelector_t menuSelector);
+
+// 获取当前属性
+MENU_Attribute_t u8g2_MenuGetAttribute(u8g2_menu_t *u8g2_menu);
+
+// 设置菜单项位置
+void u8g2_MenuSetPosition(u8g2_menu_t *u8g2_menu, u8g2_uint_t leftMarginSelector, u8g2_uint_t topMarginSelector, u8g2_uint_t lineSpacingSelector);
+
+u8g2_int_t u8g2_MenuGetX(u8g2_menu_t *u8g2_menu);
+u8g2_int_t u8g2_MenuGetY(u8g2_menu_t *u8g2_menu);
+u8g2_int_t u8g2_MenuGetH(u8g2_menu_t *u8g2_menu);
+u8g2_int_t u8g2_MenuGetW(u8g2_menu_t *u8g2_menu);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -281,5 +320,24 @@ u8g2_uint_t u8g2_MenuGetCurrentSelection(u8g2_menu_t *u8g2_menu);
 
 // 获取当前绘制的菜单
 u8g2_menu_t *u8g2_MenuGetCurrentMenu(void);
+
+// 获取菜单对应的 u8g2_t
+u8g2_t *u8g2_MenuGetU8g2(u8g2_menu_t *u8g2_menu);
+
+/* =============================== | u8g2_meun_effect.c | =============================== */
+
+// 绑定效果
+void u8g2_MenuBindEffect(u8g2_menu_t *u8g2_menu, u8g2_menu_effect_t menuEffect);
+
+/* =============================== | u8g2_meun_selector.c | =============================== */
+
+// 默认的选择展示器
+void u8g2_MenuSelector(u8g2_menu_t *u8g2_menu);
+
+// 选择展示器 圆形
+void u8g2_MenuSelectorRotundity(u8g2_menu_t *u8g2_menu);
+
+// 选择展示器 方形
+void u8g2_MenuSelectorSquare(u8g2_menu_t *u8g2_menu);
 
 #endif

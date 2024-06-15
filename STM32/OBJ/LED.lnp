@@ -62,6 +62,8 @@
 "..\obj\u8x8_u16toa.o"
 "..\obj\iic_oled.o"
 "..\obj\u8g2_menu.o"
+"..\obj\u8g2_meun_selector.o"
+"..\obj\u8g2_meun_effect.o"
 --strict --scatter "..\OBJ\LED.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

@@ -19,6 +19,12 @@ void menuItem()
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello");
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello");
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello");
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello");
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello");
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello");
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello");
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello");
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello");
 
 }
 
@@ -66,9 +72,9 @@ int main(void)
 	gpio_init();		  		// ��ʼ�����������ӵ�Ӳ���ӿ�
 	
 	oled_u8g2_init(&u8g2);	// ��ʼ��OLED
-	u8g2_CreateMenu(&u8g2,&u8g2_menu,menuItem);
-	// u8g2_SetFont(&u8g2,u8g2_font_10x20_mf);
-	u8g2_SetFont(&u8g2,u8g2_font_8x13_mf);
+	u8g2_CreateMenu_Selector(&u8g2,&u8g2_menu,menuItem,u8g2_MenuSelectorSquare);
+	u8g2_SetFont(&u8g2,u8g2_font_10x20_mf);
+	// u8g2_SetFont(&u8g2,u8g2_font_8x13_mf);
 	
 	tim2_init(1000-1,72-1);
 	while(1)
