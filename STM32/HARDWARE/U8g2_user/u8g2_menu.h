@@ -167,33 +167,31 @@ struct u8g2_menu_struct
 	u8g2_int_t currentHeight;
 	u8g2_int_t currentItemWidth;
 	u8g2_int_t currentItemHeight;
-	u8g2_int_t currentDrawItemHeight;
 
 	u8g2_int_t currentContentWidth;
 
 	MENU_Attribute_t currentAttribute; // 当前可调属性
 
-	u8g2_uint_t leftMarginSelector;	 // 菜单左边距
-	u8g2_uint_t topMarginSelector;	 // 菜单顶边距
-	u8g2_uint_t lineSpacingSelector; // 菜单行间距
+	u8g2_int_t leftMarginSelector;	 // 菜单左边距
+	u8g2_int_t topMarginSelector;	 // 菜单顶边距
+	u8g2_int_t lineSpacingSelector; // 菜单行间距
 
-	u8g2_uint_t leftMargin;	 // 菜单左边距
-	u8g2_uint_t lineSpacing; // 菜单行间距
-	u8g2_uint_t totalLength; // 菜单总长度
+	u8g2_int_t leftMargin;	 // 菜单左边距
+	u8g2_int_t lineSpacing; // 菜单行间距
+	u8g2_int_t totalLength; // 菜单总长度
 
 };
 
 /**
  * @todo:
- * 	1. 添加菜单风格
- * 	2. 显示方向
- *  3. 图片显示
- *  4. 无选择器选项
- *  5. 调整动画选项
- *  6. 合并绑定附加值 - 已分配至分支
- *  7. 添加选定后调整的开关附加值
- *  8. 添加离开某项 和 进入某项的回调函数
- *  9. 分离菜单项
+ * 	- 添加菜单风格
+ * 	- 显示方向
+ *  - 图片显示
+ *  - 调整动画选项
+ *  - 合并绑定附加值 - 已分配至分支
+ *  - 添加选定后调整的开关附加值
+ *  - 添加离开某项 和 进入某项的回调函数
+ *  - 分离菜单项
  * 		- 字符串
  * 		- 滑块条
  * 		- 图片
@@ -205,10 +203,8 @@ struct u8g2_menu_struct
  * 		- 输入框
  * 			- 密码框
  * 		- 子菜单(可以是特殊的按钮)
- * 	10. 添加时间概念 优化动画基准
- * 	11. 抽象动画管理器 把动画相关的变量统一管理
- * 	12. 抽象菜单项管理器 把菜单项相关的变量统一管理
- * 	13. 使用循环缓冲区分离按键操作 抽象按键操作管理器 扩充键值
+ * 	- 抽象菜单项管理器 把菜单项相关的变量统一管理
+ * 	- 效果器优化 添加时间概念 优化动画基准
  */
 
 /* =============================== | u8g2_meun.c | =============================== */
@@ -331,6 +327,7 @@ extern u8g2_menu_effect_t u8g2_MenuEffect;
 
 void u8g2_MenuEffectBind(u8g2_menu_t *u8g2_menu, u8g2_menu_effect_t *u8g2_menu_effect);
 u8g2_int_t u8g2_MenuEffectGetPos(u8g2_menu_t *u8g2_menu);
+float u8g2_MenuEffectGetRowHeight(u8g2_menu_t *u8g2_menu);
 
 u8g2_int_t u8g2_menuEffectExpandc_call(u8g2_menu_t *u8g2_menu);
 u8g2_int_t u8g2_menuEffectShrink_call(u8g2_menu_t *u8g2_menu);

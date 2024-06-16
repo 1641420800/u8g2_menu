@@ -1,5 +1,7 @@
 #include "u8g2_menu.h"
 
+#define nonNegative(d) ((d) < 0 ? 0 : (d))
+
 // 默认的选择展示器
 void u8g2_MenuSelector(u8g2_menu_t *u8g2_menu)
 {
@@ -57,8 +59,8 @@ void u8g2_MenuSelectorSquare(u8g2_menu_t *u8g2_menu)
         break;
     case MENU_Fix: // 不可调
         u8g2_DrawFrame(u8g2,x - 14, y + h / 2 - 6, 12, 12);
-        // u8g2_DrawLine(u8g2,x - 14, y + h / 2 - 6, x - 3, y + h / 2 + 5);
-        // u8g2_DrawLine(u8g2,x - 14, y + h / 2 + 5, x - 3, y + h / 2 - 6);
+        u8g2_DrawLine(u8g2,nonNegative(x - 14), nonNegative(y + h / 2 - 6), nonNegative(x - 3), nonNegative(y + h / 2 + 5));
+        u8g2_DrawLine(u8g2,nonNegative(x - 14), nonNegative(y + h / 2 + 5), nonNegative(x - 3), nonNegative(y + h / 2 - 6));
         break;
     case MENU_Writable: // 可调
         u8g2_DrawFrame(u8g2,x - 14, y + h / 2 - 6, 12, 12);
