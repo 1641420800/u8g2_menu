@@ -135,6 +135,10 @@ struct u8g2_menu_effect_struct
 	u8g2_int_t (*u8g2_menuEffectShrink)(u8g2_menu_t *u8g2_menu);
 	u8g2_int_t (*u8g2_menuEffectMoveItem)(u8g2_menu_t *u8g2_menu);
 	u8g2_int_t (*u8g2_menuEffectMoveSelector)(u8g2_menu_t *u8g2_menu);
+
+	u8g2_int_t _position; // 当前实时位置
+	float _rowHeight;	  // 当前实时行高比例
+	u8g2_int_t spe;		  // 移动速度
 };
 struct u8g2_menu_struct
 {
@@ -142,7 +146,7 @@ struct u8g2_menu_struct
 
 	menuItem_t menuItem;		   // 绘制表项的实际函数
 	menuSelector_t menuSelector;   // 绘制选择展示器的实际函数
-	u8g2_menu_effect_t menuEffect; // 绘制效果
+	u8g2_menu_effect_t * menuEffect; // 绘制效果
 
 	MENU_V_type_t u8g2_menuValueType;
 	u8g2_menu_value_t u8g2_menuValue;
@@ -177,9 +181,6 @@ struct u8g2_menu_struct
 	u8g2_uint_t lineSpacing; // 菜单行间距
 	u8g2_uint_t totalLength; // 菜单总长度
 
-	u8g2_int_t _position; // 当前实时位置
-	float _rowHeight;	  // 当前实时行高比例
-	u8g2_int_t spe;		  // 移动速度
 };
 
 /**
@@ -326,8 +327,15 @@ u8g2_t *u8g2_MenuGetU8g2(u8g2_menu_t *u8g2_menu);
 
 /* =============================== | u8g2_meun_effect.c | =============================== */
 
-// 绑定效果
-void u8g2_MenuBindEffect(u8g2_menu_t *u8g2_menu, u8g2_menu_effect_t menuEffect);
+extern u8g2_menu_effect_t u8g2_MenuEffect;
+
+void u8g2_MenuEffectBind(u8g2_menu_t *u8g2_menu, u8g2_menu_effect_t *u8g2_menu_effect);
+u8g2_int_t u8g2_MenuEffectGetPos(u8g2_menu_t *u8g2_menu);
+
+u8g2_int_t u8g2_menuEffectExpandc_call(u8g2_menu_t *u8g2_menu);
+u8g2_int_t u8g2_menuEffectShrink_call(u8g2_menu_t *u8g2_menu);
+u8g2_int_t u8g2_menuEffectMoveItem_call(u8g2_menu_t *u8g2_menu);
+u8g2_int_t u8g2_menuEffectMoveSelector_call(u8g2_menu_t *u8g2_menu);
 
 /* =============================== | u8g2_meun_selector.c | =============================== */
 

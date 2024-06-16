@@ -42,7 +42,7 @@ I (..\HARDWARE\U8g2_V2.0.0\u8x8.h)(0x6648C775)
 I (C:\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x60252376)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x6025237E)
 I (C:\Keil_v5\ARM\ARMCC\include\limits.h)(0x60252376)
-I (..\HARDWARE\U8g2_user\u8g2_menu.h)(0x666DBF6F)
+I (..\HARDWARE\U8g2_user\u8g2_menu.h)(0x666EE1C5)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
 F (.\stm32f10x_it.c)(0x65D80409)(--c99 -c --cpu Cortex-M3 -g -O3 --apcs=interwork --split_sections -I ..\STM32F10x_FWLib\inc -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\USART -I ..\SYSTEM\TIM -I ..\SYSTEM\ADC -I ..\SYSTEM\gpio -I ..\USER -I ..\CORE -I ..\HARDWARE\U8g2_V2.0.0 -I ..\HARDWARE\U8g2_user-IC:\Users\16414\AppData\Local\Arm\Packs\Keil\CS32F1xx_DFP\1.0.0\Device\Include-D__UVISION_VERSION="539" -DCS32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o ..\obj\stm32f10x_it.o --omf_browse ..\obj\stm32f10x_it.crf --depend ..\obj\stm32f10x_it.d)
 I (stm32f10x_it.h)(0x65D80409)
@@ -867,13 +867,13 @@ I (..\HARDWARE\U8g2_V2.0.0\u8x8.h)(0x6648C775)
 I (C:\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x60252376)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x6025237E)
 I (C:\Keil_v5\ARM\ARMCC\include\limits.h)(0x60252376)
-I (..\HARDWARE\U8g2_user\u8g2_menu.h)(0x666DBF6F)
+I (..\HARDWARE\U8g2_user\u8g2_menu.h)(0x666EE1C5)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x60252374)
 I (..\SYSTEM\delay\Delay.h)(0x65D80410)
 I (..\SYSTEM\sys\sys.h)(0x65D80410)
-F (..\HARDWARE\U8g2_user\u8g2_menu.c)(0x666DBC9C)(--c99 -c --cpu Cortex-M3 -g -O3 --apcs=interwork --split_sections -I ..\STM32F10x_FWLib\inc -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\USART -I ..\SYSTEM\TIM -I ..\SYSTEM\ADC -I ..\SYSTEM\gpio -I ..\USER -I ..\CORE -I ..\HARDWARE\U8g2_V2.0.0 -I ..\HARDWARE\U8g2_user-IC:\Users\16414\AppData\Local\Arm\Packs\Keil\CS32F1xx_DFP\1.0.0\Device\Include-D__UVISION_VERSION="539" -DCS32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o ..\obj\u8g2_menu.o --omf_browse ..\obj\u8g2_menu.crf --depend ..\obj\u8g2_menu.d)
-I (..\HARDWARE\U8g2_user\u8g2_menu.h)(0x666DBF6F)
+F (..\HARDWARE\U8g2_user\u8g2_menu.c)(0x666EE1C5)(--c99 -c --cpu Cortex-M3 -g -O3 --apcs=interwork --split_sections -I ..\STM32F10x_FWLib\inc -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\USART -I ..\SYSTEM\TIM -I ..\SYSTEM\ADC -I ..\SYSTEM\gpio -I ..\USER -I ..\CORE -I ..\HARDWARE\U8g2_V2.0.0 -I ..\HARDWARE\U8g2_user-IC:\Users\16414\AppData\Local\Arm\Packs\Keil\CS32F1xx_DFP\1.0.0\Device\Include-D__UVISION_VERSION="539" -DCS32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o ..\obj\u8g2_menu.o --omf_browse ..\obj\u8g2_menu.crf --depend ..\obj\u8g2_menu.d)
+I (..\HARDWARE\U8g2_user\u8g2_menu.h)(0x666EE1C5)
 I (..\HARDWARE\U8g2_V2.0.0\u8g2.h)(0x6652D2EA)
 I (..\HARDWARE\U8g2_V2.0.0\u8x8.h)(0x6648C775)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x6025237E)
@@ -882,8 +882,8 @@ I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x6025237E)
 I (C:\Keil_v5\ARM\ARMCC\include\limits.h)(0x60252376)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x60252374)
-F (..\HARDWARE\U8g2_user\u8g2_meun_selector.c)(0x666DB9FA)(--c99 -c --cpu Cortex-M3 -g -O3 --apcs=interwork --split_sections -I ..\STM32F10x_FWLib\inc -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\USART -I ..\SYSTEM\TIM -I ..\SYSTEM\ADC -I ..\SYSTEM\gpio -I ..\USER -I ..\CORE -I ..\HARDWARE\U8g2_V2.0.0 -I ..\HARDWARE\U8g2_user-IC:\Users\16414\AppData\Local\Arm\Packs\Keil\CS32F1xx_DFP\1.0.0\Device\Include-D__UVISION_VERSION="539" -DCS32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o ..\obj\u8g2_meun_selector.o --omf_browse ..\obj\u8g2_meun_selector.crf --depend ..\obj\u8g2_meun_selector.d)
-I (..\HARDWARE\U8g2_user\u8g2_menu.h)(0x666DBF6F)
+F (..\HARDWARE\U8g2_user\u8g2_meun_selector.c)(0x666EE1C5)(--c99 -c --cpu Cortex-M3 -g -O3 --apcs=interwork --split_sections -I ..\STM32F10x_FWLib\inc -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\USART -I ..\SYSTEM\TIM -I ..\SYSTEM\ADC -I ..\SYSTEM\gpio -I ..\USER -I ..\CORE -I ..\HARDWARE\U8g2_V2.0.0 -I ..\HARDWARE\U8g2_user-IC:\Users\16414\AppData\Local\Arm\Packs\Keil\CS32F1xx_DFP\1.0.0\Device\Include-D__UVISION_VERSION="539" -DCS32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o ..\obj\u8g2_meun_selector.o --omf_browse ..\obj\u8g2_meun_selector.crf --depend ..\obj\u8g2_meun_selector.d)
+I (..\HARDWARE\U8g2_user\u8g2_menu.h)(0x666EE1C5)
 I (..\HARDWARE\U8g2_V2.0.0\u8g2.h)(0x6652D2EA)
 I (..\HARDWARE\U8g2_V2.0.0\u8x8.h)(0x6648C775)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x6025237E)
@@ -892,4 +892,13 @@ I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x6025237E)
 I (C:\Keil_v5\ARM\ARMCC\include\limits.h)(0x60252376)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x60252374)
-F (..\HARDWARE\U8g2_user\u8g2_meun_effect.c)(0x666DBF9F)(--c99 -c --cpu Cortex-M3 -g -O3 --apcs=interwork --split_sections -I ..\STM32F10x_FWLib\inc -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\USART -I ..\SYSTEM\TIM -I ..\SYSTEM\ADC -I ..\SYSTEM\gpio -I ..\USER -I ..\CORE -I ..\HARDWARE\U8g2_V2.0.0 -I ..\HARDWARE\U8g2_user-IC:\Users\16414\AppData\Local\Arm\Packs\Keil\CS32F1xx_DFP\1.0.0\Device\Include-D__UVISION_VERSION="539" -DCS32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o ..\obj\u8g2_meun_effect.o --omf_browse ..\obj\u8g2_meun_effect.crf --depend ..\obj\u8g2_meun_effect.d)
+F (..\HARDWARE\U8g2_user\u8g2_meun_effect.c)(0x666EE21D)(--c99 -c --cpu Cortex-M3 -g -O3 --apcs=interwork --split_sections -I ..\STM32F10x_FWLib\inc -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\USART -I ..\SYSTEM\TIM -I ..\SYSTEM\ADC -I ..\SYSTEM\gpio -I ..\USER -I ..\CORE -I ..\HARDWARE\U8g2_V2.0.0 -I ..\HARDWARE\U8g2_user-IC:\Users\16414\AppData\Local\Arm\Packs\Keil\CS32F1xx_DFP\1.0.0\Device\Include-D__UVISION_VERSION="539" -DCS32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o ..\obj\u8g2_meun_effect.o --omf_browse ..\obj\u8g2_meun_effect.crf --depend ..\obj\u8g2_meun_effect.d)
+I (..\HARDWARE\U8g2_user\u8g2_menu.h)(0x666EE1C5)
+I (..\HARDWARE\U8g2_V2.0.0\u8g2.h)(0x6652D2EA)
+I (..\HARDWARE\U8g2_V2.0.0\u8x8.h)(0x6648C775)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x6025237E)
+I (C:\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x60252376)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x6025237E)
+I (C:\Keil_v5\ARM\ARMCC\include\limits.h)(0x60252376)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x60252374)

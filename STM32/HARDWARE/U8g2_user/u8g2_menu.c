@@ -29,6 +29,7 @@ void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t m
 	u8g2_menu->menuItem = menuItem;
 	u8g2_menu->menuSelector = menuSelector;
 	u8g2_menu->currentSetValue = -1;
+	u8g2_MenuEffectBind(u8g2_menu,&u8g2_MenuEffect);
 }
 
 // 创建菜单 用默认选择展示器
@@ -42,7 +43,7 @@ void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_t menuItem)
 {
 	u8g2_menu->menuItem = menuItem;
 	u8g2_menu->currentItem = 0;
-	u8g2_menu->_rowHeight = 0;
+	u8g2_menuEffectShrink_call(u8g2_menu);
 }
 
 // 切换选择器
@@ -122,31 +123,7 @@ void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
 
 	if (u8g2_menu->currentDrawItem == u8g2_menu->currentItem)
 	{
-		// 判断显示是否完整 是否需要移动
-		if (u8g2_menu->currentDrawItemHeight + u8g2_menu->lineSpacingSelector >= u8g2_menu->currentHeight + u8g2_menu->currentY)
-		{
-			u8g2_menu->spe = u8g2_menu->currentDrawItemHeight + u8g2_menu->lineSpacingSelector - u8g2_menu->currentHeight - u8g2_menu->currentY;
-			u8g2_menu->spe = u8g2_menu->spe / 2 + 1;
-		}
-		if (u8g2_menu->currentDrawItemHeight - u8g2_menu->currentItemHeight <= u8g2_menu->currentY)
-		{
-			u8g2_menu->spe = u8g2_menu->currentDrawItemHeight - u8g2_menu->currentItemHeight - u8g2_menu->currentY;
-			u8g2_menu->spe = u8g2_menu->spe / 2 - 1;
-		}
-		if (u8g2_menu->currentContentWidth > w)
-		{
-			u8g2_menu->positionOffset -= 1 + u8g2_GetMaxCharWidth(u8g2_menu->u8g2) / 10;
-			if (u8g2_menu->positionOffset + u8g2_menu->currentContentWidth + u8g2_GetMaxCharWidth(u8g2_menu->u8g2) * 5 <= w)
-			{
-				u8g2_menu->positionOffset = u8g2_GetMaxCharWidth(u8g2_menu->u8g2) * 5;
-			}
-			if (u8g2_menu->positionOffset > 0)
-				u8g2_menu->_positionOffset = 0;
-			else if (u8g2_menu->positionOffset + u8g2_menu->currentContentWidth - w <= 0)
-				u8g2_menu->_positionOffset = w - u8g2_menu->currentContentWidth;
-			else
-				u8g2_menu->_positionOffset = u8g2_menu->positionOffset;
-		}
+		u8g2_menuEffectMoveItem_call(u8g2_menu);
 	}
 }
 
@@ -181,10 +158,8 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
 	u8g2_menu->currentWidth = w - 6;
 	u8g2_menu->currentHeight = h;
 
-	u8g2_menu->_position += u8g2_menu->spe;
 	// 绘制表项
 
-	u8g2_menu->spe = 0;
 	u8g2_menu->currentDrawItem = 0;
 	u8g2_menu->totalLength = 0;
 
@@ -218,15 +193,11 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
 		u8g2_DrawVSliderBar(
 			u8g2_menu->u8g2,
 			x + w - 5, y, 5, h,
-			(float)u8g2_menu->_position / (u8g2_menu->totalLength - h),
+			(float)u8g2_MenuEffectGetPos(u8g2_menu) / (u8g2_menu->totalLength - h),
 			limitingAmplitude((float)h / u8g2_menu->totalLength, 0.2, 1));
 	}
 
-	// 通过 _rowHeight 实现菜单展开动画
-	if (u8g2_menu->_rowHeight < 1)
-		u8g2_menu->_rowHeight += 0.2;
-	else
-		u8g2_menu->_rowHeight = 1;
+	u8g2_menuEffectExpandc_call(u8g2_menu);
 
 	// 清除当前绘制的菜单
 	currentMenu = NULL;
@@ -308,7 +279,7 @@ void u8g2_MenuItemAdd(u8g2_menu_t *u8g2_menu)
 // 附加值减
 void u8g2_MenuItemSubS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 {
-#define MenuSUBK(v, a, m, k)     \
+#define MenuSUBK(v, a, m, k)                                                                                   \
 	if (*(u8g2_menu->u8g2_menuValue.v) - (u8g2_menu->u8g2_menuValue.a) * (k) >= (u8g2_menu->u8g2_menuValue.m)) \
 	*(u8g2_menu->u8g2_menuValue.v) -= (u8g2_menu->u8g2_menuValue.a) * (k)
 
@@ -426,7 +397,7 @@ u8g2_menu_t *u8g2_MenuDrawItemStart(void)
 	u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
 	if (!menu)
 		return NULL;
-	menu->currentDrawItemHeight = menu->totalLength - menu->_position;
+	menu->currentDrawItemHeight = menu->totalLength - u8g2_MenuEffectGetPos(menu);
 
 	// 解除限制绘制区域
 	u8g2_SetMaxClipWindow(menu->u8g2);
@@ -439,7 +410,7 @@ void u8g2_MenuDrawItemEnd(u8g2_menu_t *menu)
 		return;
 	++menu->currentDrawItem;
 	menu->currentAttribute = MENU_Fix;
-	menu->totalLength = (menu->currentDrawItemHeight + menu->_position) * menu->_rowHeight;
+	menu->totalLength = (menu->currentDrawItemHeight + u8g2_MenuEffectGetPos(menu)) * menu->menuEffect->_rowHeight;
 
 #if U8G2_MENU_DEBUG
 	u8g2_int_t x = u8g2_MenuGetX(menu);
