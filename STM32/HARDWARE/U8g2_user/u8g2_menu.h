@@ -157,8 +157,8 @@ struct u8g2_menu_struct
 	u8g2_uint_t currentDrawItem; // 当前绘制的项
 
 	u8g2_int_t currentItemLog;	// 记录的当前选中的项
-	u8g2_int_t positionOffset;	// 位置偏移
-	u8g2_int_t _positionOffset; // 位置偏移
+	u8g2_int_t positionOffset;	// 目标位置偏移
+	u8g2_int_t _positionOffset; // 实际位置偏移
 
 	// 当前的位置信息
 	u8g2_int_t currentX;

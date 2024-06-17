@@ -105,7 +105,12 @@ void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
 	w = u8g2_menu->currentWidth - u8g2_menu->leftMarginSelector;
 	h = u8g2_menu->currentItemHeight + u8g2_menu->topMarginSelector;
 
-	u8g2_SetClipWindow(u8g2_menu->u8g2, x < 0 ? 0 : x, y < 0 ? 0 : y, x + w, y + h);
+	x = limitingAmplitude(x, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth);
+	y = limitingAmplitude(y, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight);
+	w = limitingAmplitude(x + w, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth);
+	h = limitingAmplitude(y + h, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight);
+
+	u8g2_SetClipWindow(u8g2_menu->u8g2, x, y, w, h);
 
 	if (u8g2_menu->currentItemLog != u8g2_menu->currentItem)
 	{
@@ -185,7 +190,7 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
 		u8g2_DrawVSliderBar(
 			u8g2_menu->u8g2,
 			x + w - 5, y, 5, h,
-			(float)u8g2_MenuEffectGetPos(u8g2_menu) / (u8g2_menu->totalLength - h),
+			(float)(u8g2_MenuEffectGetPos(u8g2_menu) + y) / (u8g2_menu->totalLength - h),
 			limitingAmplitude((float)h / u8g2_menu->totalLength, 0.2, 1));
 	}
 	u8g2_menuEffectExpandc_call(u8g2_menu);
@@ -372,8 +377,7 @@ u8g2_menu_t *u8g2_MenuDrawItemStart(void)
 	if (!menu)
 		return NULL;
 	menu->totalLength = menu->totalLength - u8g2_MenuEffectGetPos(menu);
-	// 解除限制绘制区域
-	u8g2_SetMaxClipWindow(menu->u8g2);
+	u8g2_SetClipWindow(menu->u8g2, menu->currentX, menu->currentY, menu->currentX + menu->currentWidth, menu->currentY + menu->currentHeight);
 	return menu;
 }
 void u8g2_MenuDrawItemEnd(u8g2_menu_t *menu)
@@ -390,8 +394,7 @@ void u8g2_MenuDrawItemEnd(u8g2_menu_t *menu)
 	++menu->currentDrawItem;
 	menu->currentAttribute = MENU_Fix;
 	menu->totalLength = (menu->totalLength + u8g2_MenuEffectGetPos(menu)) * u8g2_MenuEffectGetRowHeight(menu);
-	// 解除限制绘制区域
-	u8g2_SetMaxClipWindow(menu->u8g2);
+	u8g2_SetClipWindow(menu->u8g2, menu->currentX, menu->currentY, menu->currentX + menu->currentWidth, menu->currentY + menu->currentHeight);
 	return;
 }
 void u8g2_MenuDrawItemStr(u8g2_uint_t (*u8g2_Draw)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str), const char *str, u8g2_uint_t multiple)
