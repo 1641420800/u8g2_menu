@@ -1,5 +1,6 @@
 #include "u8g2_menu.h"
 
+/* 宏定义 */
 #ifndef ABS
 #define ABS(s) ((s) < 0 ? -(s) : (s))
 #endif
@@ -11,7 +12,16 @@
 // 当前正在绘制的菜单
 u8g2_menu_t *currentMenu = NULL;
 
-// 创建菜单 自定义选择展示器
+/**
+ * @brief 创建一个菜单
+ *
+ * @param u8g2 u8g2对象
+ * @param u8g2_menu 菜单对象
+ * @param menuItem 菜单项
+ * @param menuSelector 选择器
+ *
+ * @return void
+ */
 void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t menuItem, menuSelector_t menuSelector)
 {
 	if (!u8g2 || !u8g2_menu || !menuItem || !menuSelector)
@@ -22,16 +32,31 @@ void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t m
 	u8g2_menu->menuItem = menuItem;
 	u8g2_menu->menuSelector = menuSelector;
 	u8g2_menu->currentSetValue = -1;
-	u8g2_MenuEffectBind(u8g2_menu,&u8g2_MenuEffect);
+	u8g2_MenuEffectBind(u8g2_menu, &u8g2_MenuEffect);
 }
 
-// 创建菜单 用默认选择展示器
+/**
+ * @brief 使用默认选择器创建一个菜单
+ *
+ * @param u8g2 u8g2对象
+ * @param u8g2_menu 菜单对象
+ * @param menuItem 菜单项函数
+ *
+ * @return void
+ */
 void u8g2_CreateMenu(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t menuItem)
 {
 	u8g2_CreateMenu_Selector(u8g2, u8g2_menu, menuItem, u8g2_MenuSelector);
 }
 
-// 切换表项
+/**
+ * @brief 更新菜单项函数
+ *
+ * @param u8g2_menu 菜单对象
+ * @param menuItem 菜单项函数
+ *
+ * @return void
+ */
 void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_t menuItem)
 {
 	u8g2_menu->menuItem = menuItem;
@@ -39,13 +64,26 @@ void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_t menuItem)
 	u8g2_menuEffectShrink_call(u8g2_menu);
 }
 
-// 切换选择器
+/**
+ * @brief 更新选择器函数
+ *
+ * @param u8g2_menu 菜单对象
+ * @param menuSelector 选择器函数
+ *
+ * @return void
+ */
 void u8g2_MenuReplaceSelector(u8g2_menu_t *u8g2_menu, menuSelector_t menuSelector)
 {
 	u8g2_menu->menuSelector = menuSelector;
 }
 
-// 获取当前属性
+/**
+ * @brief 获取当前菜单项的属性
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return MENU_Attribute_t 菜单项属性
+ */
 MENU_Attribute_t u8g2_MenuGetAttribute(u8g2_menu_t *u8g2_menu)
 {
 	if (u8g2_menu->currentDrawItem == u8g2_menu->currentItem)
@@ -55,7 +93,18 @@ MENU_Attribute_t u8g2_MenuGetAttribute(u8g2_menu_t *u8g2_menu)
 	return MENU_None;
 }
 
-// 设置菜单项位置
+/**
+ * @brief 设置菜单项的相对位置
+ * @note 本函式是预留给选择器使用的 选择器函数可调用本函数来控制具体的绘制位置
+ *
+ * @param u8g2_menu 菜单对象
+ * @param leftMarginSelector 选择器左边距
+ * @param topMarginSelector 选择器上边距
+ * @param lineSpacingSelector 选择器行间距
+ *
+ * @return void
+ *
+ */
 void u8g2_MenuSetPosition(u8g2_menu_t *u8g2_menu, u8g2_uint_t leftMarginSelector, u8g2_uint_t topMarginSelector, u8g2_uint_t lineSpacingSelector)
 {
 	u8g2_menu->leftMarginSelector = leftMarginSelector;
@@ -65,28 +114,74 @@ void u8g2_MenuSetPosition(u8g2_menu_t *u8g2_menu, u8g2_uint_t leftMarginSelector
 	u8g2_menu->totalLength += u8g2_menu->topMarginSelector;
 }
 
+/**
+ * @brief 获取当前菜单项的X坐标
+ * @note 菜单绘制过程中调用有效 一般在选择器函数中调用
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return u8g2_int_t 菜单项的X坐标
+ */
 u8g2_int_t u8g2_MenuGetX(u8g2_menu_t *u8g2_menu)
 {
 	return u8g2_menu->currentX + u8g2_menu->leftMarginSelector;
 }
+
+/**
+ * @brief 获取当前菜单项的Y坐标
+ * @note 菜单绘制过程中调用有效 一般在选择器函数中调用
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return u8g2_int_t 菜单项的Y坐标
+ */
 u8g2_int_t u8g2_MenuGetY(u8g2_menu_t *u8g2_menu)
 {
 	return u8g2_menu->totalLength - u8g2_menu->currentItemHeight + u8g2_menu->topMarginSelector;
 }
+
+/**
+ * @brief 获取当前菜单项的高度
+ * @note 菜单绘制过程中调用有效 一般在选择器函数中调用
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return u8g2_int_t 菜单项的高度
+ */
 u8g2_int_t u8g2_MenuGetH(u8g2_menu_t *u8g2_menu)
 {
 	return u8g2_menu->currentItemHeight - u8g2_menu->topMarginSelector;
 }
+
+/**
+ * @brief 获取当前菜单项的宽度
+ * @note 菜单绘制过程中调用有效 一般在选择器函数中调用
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return u8g2_int_t 菜单项的宽度
+ */
 u8g2_int_t u8g2_MenuGetW(u8g2_menu_t *u8g2_menu)
 {
 	return u8g2_menu->currentWidth - u8g2_menu->leftMarginSelector;
 }
 
+/**
+ * @brief 调用选择器函数
+ * @note 本函数负责调用选择器函数及前后的处理
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return void
+ */
 void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
 {
 	u8g2_int_t x, y, w, h;
+
+	// 是否处于选中状态
 	if (u8g2_menu->currentSetValue != -1 && u8g2_menu->currentDrawItem == u8g2_menu->currentItem && u8g2_menu->currentItem == u8g2_menu->currentSetValue)
 	{
+		// 当前菜单项处于可写状态则选中 否则恢复
 		if (u8g2_menu->currentAttribute == MENU_Writable)
 		{
 			u8g2_menu->currentAttribute = MENU_WritableSelect;
@@ -97,59 +192,93 @@ void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
 		}
 	}
 
+	// 调用选择器函数
 	if (u8g2_menu->menuSelector)
 		u8g2_menu->menuSelector(u8g2_menu);
 
+	// 计算剪裁窗口
 	x = u8g2_menu->currentX + u8g2_menu->leftMarginSelector;
 	y = u8g2_menu->totalLength - u8g2_menu->currentItemHeight;
 	w = u8g2_menu->currentWidth - u8g2_menu->leftMarginSelector;
 	h = u8g2_menu->currentItemHeight + u8g2_menu->topMarginSelector;
 
+	// 限制剪裁窗口
 	x = limitingAmplitude(x, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth);
 	y = limitingAmplitude(y, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight);
 	w = limitingAmplitude(x + w, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth);
 	h = limitingAmplitude(y + h, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight);
 
+	// 设置剪裁窗口
 	u8g2_SetClipWindow(u8g2_menu->u8g2, x, y, w, h);
 
+	// 水平滚动
 	if (u8g2_menu->currentItemLog != u8g2_menu->currentItem)
 	{
-		u8g2_menu->positionOffset = u8g2_GetMaxCharWidth(u8g2_menu->u8g2) * 5;
+		u8g2_menu->positionOffset = (float)w / u8g2_GetMaxCharWidth(u8g2_menu->u8g2);
 		u8g2_menu->currentItemLog = u8g2_menu->currentItem;
 	}
 	u8g2_menu->_positionOffset = 0;
 
+	// 判断绘制到选中的项
 	if (u8g2_menu->currentDrawItem == u8g2_menu->currentItem)
 	{
+		// 移动到选中的项
 		u8g2_menuEffectMoveItem_call(u8g2_menu);
-		
-		if (u8g2_menu->currentContentWidth > w)
+
+		// 判断选中的项是否宽度超过屏幕
+		if (u8g2_menu->currentItemWidth > w)
 		{
-			u8g2_menu->positionOffset -= 1 + u8g2_GetMaxCharWidth(u8g2_menu->u8g2) / 10;
-			if (u8g2_menu->positionOffset + u8g2_menu->currentContentWidth + u8g2_GetMaxCharWidth(u8g2_menu->u8g2) * 5 <= w)
+			// 起点坐标向左偏移
+			u8g2_menu->positionOffset -= 0.1;
+			// 判断移动完成
+			if (u8g2_menu->positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2) + u8g2_menu->currentItemWidth <= 0)
 			{
-				u8g2_menu->positionOffset = u8g2_GetMaxCharWidth(u8g2_menu->u8g2) * 5;
+				u8g2_menu->positionOffset = (float)w / u8g2_GetMaxCharWidth(u8g2_menu->u8g2);
 			}
+
+			// 判断偏移量
 			if (u8g2_menu->positionOffset > 0)
 				u8g2_menu->_positionOffset = 0;
-			else if (u8g2_menu->positionOffset + u8g2_menu->currentContentWidth - w <= 0)
-				u8g2_menu->_positionOffset = w - u8g2_menu->currentContentWidth;
+			else if (u8g2_menu->positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2) + u8g2_menu->currentItemWidth - w <= 0)
+				u8g2_menu->_positionOffset = w - u8g2_menu->currentItemWidth;
 			else
 				u8g2_menu->_positionOffset = u8g2_menu->positionOffset;
 		}
 	}
 }
 
-// 滑块条
+/**
+ * @brief 绘制滑块条
+ *
+ * @param u8g2_menu 菜单对象
+ * @param x 滑块条X坐标
+ * @param y 滑块条Y坐标
+ * @param w 滑块条宽度
+ * @param h 滑块条高度
+ * @param schedule 滑块条进度
+ * @param proportion 滑块条比例
+ *
+ * @return void
+ */
 void u8g2_DrawVSliderBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, float schedule, float proportion)
 {
-	schedule = limitingAmplitude(schedule,0,1);
-	proportion = limitingAmplitude(proportion,0,1);
+	schedule = limitingAmplitude(schedule, 0, 1);
+	proportion = limitingAmplitude(proportion, 0, 1);
 	u8g2_DrawVLine(u8g2, x + w / 2, y, h);
 	u8g2_DrawBox(u8g2, x, y + h * (1 - proportion) * schedule, w, h * proportion);
 }
 
-// 绘制菜单
+/**
+ * @brief 绘制菜单
+ *
+ * @param u8g2_menu 菜单对象
+ * @param x 菜单X坐标
+ * @param y 菜单Y坐标
+ * @param w 菜单宽度
+ * @param h 菜单高度
+ *
+ * @return void
+ */
 void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h)
 {
 	if (!u8g2_menu || w < 6)
@@ -197,27 +326,65 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
 	// 清除当前绘制的菜单
 	currentMenu = NULL;
 }
-// 上移 i 项
+
+/**
+ * @brief 尝试上移当前选中的表项
+ *
+ * @param u8g2_menu 菜单对象
+ * @param i 移动的步长
+ *
+ * @return void
+ */
 void u8g2_MenuItemUpS(u8g2_menu_t *u8g2_menu, u8g2_uint_t i)
 {
 	u8g2_menu->currentItem -= i;
 }
-// 上移 1 项
+
+/**
+ * @brief 尝试上移当前选中的表项 只移动1项
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return void
+ */
 void u8g2_MenuItemUp(u8g2_menu_t *u8g2_menu)
 {
 	u8g2_MenuItemUpS(u8g2_menu, 1);
 }
-// 下移 i 项
+
+/**
+ * @brief 尝试下移当前选中的表项
+ *
+ * @param u8g2_menu 菜单对象
+ * @param i 移动的步长
+ *
+ * @return void
+ */
 void u8g2_MenuItemDownS(u8g2_menu_t *u8g2_menu, u8g2_uint_t i)
 {
 	u8g2_menu->currentItem += i;
 }
-// 下移 1 项
+
+/**
+ * @brief 尝试下移当前选中的表项 只移动1项
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return void
+ */
 void u8g2_MenuItemDown(u8g2_menu_t *u8g2_menu)
 {
 	u8g2_MenuItemDownS(u8g2_menu, 1);
 }
-// 附加值加
+
+/**
+ * @brief 尝试增加当前选中的表项的附加值
+ *
+ * @param u8g2_menu 菜单对象
+ * @param k 增加的步长
+ *
+ * @return void
+ */
 void u8g2_MenuItemAddS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 {
 #define MenuADDK(v, a, m, k)                                                                                   \
@@ -259,12 +426,27 @@ void u8g2_MenuItemAddS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 
 #undef MenuADDK
 }
-// 附加值加
+
+/**
+ * @brief 尝试增加当前选中的表项的附加值 只增加1
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return void
+ */
 void u8g2_MenuItemAdd(u8g2_menu_t *u8g2_menu)
 {
 	u8g2_MenuItemAddS(u8g2_menu, 1);
 }
-// 附加值减
+
+/**
+ * @brief 尝试减少当前选中的表项的附加值
+ *
+ * @param u8g2_menu 菜单对象
+ * @param k 减少的步长
+ *
+ * @return void
+ */
 void u8g2_MenuItemSubS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 {
 #define MenuSUBK(v, a, m, k)                                                                                   \
@@ -306,27 +488,64 @@ void u8g2_MenuItemSubS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 
 #undef MenuSUBK
 }
-// 附加值减
+
+/**
+ * @brief 尝试减少当前选中的表项的附加值 只减少1
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return void
+ */
 void u8g2_MenuItemSub(u8g2_menu_t *u8g2_menu)
 {
 	u8g2_MenuItemSubS(u8g2_menu, 1);
 }
-// 选中
+
+/**
+ * @brief 选中当前选中的表项
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return void
+ */
 void u8g2_MenuItemSelect(u8g2_menu_t *u8g2_menu)
 {
 	u8g2_menu->currentSetValue = u8g2_menu->currentItem;
 }
-// 取消选中
+
+/**
+ * @brief 取消选中当前选中的表项
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return void
+ */
 void u8g2_MenuItemDeSelect(u8g2_menu_t *u8g2_menu)
 {
 	u8g2_menu->currentSetValue = -1;
 }
-// 获取选中状态
+
+/**
+ * @brief 获取当前表项的选中状态
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return u8g2_int_t 选中状态
+ */
 u8g2_int_t u8g2_MenuGetItemSelect(u8g2_menu_t *u8g2_menu)
 {
 	return u8g2_menu->currentSetValue;
 }
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+/**
+ * @brief 菜单按键处理
+ *
+ * @param u8g2_menu 菜单对象
+ * @param u8g2_menuKeyValue 按键值
+ *
+ * @return void
+ */
 void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)
 {
 	switch (u8g2_menuKeyValue)
@@ -370,7 +589,13 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
 	}
 }
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-// 推理表项
+
+/**
+ * @brief 菜单项绘制开始
+ * @note 菜单项绘制开始前，获取当前菜单对象，并设置剪裁窗口
+ *
+ * @return u8g2_menu_t* 菜单对象
+ */
 u8g2_menu_t *u8g2_MenuDrawItemStart(void)
 {
 	u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
@@ -380,6 +605,13 @@ u8g2_menu_t *u8g2_MenuDrawItemStart(void)
 	u8g2_SetClipWindow(menu->u8g2, menu->currentX, menu->currentY, menu->currentX + menu->currentWidth, menu->currentY + menu->currentHeight);
 	return menu;
 }
+
+/**
+ * @brief 菜单项绘制结束
+ * @note 菜单项绘制结束后，恢复剪裁窗口
+ *
+ * @return void
+ */
 void u8g2_MenuDrawItemEnd(u8g2_menu_t *menu)
 {
 	if (!menu)
@@ -397,6 +629,16 @@ void u8g2_MenuDrawItemEnd(u8g2_menu_t *menu)
 	u8g2_SetClipWindow(menu->u8g2, menu->currentX, menu->currentY, menu->currentX + menu->currentWidth, menu->currentY + menu->currentHeight);
 	return;
 }
+
+/**
+ * @brief 菜单项绘制字符串
+ *
+ * @param u8g2_Draw 绘制函数
+ * @param str 字符串
+ * @param multiple 放大倍数
+ *
+ * @return void
+ */
 void u8g2_MenuDrawItemStr(u8g2_uint_t (*u8g2_Draw)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str), const char *str, u8g2_uint_t multiple)
 {
 	if (!u8g2_Draw || !multiple)
@@ -414,6 +656,15 @@ void u8g2_MenuDrawItemStr(u8g2_uint_t (*u8g2_Draw)(u8g2_t *u8g2, u8g2_uint_t x, 
 	menu->totalLength += menu->lineSpacing;
 	u8g2_MenuDrawItemEnd(menu);
 }
+
+/**
+ * @brief 设置附加值属性并返回菜单对象
+ * @note 设置附加值之前需调用本函数来获取菜单对象并设置附加值属性 禁止直接获取菜单对象
+ *
+ * @param MENU_Attribute 属性
+ *
+ * @return u8g2_menu_t* 菜单对象
+ */
 u8g2_menu_t *u8g2_getMenuItemValue(MENU_Attribute_t MENU_Attribute)
 {
 	u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
@@ -425,7 +676,15 @@ u8g2_menu_t *u8g2_getMenuItemValue(MENU_Attribute_t MENU_Attribute)
 	return menu;
 }
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-// 菜单显示字符串
+
+/**
+ * @brief 字符串项显示函数
+ * @note 在菜单项绘制函数中调用本函数来显示字符串
+ *
+ * @param str 要显示的字符串
+ *
+ * @return void
+ */
 void u8g2_MenuDrawStr(char *str)
 {
 	char *token;
@@ -439,7 +698,15 @@ void u8g2_MenuDrawStr(char *str)
 		token = strtok(NULL, "\n");
 	}
 }
-// 菜单显示字符串 二倍大
+
+/**
+ * @brief 字符串项显示函数 2倍大
+ * @note 在菜单项绘制函数中调用本函数来显示字符串 2倍大
+ *
+ * @param str 要显示的字符串
+ *
+ * @return void
+ */
 void u8g2_MenuDrawStrX2(char *str)
 {
 	char *token;
@@ -453,7 +720,15 @@ void u8g2_MenuDrawStrX2(char *str)
 		token = strtok(NULL, "\n");
 	}
 }
-// 菜单显示UTF-8字符集
+
+/**
+ * @brief 字符串项显示函数 UTF-8
+ * @note 在菜单项绘制函数中调用本函数来显示字符串 UTF-8
+ *
+ * @param str 要显示的字符串
+ *
+ * @return void
+ */
 void u8g2_MenuDrawUTF8(char *str)
 {
 	u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
@@ -461,7 +736,15 @@ void u8g2_MenuDrawUTF8(char *str)
 		return;
 	u8g2_MenuDrawItemStr(u8g2_DrawUTF8, str, 1);
 }
-// 菜单显示UTF-8字符集 二倍大
+
+/**
+ * @brief 字符串项显示函数 2倍大 UTF-8
+ * @note 在菜单项绘制函数中调用本函数来显示字符串 2倍大 UTF-8
+ *
+ * @param str 要显示的字符串
+ *
+ * @return void
+ */
 void u8g2_MenuDrawUTF8X2(char *str)
 {
 	u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
@@ -469,7 +752,17 @@ void u8g2_MenuDrawUTF8X2(char *str)
 		return;
 	u8g2_MenuDrawItemStr(u8g2_DrawUTF8X2, str, 2);
 }
-// 菜单格式化输出
+
+/**
+ * @brief 字符串项格式化显示函数
+ * @note 在菜单项绘制函数中调用本函数来显示字符串
+ *
+ * @param u8g2_MenuDraw 绘制函数
+ * @param fmt 格式化字符串
+ * @param ... 参数
+ *
+ * @return void
+ */
 void u8g2_MenuPrintf(u8g2_MenuDraw_t u8g2_MenuDraw, const char *fmt, ...)
 {
 	char buffer[64];
@@ -480,7 +773,17 @@ void u8g2_MenuPrintf(u8g2_MenuDraw_t u8g2_MenuDraw, const char *fmt, ...)
 	u8g2_MenuDraw(buffer);
 }
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-// 追加附加值
+
+/**
+ * @brief 设置菜单项值属性
+ *
+ * @param value 值
+ * @param adjValue 步进值
+ * @param minValue 最小值
+ * @param maxValue 最大值
+ *
+ * @return void
+ */
 void u8g2_MenuItemValue_uint8(uint8_t *value, int8_t adjValue, uint8_t minValue, uint8_t maxValue)
 {
 	u8g2_menu_t *menu = u8g2_getMenuItemValue(MENU_Writable);
@@ -590,16 +893,34 @@ void u8g2_MenuItem_button(u8g2_MenuButton_t but, uint8_t ID)
 	menu->u8g2_menuValue.button.ID = ID;
 }
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-// 获取当前选中项
+
+/**
+ * @brief 获取当前选中的菜单项
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return u8g2_uint_t 选中的菜单项
+ */
 u8g2_uint_t u8g2_MenuGetCurrentSelection(u8g2_menu_t *u8g2_menu)
 {
 	return u8g2_menu->currentItem;
 }
-// 获取当前绘制的菜单
+
+/**
+ * @brief 获取当前绘制的菜单对象
+ *
+ * @return u8g2_menu_t* 菜单对象
+ */
 u8g2_menu_t *u8g2_MenuGetCurrentMenu(void)
 {
 	return currentMenu;
 }
+
+/**
+ * @brief 获取菜单对象对应的u8g2对象
+ *
+ * @return u8g2_t* u8g2对象
+ */
 u8g2_t *u8g2_MenuGetU8g2(u8g2_menu_t *u8g2_menu)
 {
 	return u8g2_menu->u8g2;
