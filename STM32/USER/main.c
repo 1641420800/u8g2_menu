@@ -16,15 +16,7 @@ void menuItem()
 	u8g2_MenuItemValue_uint16(&u8g2_menuValue,1,0,10);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"%d",u8g2_menuValue);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello1");
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello3");
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello4");
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello5");
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello6");
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello7");
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello8");
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello9");
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello0");
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2Hello2Hello2Hello2Hello2");
 
 }
 

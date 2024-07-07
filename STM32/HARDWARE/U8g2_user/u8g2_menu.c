@@ -32,6 +32,8 @@ void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t m
 	u8g2_menu->menuItem = menuItem;
 	u8g2_menu->menuSelector = menuSelector;
 	u8g2_menu->currentSetValue = -1;
+	u8g2_menu->positionOffset_spe = 0.1;
+	u8g2_menu->positionOffset_strHeaderLen = 5;
 	u8g2_MenuEffectBind(u8g2_menu, &u8g2_MenuEffect);
 }
 
@@ -167,6 +169,47 @@ u8g2_int_t u8g2_MenuGetW(u8g2_menu_t *u8g2_menu)
 }
 
 /**
+ * @brief 获取当前菜单项的水平偏移
+ * @note 菜单绘制过程中调用有效
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return u8g2_int_t 菜单项的水平偏移
+ */
+u8g2_int_t u8g2_MenuGetHorizontalOffset(u8g2_menu_t *u8g2_menu)
+{
+	return u8g2_menu->currentX + u8g2_menu->leftMarginSelector + u8g2_menu->_positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2);
+}
+
+/**
+ * @brief 设置水平移动的速度
+ *
+ * @param u8g2_menu 菜单对象
+ * @param spe 移动的速度 含义为每次刷新移动多少字符
+ *
+ * @return void
+ */
+void u8g2_MenuSetPositionOffsetSpe(u8g2_menu_t *u8g2_menu, float spe)
+{
+	if(spe > 0) spe = -spe;
+	if(spe == 0) spe = -0.01;
+	u8g2_menu->positionOffset_spe = spe;
+}
+
+/**
+ * @brief 设置水平移动的头停留长度
+ *
+ * @param u8g2_menu 菜单对象
+ * @param spe 移动的头停留长度
+ *
+ * @return void
+ */
+void u8g2_MenuSetPositionOffsetStrHeaderLen(u8g2_menu_t *u8g2_menu, float strHeaderLen)
+{
+	u8g2_menu->positionOffset_strHeaderLen = strHeaderLen;
+}
+
+/**
  * @brief 调用选择器函数
  * @note 本函数负责调用选择器函数及前后的处理
  *
@@ -214,7 +257,7 @@ void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
 	// 水平滚动
 	if (u8g2_menu->currentItemLog != u8g2_menu->currentItem)
 	{
-		u8g2_menu->positionOffset = (float)w / u8g2_GetMaxCharWidth(u8g2_menu->u8g2);
+		u8g2_menu->positionOffset = u8g2_menu->positionOffset_strHeaderLen;
 		u8g2_menu->currentItemLog = u8g2_menu->currentItem;
 	}
 	u8g2_menu->_positionOffset = 0;
@@ -229,18 +272,18 @@ void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
 		if (u8g2_menu->currentItemWidth > w)
 		{
 			// 起点坐标向左偏移
-			u8g2_menu->positionOffset -= 0.1;
+			u8g2_menu->positionOffset -= u8g2_menu->positionOffset_spe;
 			// 判断移动完成
 			if (u8g2_menu->positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2) + u8g2_menu->currentItemWidth <= 0)
 			{
-				u8g2_menu->positionOffset = (float)w / u8g2_GetMaxCharWidth(u8g2_menu->u8g2);
+				u8g2_menu->positionOffset = u8g2_menu->positionOffset_strHeaderLen;
 			}
 
 			// 判断偏移量
 			if (u8g2_menu->positionOffset > 0)
 				u8g2_menu->_positionOffset = 0;
-			else if (u8g2_menu->positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2) + u8g2_menu->currentItemWidth - w <= 0)
-				u8g2_menu->_positionOffset = w - u8g2_menu->currentItemWidth;
+			else if (u8g2_menu->positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2) + u8g2_menu->currentItemWidth <= w * 0.5)
+				u8g2_menu->_positionOffset = (w * 0.5 - u8g2_menu->currentItemWidth) / u8g2_GetMaxCharWidth(u8g2_menu->u8g2);
 			else
 				u8g2_menu->_positionOffset = u8g2_menu->positionOffset;
 		}
@@ -651,9 +694,8 @@ void u8g2_MenuDrawItemStr(u8g2_uint_t (*u8g2_Draw)(u8g2_t *u8g2, u8g2_uint_t x, 
 	menu->currentItemHeight = u8g2_GetMaxCharHeight(menu->u8g2) * multiple;
 	menu->totalLength += menu->currentItemHeight;
 	u8g2_MenuSelectorCall(menu);
-	u8g2_Draw(menu->u8g2, menu->currentX + menu->leftMargin + menu->leftMarginSelector + menu->_positionOffset, menu->totalLength + descent, str);
+	u8g2_Draw(menu->u8g2, u8g2_MenuGetHorizontalOffset(menu), menu->totalLength + descent, str);
 	menu->totalLength += menu->lineSpacingSelector;
-	menu->totalLength += menu->lineSpacing;
 	u8g2_MenuDrawItemEnd(menu);
 }
 

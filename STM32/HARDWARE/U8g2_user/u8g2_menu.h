@@ -159,6 +159,8 @@ struct u8g2_menu_struct
 	u8g2_int_t currentItemLog;	// 记录的当前选中的项
 	float positionOffset;	// 目标位置偏移
 	float _positionOffset; // 实际位置偏移
+	float positionOffset_spe; // 目标位置偏移速度
+	float positionOffset_strHeaderLen; // 字符串偏移的头宽度(字符)
 
 	// 当前的位置信息
 	u8g2_int_t currentX;
@@ -176,8 +178,6 @@ struct u8g2_menu_struct
 	u8g2_int_t topMarginSelector;	 // 菜单顶边距
 	u8g2_int_t lineSpacingSelector; // 菜单行间距
 
-	u8g2_int_t leftMargin;	 // 菜单左边距
-	u8g2_int_t lineSpacing; // 菜单行间距
 	u8g2_int_t totalLength; // 菜单总长度
 
 };
@@ -217,6 +217,20 @@ void u8g2_CreateMenu(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t menuItem);
 
 // 切换表项
 void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_t menuItem);
+
+// 设置平移速度
+void u8g2_MenuSetPositionOffsetSpe(u8g2_menu_t *u8g2_menu, float spe);
+
+// 获取平移速度
+#define u8g2_MenuGetPositionOffsetSpe(u8g2_menu) ((u8g2_menu)->positionOffset_spe)
+// float u8g2_MenuGetPositionOffsetSpe(u8g2_menu_t *u8g2_menu);
+
+// 设置平移头长度
+void u8g2_MenuSetPositionOffsetStrHeaderLen(u8g2_menu_t *u8g2_menu, float strHeaderLen);
+
+// 获取平移头长度
+#define u8g2_MenuGetPositionOffsetStrHeaderLen(u8g2_menu) ((u8g2_menu)->positionOffset_strHeaderLen)
+// float u8g2_MenuGetPositionOffsetStrHeaderLen(u8g2_menu_t *u8g2_menu);
 
 // 滑块条
 void u8g2_DrawVSliderBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, float schedule, float proportion);
