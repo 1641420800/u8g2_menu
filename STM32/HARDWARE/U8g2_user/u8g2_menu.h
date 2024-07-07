@@ -6,8 +6,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#define U8G2_MENU_VERSION "1.0.0"
-#define U8G2_MENU_DEBUG 1
+#define U8G2_MENU_VERSION "1.0.0-alpha"
+#define U8G2_MENU_DEBUG 0
 
 typedef struct u8g2_menu_effect_struct u8g2_menu_effect_t;
 typedef struct u8g2_menu_struct u8g2_menu_t;
