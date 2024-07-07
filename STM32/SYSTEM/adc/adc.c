@@ -2,37 +2,37 @@
 #include "stm32f10x_adc.h"
 #include "stm32f10x_gpio.h"
 
-/*---------AD×ª»»--------
-ËµÃ÷£ºc8t6¹²ÓĞ10¸öÍâ²¿AD×ª»» PA0-PA7 PB0¡¢PB1 ·Ö±ğ¶ÔÓ¦Í¨µÀ0-Í¨µÀ9  ±¾³ÌĞòÎªPA0¡¢PA1¡¢PB0¡¢PB1
-		ĞèÒªÊ×ÏÈÔÚ±¾ÎÄ¼şÄÚÎÄ¼şÄÚĞŞ¸ÄĞèÒªÊ¹ÓÃµÄÍ¨µÀ CLOSE£¨¹Ø±Õ£© »ò OPEN£¨´ò¿ª£©
+/*---------ADè½¬æ¢--------
+è¯´æ˜ï¼šc8t6å…±æœ‰10ä¸ªå¤–éƒ¨ADè½¬æ¢ PA0-PA7 PB0ã€PB1 åˆ†åˆ«å¯¹åº”é€šé“0-é€šé“9  æœ¬ç¨‹åºä¸ºPA0ã€PA1ã€PB0ã€PB1
+		éœ€è¦é¦–å…ˆåœ¨æœ¬æ–‡ä»¶å†…æ–‡ä»¶å†…ä¿®æ”¹éœ€è¦ä½¿ç”¨çš„é€šé“ CLOSEï¼ˆå…³é—­ï¼‰ æˆ– OPENï¼ˆæ‰“å¼€ï¼‰
 		
-Í¨µÀËµÃ÷£º	//ÆäËû	GET_ADC_PA3¡¢GET_ADC_PA4¡¢GET_ADC_PA5¡¢GET_ADC_PA6¡¢GET_ADC_PA7¡¢
-			GET_ADC_PA8¡¢GET_ADC_PA9¡¢GET_ADC_PA5¡¢GET_ADC_PB0¡¢GET_ADC_PB1
-µ÷ÓÃ£º
+é€šé“è¯´æ˜ï¼š	//å…¶ä»–	GET_ADC_PA3ã€GET_ADC_PA4ã€GET_ADC_PA5ã€GET_ADC_PA6ã€GET_ADC_PA7ã€
+			GET_ADC_PA8ã€GET_ADC_PA9ã€GET_ADC_PA5ã€GET_ADC_PB0ã€GET_ADC_PB1
+è°ƒç”¨ï¼š
 	#include "adc.h"
 	
-	int adcx1,adcx2,adcx3,adcx4;  			//AD×ª»»µÄ½á¹û
+	int adcx1,adcx2,adcx3,adcx4;  			//ADè½¬æ¢çš„ç»“æœ
 	float adc1,adc2,adc3,adc4;
-//--------------------------------ADC³õÊ¼»¯Ä¬ÈÏ¿ªÆôPA0ºÍPA1µÄÍ¨µÀ£¬ÈçĞèÒªÆäËûÍ¨µÀÔÚÏÂ·½½øĞĞ¿ªÆô----
+//--------------------------------ADCåˆå§‹åŒ–é»˜è®¤å¼€å¯PA0å’ŒPA1çš„é€šé“ï¼Œå¦‚éœ€è¦å…¶ä»–é€šé“åœ¨ä¸‹æ–¹è¿›è¡Œå¼€å¯----
 
-	Adc_Init();							//ADC×ª»»³õÊ¼»¯
-//--------------------------------ADC»ñÈ¡Êı¾İ²¢OLED½øĞĞÏÔÊ¾--------------------------------------
-	adcx1=GET_ADC_PA0;						//»ñÈ¡PA0µÄADCÖµ
-	adcx2=GET_ADC_PA1;						//»ñÈ¡PA1µÄADCÖµ
-	adcx3=GET_ADC_PA2;						//»ñÈ¡PA2µÄADCÖµ			Ä¬ÈÏÎ´¿ªÆô£¬ĞèÔÚÏÂ·½¿ªÆô
-	adcx4=GET_ADC_PA3;						//»ñÈ¡PA3µÄADCÖµ			Ä¬ÈÏÎ´¿ªÆô£¬ĞèÔÚÏÂ·½¿ªÆô
-	adc1 = 100-(adcx1/40);  				//¿ØÖÆ±ä»¯·¶Î§ÔÚ0-100
-	adc2 = 100-(adcx2/40);					//¿ØÖÆ±ä»¯·¶Î§ÔÚ0-100
-	adc3 = 100-(adcx3/40);					//¿ØÖÆ±ä»¯·¶Î§ÔÚ0-100
-	adc4 = 100-(adcx4/40);					//¿ØÖÆ±ä»¯·¶Î§ÔÚ0-100
-	OLED_ShowString(0,0,"adc1:",16);   	    //ÏÔÊ¾±êÌâ 
-	OLED_ShowNum(55,0,adc1,3,16);           //ÏÔÊ¾ÆÁÏÔÊ¾adc1 
-	OLED_ShowString(0,2,"adc2:",16);   	    //ÏÔÊ¾±êÌâ 
-	OLED_ShowNum(55,2,adc2,3,16);           //ÏÔÊ¾ÆÁÏÔÊ¾adc2
-	OLED_ShowString(0,4,"adc3:",16);   	    //ÏÔÊ¾±êÌâ  
-	OLED_ShowNum(55,4,adc3,3,16);           //ÏÔÊ¾ÆÁÏÔÊ¾adc3 
-	OLED_ShowString(0,6,"adc4:",16);   	    //ÏÔÊ¾ÆÁ±êÌâ 
-	OLED_ShowNum(55,6,adc4,3,16);           //ÏÔÊ¾ÆÁÏÔÊ¾adc4 	
+	Adc_Init();							//ADCè½¬æ¢åˆå§‹åŒ–
+//--------------------------------ADCè·å–æ•°æ®å¹¶OLEDè¿›è¡Œæ˜¾ç¤º--------------------------------------
+	adcx1=GET_ADC_PA0;						//è·å–PA0çš„ADCå€¼
+	adcx2=GET_ADC_PA1;						//è·å–PA1çš„ADCå€¼
+	adcx3=GET_ADC_PA2;						//è·å–PA2çš„ADCå€¼			é»˜è®¤æœªå¼€å¯ï¼Œéœ€åœ¨ä¸‹æ–¹å¼€å¯
+	adcx4=GET_ADC_PA3;						//è·å–PA3çš„ADCå€¼			é»˜è®¤æœªå¼€å¯ï¼Œéœ€åœ¨ä¸‹æ–¹å¼€å¯
+	adc1 = 100-(adcx1/40);  				//æ§åˆ¶å˜åŒ–èŒƒå›´åœ¨0-100
+	adc2 = 100-(adcx2/40);					//æ§åˆ¶å˜åŒ–èŒƒå›´åœ¨0-100
+	adc3 = 100-(adcx3/40);					//æ§åˆ¶å˜åŒ–èŒƒå›´åœ¨0-100
+	adc4 = 100-(adcx4/40);					//æ§åˆ¶å˜åŒ–èŒƒå›´åœ¨0-100
+	OLED_ShowString(0,0,"adc1:",16);   	    //æ˜¾ç¤ºæ ‡é¢˜ 
+	OLED_ShowNum(55,0,adc1,3,16);           //æ˜¾ç¤ºå±æ˜¾ç¤ºadc1 
+	OLED_ShowString(0,2,"adc2:",16);   	    //æ˜¾ç¤ºæ ‡é¢˜ 
+	OLED_ShowNum(55,2,adc2,3,16);           //æ˜¾ç¤ºå±æ˜¾ç¤ºadc2
+	OLED_ShowString(0,4,"adc3:",16);   	    //æ˜¾ç¤ºæ ‡é¢˜  
+	OLED_ShowNum(55,4,adc3,3,16);           //æ˜¾ç¤ºå±æ˜¾ç¤ºadc3 
+	OLED_ShowString(0,6,"adc4:",16);   	    //æ˜¾ç¤ºå±æ ‡é¢˜ 
+	OLED_ShowNum(55,6,adc4,3,16);           //æ˜¾ç¤ºå±æ˜¾ç¤ºadc4 	
 
 */
 #define CLOSE 0
@@ -56,24 +56,24 @@
 void ADC_DMA_Init(uint32_t * data, uint16_t dataSize)
 {
 	DMA_InitTypeDef DMA_InitStructure;
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE); 				//Ê¹ÄÜMDA1Ê±ÖÓ
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE); 				//ä½¿èƒ½MDA1æ—¶é’Ÿ
 	/* DMA channel1 configuration */
-	DMA_DeInit(DMA1_Channel1); 										//Ö¸¶¨DMAÍ¨µÀ
-	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(ADC1->DR);		//ADC1µØÖ·---´ú±íADC1±£´æ×ª»»ÖµµÄ¼Ä´æÆ÷
-	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)&data;	//ÉèÖÃDMAÄÚ´æµØÖ·£¬ADC×ª»»½á¹ûÖ±½Ó·ÅÈë¸ÃµØÖ·
-	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC; 				//ÍâÉèÎªÉèÖÃÎªÊı¾İ´«ÊäµÄÀ´Ô´
-	DMA_InitStructure.DMA_BufferSize = dataSize;						//´«Êä×ÜÊı¾İ---2Í¨µÀĞèÒª´«Êä2¸öÊı¾İ
-	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable; 	//ÍâÉèµØÖ·¹Ì¶¨
-	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;			//ÄÚ´æµØÖ·×ÔÔö---×ÜÌå±íÊ¾Ê¼ÖÕ´ÓÍâÉèADC1µØÖ·´¦È¡Öµ---ÒÀ´Î±£´æµ½Á¬ĞøµÄÁ½¸öÄÚ´æ±äÁ¿ÖĞ---
-	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord; //ÄÚ´æ´«ÊäÊı¾İµ¥Ôª---°ë×Ö16Î»
+	DMA_DeInit(DMA1_Channel1); 										//æŒ‡å®šDMAé€šé“
+	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(ADC1->DR);		//ADC1åœ°å€---ä»£è¡¨ADC1ä¿å­˜è½¬æ¢å€¼çš„å¯„å­˜å™¨
+	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)&data;	//è®¾ç½®DMAå†…å­˜åœ°å€ï¼ŒADCè½¬æ¢ç»“æœç›´æ¥æ”¾å…¥è¯¥åœ°å€
+	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC; 				//å¤–è®¾ä¸ºè®¾ç½®ä¸ºæ•°æ®ä¼ è¾“çš„æ¥æº
+	DMA_InitStructure.DMA_BufferSize = dataSize;						//ä¼ è¾“æ€»æ•°æ®---2é€šé“éœ€è¦ä¼ è¾“2ä¸ªæ•°æ®
+	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable; 	//å¤–è®¾åœ°å€å›ºå®š
+	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;			//å†…å­˜åœ°å€è‡ªå¢---æ€»ä½“è¡¨ç¤ºå§‹ç»ˆä»å¤–è®¾ADC1åœ°å€å¤„å–å€¼---ä¾æ¬¡ä¿å­˜åˆ°è¿ç»­çš„ä¸¤ä¸ªå†…å­˜å˜é‡ä¸­---
+	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord; //å†…å­˜ä¼ è¾“æ•°æ®å•å…ƒ---åŠå­—16ä½
 	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;					//Ñ­»·Ä£Ê½---2¸öÊı¾İÒÀ´ÎÑ­»·½ÓÊÕ´ÓÍâÉèADC1´«Êä¹ıÀ´µÄADCÖµ---
+	DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;					//å¾ªç¯æ¨¡å¼---2ä¸ªæ•°æ®ä¾æ¬¡å¾ªç¯æ¥æ”¶ä»å¤–è®¾ADC1ä¼ è¾“è¿‡æ¥çš„ADCå€¼---
 	DMA_InitStructure.DMA_Priority = DMA_Priority_High;
 	DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
 	DMA_Init(DMA1_Channel1, &DMA_InitStructure);
 
 	/* Enable DMA channel1 */
-	DMA_Cmd(DMA1_Channel1, ENABLE); 									//Ê¹ÄÜDMAÍ¨µÀ
+	DMA_Cmd(DMA1_Channel1, ENABLE); 									//ä½¿èƒ½DMAé€šé“
 	
 	Adc_Init();
 	
@@ -94,7 +94,7 @@ void Adc_Init(void)
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB|RCC_APB2Periph_ADC1,ENABLE);
 #endif
 	
-	RCC_ADCCLKConfig(RCC_PCLK2_Div6);	//ÉèÖÃADCÎª6·ÖÆµ 72M/6=12M  ADC×î´óÊ±¼ä <= 14M	
+	RCC_ADCCLKConfig(RCC_PCLK2_Div6);	//è®¾ç½®ADCä¸º6åˆ†é¢‘ 72M/6=12M  ADCæœ€å¤§æ—¶é—´ <= 14M	
 	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AIN;
 #if ADC1_CH0_PA0_CHOOSE 
 	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_0;
@@ -149,19 +149,19 @@ void Adc_Init(void)
 	
 	ADC_DeInit(ADC1);
 	
-	ADC_InitStructure.ADC_Mode					= ADC_Mode_Independent;			// ADC¹¤×÷Ä£Ê½:ADC1ºÍADC2¹¤×÷ÔÚ¶ÀÁ¢Ä£Ê½
+	ADC_InitStructure.ADC_Mode					= ADC_Mode_Independent;			// ADCå·¥ä½œæ¨¡å¼:ADC1å’ŒADC2å·¥ä½œåœ¨ç‹¬ç«‹æ¨¡å¼
 
 #if ADC1_DMA
-	ADC_InitStructure.ADC_ScanConvMode			= ENABLE;						// Ä£Êı×ª»»¹¤×÷ÔÚÉ¨ÃèÄ£Ê½
-	ADC_InitStructure.ADC_ContinuousConvMode	= ENABLE;						// Ä£Êı×ª»»¹¤×÷ÔÚÁ¬Ğø×ª»»
+	ADC_InitStructure.ADC_ScanConvMode			= ENABLE;						// æ¨¡æ•°è½¬æ¢å·¥ä½œåœ¨æ‰«ææ¨¡å¼
+	ADC_InitStructure.ADC_ContinuousConvMode	= ENABLE;						// æ¨¡æ•°è½¬æ¢å·¥ä½œåœ¨è¿ç»­è½¬æ¢
 #else
-	ADC_InitStructure.ADC_ScanConvMode			= DISABLE;						// Ä£Êı×ª»»¹¤×÷ÔÚµ¥Í¨µÀÄ£Ê½
-	ADC_InitStructure.ADC_ContinuousConvMode	= DISABLE;						// Ä£Êı×ª»»¹¤×÷ÔÚµ¥´Î×ª»»
+	ADC_InitStructure.ADC_ScanConvMode			= DISABLE;						// æ¨¡æ•°è½¬æ¢å·¥ä½œåœ¨å•é€šé“æ¨¡å¼
+	ADC_InitStructure.ADC_ContinuousConvMode	= DISABLE;						// æ¨¡æ•°è½¬æ¢å·¥ä½œåœ¨å•æ¬¡è½¬æ¢
 #endif
-	ADC_InitStructure.ADC_ExternalTrigConv		= ADC_ExternalTrigConv_None;	// ×ª»»ÓÉÈí¼ş¶ø²»ÊÇÍâ²¿´¥·¢Æô¶¯
-	ADC_InitStructure.ADC_DataAlign				= ADC_DataAlign_Right;			// ADCÊı¾İÓÒ¶ÔÆë
-	ADC_InitStructure.ADC_NbrOfChannel			= order;						// Ë³Ğò½øĞĞ¹æÔò×ª»»µÄADCÍ¨µÀµÄÊıÄ¿
-	ADC_Init(ADC1, &ADC_InitStructure);											// ³õÊ¼»¯ ADC 
+	ADC_InitStructure.ADC_ExternalTrigConv		= ADC_ExternalTrigConv_None;	// è½¬æ¢ç”±è½¯ä»¶è€Œä¸æ˜¯å¤–éƒ¨è§¦å‘å¯åŠ¨
+	ADC_InitStructure.ADC_DataAlign				= ADC_DataAlign_Right;			// ADCæ•°æ®å³å¯¹é½
+	ADC_InitStructure.ADC_NbrOfChannel			= order;						// é¡ºåºè¿›è¡Œè§„åˆ™è½¬æ¢çš„ADCé€šé“çš„æ•°ç›®
+	ADC_Init(ADC1, &ADC_InitStructure);											// åˆå§‹åŒ– ADC 
 	
 	order = 0;
 #if ADC1_CH0_PA0_CHOOSE 
@@ -196,7 +196,7 @@ void Adc_Init(void)
 #endif	 
 
 #if ADC1_DMA
-	ADC_DMACmd ( ADC1, ENABLE ); //Ê¹ÄÜADC DMA´«Êä
+	ADC_DMACmd ( ADC1, ENABLE ); //ä½¿èƒ½ADC DMAä¼ è¾“
 #endif
 
 	ADC_Cmd(ADC1,ENABLE);

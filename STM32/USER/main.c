@@ -12,14 +12,19 @@
 u8g2_menu_t u8g2_menu; 
 
 uint16_t i;
+int jd;
+
 
 void u8g2_MenuButton(uint8_t ID, u8g2_menuKeyValue_t key);
 
 void menuItem_1()
 {
 	u8g2_MenuItem_button(u8g2_MenuButton,0);
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello1");
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello1");
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"456");
+	
+	u8g2_MenuDrawItemProgressBar_bind(&jd,10,-100,100);
+
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"123456789123456789123456789");
 	
 	u8g2_MenuItemValue_uint16(&i,1,0,100);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"%d",i);
@@ -29,6 +34,8 @@ void menuItem_2()
 {
 	u8g2_MenuItem_button(u8g2_MenuButton,1);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
+	u8g2_MenuPrintf(u8g2_MenuDrawStrX2,"Hello2");
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
 
@@ -83,10 +90,10 @@ void tim2_IRQ(void)
 int main(void)
 {
 	u8g2_t u8g2;
-	delay_init();	   		// ��ʱ������ʼ��	  
-	gpio_init();		  		// ��ʼ�����������ӵ�Ӳ���ӿ�
+	delay_init();
+	gpio_init();
 	
-	oled_u8g2_init(&u8g2);	// ��ʼ��OLED
+	oled_u8g2_init(&u8g2);
 	u8g2_CreateMenu(&u8g2,&u8g2_menu,menuItem_1);
 	u8g2_SetFont(&u8g2,u8g2_font_10x20_mf);
 	// u8g2_SetFont(&u8g2,u8g2_font_8x13_mf);
@@ -94,7 +101,6 @@ int main(void)
 	tim2_init(1000-1,72-1);
 	while(1)
 	{
-		delay_ms(100); // 模拟其他任务
 		u8g2_ClearBuffer(&u8g2);
 		oled_display(&u8g2);
 		u8g2_SendBuffer(&u8g2);
