@@ -63,6 +63,7 @@ void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_t menuItem)
 {
 	u8g2_menu->menuItem = menuItem;
 	u8g2_menu->currentItem = 0;
+	u8g2_menu->currentSetValue = -1;
 	u8g2_menuEffectShrink_call(u8g2_menu);
 }
 
@@ -335,6 +336,7 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
 	// 绘制表项
 	u8g2_menu->currentDrawItem = 0;
 	u8g2_menu->totalLength = 0;
+	u8g2_menu->u8g2_menuValueType = MENU_NC;
 	if (u8g2_menu->menuItem)
 		u8g2_menu->menuItem();
 
@@ -465,6 +467,8 @@ void u8g2_MenuItemAddS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 		break;
 	case MENU_butten:
 		break;
+	case MENU_NC:
+		break;
 	}
 
 #undef MenuADDK
@@ -526,6 +530,8 @@ void u8g2_MenuItemSubS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 		MenuSUBK(v_double.value, v_double.adjValue, v_double.minValue, k);
 		break;
 	case MENU_butten:
+		break;
+	case MENU_NC:
 		break;
 	}
 
@@ -591,39 +597,46 @@ u8g2_int_t u8g2_MenuGetItemSelect(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)
 {
+	// 根据是否选中进行按键映射
+	if (u8g2_MenuGetItemSelect(u8g2_menu) != -1)
+	{
+		if(u8g2_menuKeyValue == MENU_Key_Up)
+		{
+			u8g2_MenuKeys(u8g2_menu,MENU_Key_Add);
+			return;
+		}
+		if(u8g2_menuKeyValue == MENU_Key_Down)
+		{
+			u8g2_MenuKeys(u8g2_menu,MENU_Key_Sub);
+			return;
+		}
+		if(u8g2_menuKeyValue == MENU_Key_Enter)
+		{
+			u8g2_MenuKeys(u8g2_menu,MENU_Key_Return);
+			return;
+		}
+	}
 	switch (u8g2_menuKeyValue)
 	{
 	case MENU_Key_None:
 		break;
-	case MENU_Key_Add:
-		if (u8g2_MenuGetItemSelect(u8g2_menu) != -1)
-		{
-			u8g2_MenuItemAdd(u8g2_menu);
-		}
-		else
-		{
+	case MENU_Key_Up:
 			u8g2_MenuItemUp(u8g2_menu);
-		}
+		break;
+	case MENU_Key_Down:
+			u8g2_MenuItemDown(u8g2_menu);
+		break;
+	case MENU_Key_Enter:
+			u8g2_MenuItemSelect(u8g2_menu);
+		break;
+	case MENU_Key_Return:
+			u8g2_MenuItemDeSelect(u8g2_menu);
+		break;
+	case MENU_Key_Add:
+			u8g2_MenuItemAdd(u8g2_menu);
 		break;
 	case MENU_Key_Sub:
-		if (u8g2_MenuGetItemSelect(u8g2_menu) != -1)
-		{
 			u8g2_MenuItemSub(u8g2_menu);
-		}
-		else
-		{
-			u8g2_MenuItemDown(u8g2_menu);
-		}
-		break;
-	case MENU_Key_Confirm:
-		if (u8g2_MenuGetItemSelect(u8g2_menu) != -1)
-		{
-			u8g2_MenuItemDeSelect(u8g2_menu);
-		}
-		else
-		{
-			u8g2_MenuItemSelect(u8g2_menu);
-		}
 		break;
 	}
 	if (u8g2_menu->u8g2_menuValueType == MENU_butten)
@@ -711,6 +724,8 @@ u8g2_menu_t *u8g2_getMenuItemValue(MENU_Attribute_t MENU_Attribute)
 {
 	u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
 	if (!menu)
+		return NULL;
+	if(menu->currentItem != menu->currentDrawItem)
 		return NULL;
 	menu->currentAttribute = MENU_Attribute;
 	if (menu->currentItem != menu->currentDrawItem)

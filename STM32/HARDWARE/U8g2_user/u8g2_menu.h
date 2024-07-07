@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define U8G2_MENU_VERSION "1.0.0-alpha"
+#define U8G2_MENU_VERSION "1.0.1-alpha"
 #define U8G2_MENU_DEBUG 0
 
 typedef struct u8g2_menu_effect_struct u8g2_menu_effect_t;
@@ -31,14 +31,18 @@ typedef enum
 	MENU_V_int,
 	MENU_V_float,
 	MENU_V_double,
-	MENU_butten
+	MENU_butten,
+	MENU_NC
 } MENU_V_type_t;
 typedef enum
 {
 	MENU_Key_None = 0, // 无按键
+	MENU_Key_Up,	   // 上
+	MENU_Key_Down,	   // 下
+	MENU_Key_Enter,   // 确认
+	MENU_Key_Return,   // 返回
 	MENU_Key_Add,	   // 加
-	MENU_Key_Sub,	   // 减
-	MENU_Key_Confirm   // 确认
+	MENU_Key_Sub	   // 减
 } u8g2_menuKeyValue_t;
 
 typedef void (*menuItem_t)(void);
