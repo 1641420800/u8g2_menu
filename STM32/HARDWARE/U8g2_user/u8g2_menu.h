@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #define U8G2_MENU_VERSION "1.0.1-alpha"
-#define U8G2_MENU_DEBUG 1
+#define U8G2_MENU_DEBUG 0
 
 /* 宏定义 */
 #ifndef ABS

@@ -52,7 +52,7 @@ void u8g2_MenuButton(uint8_t ID, u8g2_menuKeyValue_t key)
 
 void oled_display(u8g2_t * u8g2)
 {
-	u8g2_DrawMenu(&u8g2_menu,0,0,128,64);
+	u8g2_DrawMenu(&u8g2_menu,32,16,64,32);
 }
 
 void keyScann(void)

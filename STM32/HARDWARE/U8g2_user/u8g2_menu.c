@@ -230,7 +230,7 @@ void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
 			u8g2_menu->currentSetValue = -1;
 		}
 	}
-
+	u8g2_SetClipWindow(u8g2_menu->u8g2, u8g2_menu->currentX, u8g2_menu->currentY, u8g2_menu->currentX + u8g2_menu->currentWidth, u8g2_menu->currentY + u8g2_menu->currentHeight);
 	// 调用选择器函数
 	if (u8g2_menu->menuSelector)
 		u8g2_menu->menuSelector(u8g2_menu);
