@@ -248,11 +248,11 @@ void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
 	// 限制剪裁窗口
 	x = limitingAmplitude(x, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth);
 	y = limitingAmplitude(y, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight);
-	w = limitingAmplitude(x + w, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth);
-	h = limitingAmplitude(y + h, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight);
+	w = limitingAmplitude(x + w, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth) - x;
+	h = limitingAmplitude(y + h, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight) - y;
 
 	// 设置剪裁窗口
-	u8g2_SetClipWindow(u8g2_menu->u8g2, x, y, w, h);
+	u8g2_SetClipWindow(u8g2_menu->u8g2, x, y, x + w, y + h);
 
 	// 水平滚动
 	if (u8g2_menu->currentItemLog != u8g2_menu->currentItem)
@@ -282,8 +282,8 @@ void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
 			// 判断偏移量
 			if (u8g2_menu->positionOffset > 0)
 				u8g2_menu->_positionOffset = 0;
-			else if (u8g2_menu->positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2) + u8g2_menu->currentItemWidth <= w * 0.5)
-				u8g2_menu->_positionOffset = (w * 0.5 - u8g2_menu->currentItemWidth) / u8g2_GetMaxCharWidth(u8g2_menu->u8g2);
+			else if (u8g2_menu->positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2) + u8g2_menu->currentItemWidth <= w * 0.8)
+				u8g2_menu->_positionOffset = (w * 0.8 - u8g2_menu->currentItemWidth) / u8g2_GetMaxCharWidth(u8g2_menu->u8g2);
 			else
 				u8g2_menu->_positionOffset = u8g2_menu->positionOffset;
 		}
