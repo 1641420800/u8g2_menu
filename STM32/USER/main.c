@@ -10,6 +10,9 @@
 #include "IIC_OLED.h"
 
 u8g2_menu_t u8g2_menu; 
+u8g2_menu_t u8g2_menu_1; 
+u8g2_menu_t u8g2_menu_2; 
+u8g2_menu_t u8g2_menu_3; 
 
 uint16_t i;
 int jd;
@@ -52,7 +55,8 @@ void u8g2_MenuButton(uint8_t ID, u8g2_menuKeyValue_t key)
 
 void oled_display(u8g2_t * u8g2)
 {
-	u8g2_DrawMenu(&u8g2_menu,32,16,64,32);
+	u8g2_DrawMenu(&u8g2_menu,0,0,64,64);
+	u8g2_DrawMenu(&u8g2_menu_1,64,0,64,64);
 }
 
 void keyScann(void)
@@ -95,6 +99,9 @@ int main(void)
 	
 	oled_u8g2_init(&u8g2);
 	u8g2_CreateMenu(&u8g2,&u8g2_menu,menuItem_1);
+	u8g2_CreateMenu(&u8g2,&u8g2_menu_1,menuItem_1);
+	u8g2_CreateMenu(&u8g2,&u8g2_menu_2,menuItem_1);
+	u8g2_CreateMenu(&u8g2,&u8g2_menu_3,menuItem_1);
 	u8g2_SetFont(&u8g2,u8g2_font_10x20_mf);
 	// u8g2_SetFont(&u8g2,u8g2_font_8x13_mf);
 	

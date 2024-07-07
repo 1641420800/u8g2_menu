@@ -159,7 +159,7 @@ struct u8g2_menu_struct
 
 	menuItem_t menuItem;			// 绘制表项的实际函数
 	menuSelector_t menuSelector;	// 绘制选择展示器的实际函数
-	u8g2_menu_effect_t *menuEffect; // 绘制效果
+	u8g2_menu_effect_t menuEffect; // 绘制效果
 
 	MENU_V_type_t u8g2_menuValueType;
 	u8g2_menu_value_t u8g2_menuValue;

@@ -213,7 +213,7 @@ void u8g2_MenuSetPositionOffsetStrHeaderLen(u8g2_menu_t *u8g2_menu, float strHea
  */
 void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
 {
-	u8g2_int_t x, y, w, h;
+	u8g2_int_t x = 0, y = 0, w = 0, h = 0;
 
 	if (!u8g2_menu)
 		return;
