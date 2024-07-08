@@ -69,6 +69,7 @@
 "..\obj\u8g2_meun_drawvaluebar.o"
 "..\obj\u8g2_meun_keys.o"
 "..\obj\u8g2_meun_itemvalue.o"
+"..\obj\u8g2_meun_drawpic.o"
 --strict --scatter "..\OBJ\LED.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

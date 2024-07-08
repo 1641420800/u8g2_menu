@@ -170,6 +170,8 @@ void u8g2_drawPointChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_i
  */
 void u8g2_MenuDrawItemChart(u8g2_chart_t *chart, void (*drawChart)(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h), u8g2_uint_t h, float max, float min)
 {
+	if(!drawChart || !chart || !chart->data_len)
+		return;
 	u8g2_menu_t *menu = u8g2_MenuDrawItemStart();
 	u8g2_t *u8g2 = u8g2_MenuGetU8g2(menu);
 	if (!menu)
@@ -191,6 +193,7 @@ void u8g2_MenuDrawItemChart(u8g2_chart_t *chart, void (*drawChart)(u8g2_t *u8g2,
 	{
 		u8g2_chart_setRange(chart, max, min);
 	}
+	u8g2_SetClipWindow(u8g2, nonNegative(X), nonNegative(Y), nonNegative(X + W), nonNegative(Y + H));
 	drawChart(u8g2, chart, X, Y, W, H);
 
 	u8g2_MenuDrawItemEnd(menu);

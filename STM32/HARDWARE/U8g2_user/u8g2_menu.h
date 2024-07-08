@@ -383,6 +383,13 @@ void u8g2_MenuDrawItemLineChart(u8g2_chart_t *chart, u8g2_uint_t h, float max, f
 // 绘制散点图项
 void u8g2_MenuDrawItemPointChart(u8g2_chart_t *chart, u8g2_uint_t h, float max, float min);
 
+/* =============================== | u8g2_meun_drawPic.c | =============================== */
+// 绘制XBM
+void u8g2_MenuDrawItemXBM(u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap);
+
+// 绘制XBMP
+void u8g2_MenuDrawItemXBMP(u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap);
+
 /* =============================== | u8g2_meun_itemValue.c | =============================== */
 // 附加值加
 void u8g2_MenuItemAddS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k);
