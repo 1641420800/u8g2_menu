@@ -21,7 +21,7 @@
 																		  : (d))
 #endif
 #ifndef LEN
-#define LEN(s) (sizeof(s)/sizeof(s[0]))
+#define LEN(s) (sizeof(s) / sizeof(s[0]))
 #endif
 #ifndef nonNegative
 #define nonNegative(d) ((d) < 0 ? 0 : (d))
@@ -165,43 +165,32 @@ struct u8g2_menu_effect_struct
 };
 struct u8g2_menu_struct
 {
-	u8g2_t *u8g2; // 简化参数用的
-
-	menuItem_t menuItem;			// 绘制表项的实际函数
-	menuSelector_t menuSelector;	// 绘制选择展示器的实际函数
-	u8g2_menu_effect_t menuEffect; // 绘制效果
-
-	MENU_V_type_t u8g2_menuValueType;
-	u8g2_menu_value_t u8g2_menuValue;
-
-	u8g2_int_t currentSetValue;
-	u8g2_int_t currentItem; // 当前选中的项
-
-	u8g2_uint_t currentDrawItem; // 当前绘制的项
-
+	u8g2_t *u8g2;					   // u8g2实例
+	menuItem_t menuItem;			   // 绘制表项的实际函数
+	menuSelector_t menuSelector;	   // 绘制选择展示器的实际函数
+	u8g2_menu_effect_t menuEffect;	   // 绘制效果
+	MENU_V_type_t u8g2_menuValueType;  // 菜单附加值类型
+	u8g2_menu_value_t u8g2_menuValue;  // 菜单附加值
+	u8g2_int_t currentSetValue;		   // 当前选中状态 -1 表示未选中
+	u8g2_int_t currentItem;			   // 当前选中的项
+	u8g2_uint_t currentDrawItem;	   // 当前绘制的项
 	u8g2_int_t currentItemLog;		   // 记录的当前选中的项
 	float positionOffset;			   // 目标位置偏移
 	float _positionOffset;			   // 实际位置偏移
 	float positionOffset_spe;		   // 目标位置偏移速度
 	float positionOffset_strHeaderLen; // 字符串偏移的头宽度(字符)
-
-	// 当前的位置信息
-	u8g2_int_t currentX;
-	u8g2_int_t currentY;
-	u8g2_int_t currentWidth;
-	u8g2_int_t currentHeight;
-	u8g2_int_t currentItemWidth;
-	u8g2_int_t currentItemHeight;
-
-	u8g2_int_t currentContentWidth;
-
+	u8g2_int_t currentX;			   // 当前绘制的X
+	u8g2_int_t currentY;			   // 当前绘制的Y
+	u8g2_int_t currentWidth;		   // 当前菜单的宽度
+	u8g2_int_t currentHeight;		   // 当前菜单的高度
+	u8g2_int_t currentItemWidth;	   // 当前项的宽度
+	u8g2_int_t currentItemHeight;	   // 当前项的高度
+	u8g2_int_t currentContentWidth;	   // 当前菜单内容宽度
 	MENU_Attribute_t currentAttribute; // 当前可调属性
-
-	u8g2_int_t leftMarginSelector;	// 菜单左边距
-	u8g2_int_t topMarginSelector;	// 菜单顶边距
-	u8g2_int_t lineSpacingSelector; // 菜单行间距
-
-	u8g2_int_t totalLength; // 菜单总长度
+	u8g2_int_t leftMarginSelector;	   // 菜单左边距
+	u8g2_int_t topMarginSelector;	   // 菜单顶边距
+	u8g2_int_t lineSpacingSelector;	   // 菜单行间距
+	u8g2_int_t totalLength;			   // 菜单总长度
 };
 
 struct u8g2_chart_struct
@@ -217,24 +206,18 @@ struct u8g2_chart_struct
  * @todo:
  * 	- 添加菜单风格
  * 	- 显示方向
- *  - 图片显示
  *  - 调整动画选项
  *  - 合并绑定附加值 - 已分配至分支
  *  - 添加选定后调整的开关附加值
  *  - 添加离开某项 和 进入某项的回调函数
  *  - 分离菜单项
- * 		- 字符串
- * 		- 滑块条
  * 		- 图片
  * 			- 图片
- * 			- 折线图
  * 			- 柱状图
  * 			- 仪表盘
- * 			- 散点图
  * 		- 输入框
  * 			- 密码框
  * 		- 子菜单(可以是特殊的按钮)
- * 	- 抽象菜单项管理器 把菜单项相关的变量统一管理
  * 	- 效果器优化 添加时间概念 优化动画基准
  */
 
@@ -305,6 +288,7 @@ MENU_Attribute_t u8g2_MenuGetAttribute(u8g2_menu_t *u8g2_menu);
 // 设置菜单项位置
 void u8g2_MenuSetPosition(u8g2_menu_t *u8g2_menu, u8g2_uint_t leftMarginSelector, u8g2_uint_t topMarginSelector, u8g2_uint_t lineSpacingSelector);
 
+// 获取菜单项位置
 u8g2_int_t u8g2_MenuGetX(u8g2_menu_t *u8g2_menu);
 u8g2_int_t u8g2_MenuGetY(u8g2_menu_t *u8g2_menu);
 u8g2_int_t u8g2_MenuGetH(u8g2_menu_t *u8g2_menu);
@@ -370,23 +354,35 @@ void u8g2_MenuDrawItemProgressBar(float position);
 void u8g2_MenuDrawItemProgressBar_bind(int *value, int adjValue, int minValue, int maxValue);
 
 /* =============================== | u8g2_meun_drawChart.c | =============================== */
+// 图表数据初始化
 void u8g2_chart_init(u8g2_chart_t *chart, float *data, float *data_dis, uint16_t data_len);
 
+// 图表数据添加
 void u8g2_chart_addData(u8g2_chart_t *chart, float d);
 
+// 图表数据更新
 void u8g2_chart_update(u8g2_chart_t *chart);
 
+// 图表数据范围设置
 void u8g2_chart_setRange(u8g2_chart_t *chart, float max, float min);
 
+// 图表数据自动范围设置
 void u8g2_chart_autoRange(u8g2_chart_t *chart);
 
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+// 绘制折线图
 void u8g2_drawLineChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h);
 
+// 绘制散点图
 void u8g2_drawPointChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h);
 
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+// 绘制折线图项
 void u8g2_MenuDrawItemLineChart(u8g2_chart_t *chart, u8g2_uint_t h, float max, float min);
 
+// 绘制散点图项
 void u8g2_MenuDrawItemPointChart(u8g2_chart_t *chart, u8g2_uint_t h, float max, float min);
+
 /* =============================== | u8g2_meun_itemValue.c | =============================== */
 // 附加值加
 void u8g2_MenuItemAddS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k);

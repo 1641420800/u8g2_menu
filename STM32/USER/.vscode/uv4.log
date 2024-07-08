@@ -1,3 +1,25 @@
-Load "..\\OBJ\\LED.axf" 
-Erase Done.Programming Done.Verify OK.Application running ...
-Flash Load finished at 23:09:08
+*** Using Compiler 'V5.06 update 7 (build 960)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
+Build target 'Target 1'
+compiling u8g2_meun_selector.c...
+compiling u8g2_meun_effect.c...
+compiling u8g2_menu.c...
+compiling main.c...
+compiling IIC_OLED.c...
+linking...
+..\OBJ\LED.axf: Error: L6218E: Undefined symbol u8g2_MenuDrawItemLineChart (referred from main.o).
+..\OBJ\LED.axf: Error: L6218E: Undefined symbol u8g2_MenuDrawItemPointChart (referred from main.o).
+..\OBJ\LED.axf: Error: L6218E: Undefined symbol u8g2_MenuDrawItemProgressBar_bind (referred from main.o).
+..\OBJ\LED.axf: Error: L6218E: Undefined symbol u8g2_MenuDrawStr (referred from main.o).
+..\OBJ\LED.axf: Error: L6218E: Undefined symbol u8g2_MenuDrawStrX2 (referred from main.o).
+..\OBJ\LED.axf: Error: L6218E: Undefined symbol u8g2_MenuItemValue_uint16 (referred from main.o).
+..\OBJ\LED.axf: Error: L6218E: Undefined symbol u8g2_MenuItem_button (referred from main.o).
+..\OBJ\LED.axf: Error: L6218E: Undefined symbol u8g2_MenuKeys (referred from main.o).
+..\OBJ\LED.axf: Error: L6218E: Undefined symbol u8g2_MenuPrintf (referred from main.o).
+..\OBJ\LED.axf: Error: L6218E: Undefined symbol u8g2_chart_addData (referred from main.o).
+..\OBJ\LED.axf: Error: L6218E: Undefined symbol u8g2_chart_init (referred from main.o).
+Not enough information to list image symbols.
+Not enough information to list load addresses in the image map.
+Finished: 2 information, 0 warning and 11 error messages.
+"..\OBJ\LED.axf" - 11 Error(s), 0 Warning(s).
+Target not created.
+Build Time Elapsed:  00:00:02

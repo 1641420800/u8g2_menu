@@ -64,6 +64,11 @@
 "..\obj\u8g2_menu.o"
 "..\obj\u8g2_meun_selector.o"
 "..\obj\u8g2_meun_effect.o"
+"..\obj\u8g2_meun_drawchart.o"
+"..\obj\u8g2_meun_drawstr.o"
+"..\obj\u8g2_meun_drawvaluebar.o"
+"..\obj\u8g2_meun_keys.o"
+"..\obj\u8g2_meun_itemvalue.o"
 --strict --scatter "..\OBJ\LED.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

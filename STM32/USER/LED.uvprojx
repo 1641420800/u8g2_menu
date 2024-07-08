@@ -737,6 +737,31 @@
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\U8g2_user\u8g2_meun_effect.c</FilePath>
             </File>
+            <File>
+              <FileName>u8g2_meun_drawChart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\U8g2_user\u8g2_meun_drawChart.c</FilePath>
+            </File>
+            <File>
+              <FileName>u8g2_meun_drawStr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\U8g2_user\u8g2_meun_drawStr.c</FilePath>
+            </File>
+            <File>
+              <FileName>u8g2_meun_drawValueBar.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\U8g2_user\u8g2_meun_drawValueBar.c</FilePath>
+            </File>
+            <File>
+              <FileName>u8g2_meun_keys.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\U8g2_user\u8g2_meun_keys.c</FilePath>
+            </File>
+            <File>
+              <FileName>u8g2_meun_itemValue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\U8g2_user\u8g2_meun_itemValue.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
