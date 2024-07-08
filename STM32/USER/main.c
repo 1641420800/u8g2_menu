@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "sys.h"
 #include "tim.h"
@@ -9,19 +10,35 @@
 
 #include "IIC_OLED.h"
 
-u8g2_menu_t u8g2_menu; 
-u8g2_menu_t u8g2_menu_1; 
-u8g2_menu_t u8g2_menu_2; 
-u8g2_menu_t u8g2_menu_3; 
+
+
+u8g2_menu_t u8g2_menu;
+u8g2_chart_t chart;
+
+float data[100];
+float data_dis[LEN(data)];
+
+u8g2_chart_t chart2;
+
+float data2[100];
+float data_dis2[LEN(data2)];
+
+u8g2_chart_t chart3;
+
+float data3[100];
+float data_dis3[LEN(data2)];
 
 uint16_t i;
 int jd;
-
 
 void u8g2_MenuButton(uint8_t ID, u8g2_menuKeyValue_t key);
 
 void menuItem_1()
 {
+	u8g2_MenuDrawItemLineChart(&chart,50,1,-1);
+	u8g2_MenuDrawItemPointChart(&chart2,40,1,-1);
+	u8g2_MenuDrawItemLineChart(&chart3,40,1,-1);
+	
 	u8g2_MenuItem_button(u8g2_MenuButton,0);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"456");
 	
@@ -31,7 +48,7 @@ void menuItem_1()
 	
 	u8g2_MenuItemValue_uint16(&i,1,0,100);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"%d",i);
-
+	
 }
 void menuItem_2()
 {
@@ -41,7 +58,6 @@ void menuItem_2()
 	u8g2_MenuPrintf(u8g2_MenuDrawStrX2,"Hello2");
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
-
 }
 
 void u8g2_MenuButton(uint8_t ID, u8g2_menuKeyValue_t key)
@@ -55,8 +71,7 @@ void u8g2_MenuButton(uint8_t ID, u8g2_menuKeyValue_t key)
 
 void oled_display(u8g2_t * u8g2)
 {
-	u8g2_DrawMenu(&u8g2_menu,0,0,64,64);
-	u8g2_DrawMenu(&u8g2_menu_1,64,0,64,64);
+	u8g2_DrawMenu(&u8g2_menu,0,0,128,64);
 }
 
 void keyScann(void)
@@ -86,6 +101,7 @@ void keyScann(void)
 	keyLog[2] = key[2];
 }
 
+float k = 0;
 void tim2_IRQ(void)
 {
 	keyScann();
@@ -99,15 +115,19 @@ int main(void)
 	
 	oled_u8g2_init(&u8g2);
 	u8g2_CreateMenu(&u8g2,&u8g2_menu,menuItem_1);
-	u8g2_CreateMenu(&u8g2,&u8g2_menu_1,menuItem_1);
-	u8g2_CreateMenu(&u8g2,&u8g2_menu_2,menuItem_1);
-	u8g2_CreateMenu(&u8g2,&u8g2_menu_3,menuItem_1);
-	u8g2_SetFont(&u8g2,u8g2_font_10x20_mf);
+	u8g2_chart_init(&chart,data,data_dis,LEN(data));
+	u8g2_chart_init(&chart2,data2,data_dis2,LEN(data2));
+	u8g2_chart_init(&chart3,data3,data_dis3,LEN(data3));
+	u8g2_SetFont(&u8g2,u8g2_font_10x20_tf);
 	// u8g2_SetFont(&u8g2,u8g2_font_8x13_mf);
 	
 	tim2_init(1000-1,72-1);
 	while(1)
 	{
+		u8g2_chart_addData(&chart,sin(k));
+		u8g2_chart_addData(&chart2,cos(k));
+		u8g2_chart_addData(&chart3,tan(k));
+		k += 0.08;
 		u8g2_ClearBuffer(&u8g2);
 		oled_display(&u8g2);
 		u8g2_SendBuffer(&u8g2);

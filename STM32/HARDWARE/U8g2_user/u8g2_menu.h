@@ -13,14 +13,24 @@
 #ifndef ABS
 #define ABS(s) ((s) < 0 ? -(s) : (s))
 #endif
+#ifndef map
+#define map(v, min1, max1, min2, max2) (((v) - (min1)) * ((max2) - (min2)) / ((max1) - (min1)) + (min2))
+#endif
 #ifndef limitingAmplitude
 #define limitingAmplitude(d, min, max) ((d) < (min) ? (min) : (d) > (max) ? (max) \
 																		  : (d))
+#endif
+#ifndef LEN
+#define LEN(s) (sizeof(s)/sizeof(s[0]))
+#endif
+#ifndef nonNegative
+#define nonNegative(d) ((d) < 0 ? 0 : (d))
 #endif
 
 typedef struct u8g2_menu_effect_struct u8g2_menu_effect_t;
 typedef struct u8g2_menu_struct u8g2_menu_t;
 typedef union u8g2_menu_value_uniom u8g2_menu_value_t;
+typedef struct u8g2_chart_struct u8g2_chart_t;
 
 typedef enum
 {
@@ -194,6 +204,15 @@ struct u8g2_menu_struct
 	u8g2_int_t totalLength; // 菜单总长度
 };
 
+struct u8g2_chart_struct
+{
+	float *data;
+	float *data_dis;
+	float data_max;
+	float data_min;
+	uint16_t data_len;
+};
+
 /**
  * @todo:
  * 	- 添加菜单风格
@@ -349,6 +368,25 @@ void u8g2_MenuDrawItemProgressBar(float position);
 
 // 菜单显示进度条 绑定附加值
 void u8g2_MenuDrawItemProgressBar_bind(int *value, int adjValue, int minValue, int maxValue);
+
+/* =============================== | u8g2_meun_drawChart.c | =============================== */
+void u8g2_chart_init(u8g2_chart_t *chart, float *data, float *data_dis, uint16_t data_len);
+
+void u8g2_chart_addData(u8g2_chart_t *chart, float d);
+
+void u8g2_chart_update(u8g2_chart_t *chart);
+
+void u8g2_chart_setRange(u8g2_chart_t *chart, float max, float min);
+
+void u8g2_chart_autoRange(u8g2_chart_t *chart);
+
+void u8g2_drawLineChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h);
+
+void u8g2_drawPointChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h);
+
+void u8g2_MenuDrawItemLineChart(u8g2_chart_t *chart, u8g2_uint_t h, float max, float min);
+
+void u8g2_MenuDrawItemPointChart(u8g2_chart_t *chart, u8g2_uint_t h, float max, float min);
 /* =============================== | u8g2_meun_itemValue.c | =============================== */
 // 附加值加
 void u8g2_MenuItemAddS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k);
