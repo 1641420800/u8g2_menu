@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_MD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\STM32F10x_FWLib\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\USART;..\SYSTEM\TIM;..\SYSTEM\ADC;..\SYSTEM\gpio;..\USER;..\CORE;..\HARDWARE\U8g2_V2.0.0;..\HARDWARE\U8g2_user</IncludePath>
+              <IncludePath>..\STM32F10x_FWLib\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\USART;..\SYSTEM\TIM;..\SYSTEM\ADC;..\SYSTEM\gpio;..\USER;..\CORE;..\HARDWARE\U8g2_V2.0.0;..\HARDWARE\U8g2_user;..\HARDWARE\matrixKey_V1.0.0</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -403,6 +403,13 @@
         </Group>
         <Group>
           <GroupName>HARDWARE</GroupName>
+          <Files>
+            <File>
+              <FileName>matrixKey.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\matrixKey_V1.0.0\matrixKey.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>SYSTEM</GroupName>
