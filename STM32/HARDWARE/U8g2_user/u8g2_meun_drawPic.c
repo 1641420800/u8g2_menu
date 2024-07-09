@@ -28,7 +28,7 @@ void u8g2_MenuDrawItemPic(void (*drawXBM)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint
 	u8g2_int_t H = u8g2_MenuGetH(menu);
 
 	u8g2_SetClipWindow(u8g2, nonNegative(X), nonNegative(Y), nonNegative(X + W), nonNegative(Y + H));
-	drawXBM(u8g2, X, Y, w, h, bitmap);
+	drawXBM(u8g2, u8g2_MenuGetHorizontalOffset(menu), Y, w, h, bitmap);
 
 	u8g2_MenuDrawItemEnd(menu);
 }
