@@ -1,6 +1,46 @@
 #include "u8g2_menu.h"
 
 /**
+ * @brief 选中当前选中的表项
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return void
+ */
+void u8g2_MenuItemSelect(u8g2_menu_t *u8g2_menu)
+{
+	u8g2_menu->currentSetValue = u8g2_menu->currentItem;
+	if (u8g2_menu->u8g2_menuValueType == MENU_menu)
+	{
+		u8g2_MenuReplaceItem(u8g2_menu,u8g2_menu->u8g2_menuValue.menu.menuItem);
+	}
+}
+
+/**
+ * @brief 取消选中当前选中的表项
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return void
+ */
+void u8g2_MenuItemDeSelect(u8g2_menu_t *u8g2_menu)
+{
+	u8g2_menu->currentSetValue = -1;
+}
+
+/**
+ * @brief 获取当前表项的选中状态
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return u8g2_int_t 选中状态
+ */
+u8g2_int_t u8g2_MenuGetItemSelect(u8g2_menu_t *u8g2_menu)
+{
+	return u8g2_menu->currentSetValue;
+}
+
+/**
  * @brief 尝试增加当前选中的表项的附加值
  *
  * @param u8g2_menu 菜单对象
@@ -44,6 +84,8 @@ void u8g2_MenuItemAddS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 		MenuADDK(v_double.value, v_double.adjValue, v_double.maxValue, k);
 		break;
 	case MENU_butten:
+		break;
+	case MENU_menu:
 		break;
 	case MENU_NC:
 		break;
@@ -108,6 +150,8 @@ void u8g2_MenuItemSubS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 		MenuSUBK(v_double.value, v_double.adjValue, v_double.minValue, k);
 		break;
 	case MENU_butten:
+		break;
+	case MENU_menu:
 		break;
 	case MENU_NC:
 		break;
@@ -245,4 +289,12 @@ void u8g2_MenuItem_button(u8g2_MenuButton_t but, uint8_t ID)
 	menu->u8g2_menuValueType = MENU_butten;
 	menu->u8g2_menuValue.button.but = but;
 	menu->u8g2_menuValue.button.ID = ID;
+}
+void u8g2_MenuItem_menu(menuItem_t menuItem)
+{
+	u8g2_menu_t *menu = u8g2_getMenuItemValue(MENU_Writable);
+	if (!menu)
+		return;
+	menu->u8g2_menuValueType = MENU_menu;
+	menu->u8g2_menuValue.menu.menuItem = menuItem;
 }

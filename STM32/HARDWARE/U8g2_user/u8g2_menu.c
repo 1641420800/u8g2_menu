@@ -417,41 +417,6 @@ void u8g2_MenuItemDown(u8g2_menu_t *u8g2_menu)
 	u8g2_MenuItemDownS(u8g2_menu, 1);
 }
 
-/**
- * @brief 选中当前选中的表项
- *
- * @param u8g2_menu 菜单对象
- *
- * @return void
- */
-void u8g2_MenuItemSelect(u8g2_menu_t *u8g2_menu)
-{
-	u8g2_menu->currentSetValue = u8g2_menu->currentItem;
-}
-
-/**
- * @brief 取消选中当前选中的表项
- *
- * @param u8g2_menu 菜单对象
- *
- * @return void
- */
-void u8g2_MenuItemDeSelect(u8g2_menu_t *u8g2_menu)
-{
-	u8g2_menu->currentSetValue = -1;
-}
-
-/**
- * @brief 获取当前表项的选中状态
- *
- * @param u8g2_menu 菜单对象
- *
- * @return u8g2_int_t 选中状态
- */
-u8g2_int_t u8g2_MenuGetItemSelect(u8g2_menu_t *u8g2_menu)
-{
-	return u8g2_menu->currentSetValue;
-}
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 

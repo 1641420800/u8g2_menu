@@ -51,6 +51,7 @@ typedef enum
 	MENU_V_float,
 	MENU_V_double,
 	MENU_butten,
+	MENU_menu,
 	MENU_NC
 } MENU_V_type_t;
 typedef enum
@@ -138,6 +139,11 @@ struct u8g2_menu_button_struct
 	uint8_t ID;
 };
 
+struct u8g2_menu_menu_struct
+{
+	menuItem_t menuItem;
+};
+
 union u8g2_menu_value_uniom
 {
 	struct u8g2_menu_uint8_struct v_uint8;
@@ -150,6 +156,7 @@ union u8g2_menu_value_uniom
 	struct u8g2_menu_float_struct v_float;
 	struct u8g2_menu_double_struct v_double;
 	struct u8g2_menu_button_struct button;
+	struct u8g2_menu_menu_struct menu;
 };
 
 struct u8g2_menu_effect_struct
@@ -211,13 +218,9 @@ struct u8g2_chart_struct
  *  - 添加选定后调整的开关附加值
  *  - 添加离开某项 和 进入某项的回调函数
  *  - 分离菜单项
- * 		- 图片
- * 			- 图片
- * 			- 柱状图
- * 			- 仪表盘
+ * 		- 仪表盘
  * 		- 输入框
  * 			- 密码框
- * 		- 子菜单(可以是特殊的按钮)
  * 	- 效果器优化 添加时间概念 优化动画基准
  */
 
@@ -268,15 +271,6 @@ void u8g2_MenuItemDownS(u8g2_menu_t *u8g2_menu, u8g2_uint_t i);
 
 // 下移 1 项
 void u8g2_MenuItemDown(u8g2_menu_t *u8g2_menu);
-
-// 选中
-void u8g2_MenuItemSelect(u8g2_menu_t *u8g2_menu);
-
-// 取消选中
-void u8g2_MenuItemDeSelect(u8g2_menu_t *u8g2_menu);
-
-// 获取选中状态
-u8g2_int_t u8g2_MenuGetItemSelect(u8g2_menu_t *u8g2_menu);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 // 切换选择器
@@ -391,6 +385,15 @@ void u8g2_MenuDrawItemXBM(u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap);
 void u8g2_MenuDrawItemXBMP(u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap);
 
 /* =============================== | u8g2_meun_itemValue.c | =============================== */
+// 选中
+void u8g2_MenuItemSelect(u8g2_menu_t *u8g2_menu);
+
+// 取消选中
+void u8g2_MenuItemDeSelect(u8g2_menu_t *u8g2_menu);
+
+// 获取选中状态
+u8g2_int_t u8g2_MenuGetItemSelect(u8g2_menu_t *u8g2_menu);
+
 // 附加值加
 void u8g2_MenuItemAddS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k);
 
@@ -416,6 +419,7 @@ void u8g2_MenuItemValue_float(float *value, float adjValue, float minValue, floa
 void u8g2_MenuItemValue_double(double *value, double adjValue, double minValue, double maxValue);
 
 void u8g2_MenuItem_button(u8g2_MenuButton_t but, uint8_t ID);
+void u8g2_MenuItem_menu(menuItem_t menuItem);
 
 /* =============================== | u8g2_meun_effect.c | =============================== */
 

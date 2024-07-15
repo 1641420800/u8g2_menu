@@ -284,15 +284,14 @@ const uint8_t bmp[] = {
 0x00,0x00,0x00,0xE0,0x01,0x00,0x00,0x00,/*"C:\Users\16414\Pictures\素材\水平花纹素材1.bmp",0*/
 };
 
-void u8g2_MenuButton(uint8_t ID, u8g2_menuKeyValue_t key);
-
+void menuItem_2(void);
 void menuItem_1()
 {
+	u8g2_MenuItem_menu(menuItem_2);
 	u8g2_MenuDrawItemLineChart(&chart,50,0,0);
 	u8g2_MenuDrawItemPointChart(&chart2,40,1,-1);
 	u8g2_MenuDrawItemLineChart(&chart3,40,1,-1);
 	
-	u8g2_MenuItem_button(u8g2_MenuButton,0);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"456 %c",keys);
 	
 	u8g2_MenuDrawItemProgressBar_bind(&jd,10,-100,100);
@@ -305,7 +304,7 @@ void menuItem_1()
 }
 void menuItem_2()
 {
-	u8g2_MenuItem_button(u8g2_MenuButton,1);
+	u8g2_MenuItem_menu(menuItem_1);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
 	u8g2_MenuPrintf(u8g2_MenuDrawStrX2,"Hello2");
@@ -313,14 +312,6 @@ void menuItem_2()
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
 }
 
-void u8g2_MenuButton(uint8_t ID, u8g2_menuKeyValue_t key)
-{
-	if(key == MENU_Key_Enter)
-	{
-		if(ID == 1) u8g2_MenuReplaceItem(&u8g2_menu,menuItem_1);
-		if(ID == 0) u8g2_MenuReplaceItem(&u8g2_menu,menuItem_2);
-	}
-}
 
 void oled_display(u8g2_t * u8g2)
 {
@@ -357,6 +348,20 @@ void keyScann(void)
 float k = 0;
 void tim2_IRQ(void)
 {
+	keys = get_current_key_value(&matrixKey);
+	switch(keys)
+	{
+		case 'A':
+			u8g2_MenuKeys(&u8g2_menu,MENU_Key_Up);
+			break;
+		case 'B':
+			u8g2_MenuKeys(&u8g2_menu,MENU_Key_Down);
+			break;
+		case 'C':
+			u8g2_MenuKeys(&u8g2_menu,MENU_Key_Enter);
+			break;
+
+	}
 	keyScann();
 }
 
@@ -378,7 +383,6 @@ int main(void)
 	tim2_init(1000-1,72-1);
 	while(1)
 	{
-		keys = get_current_key_value(&matrixKey);
 		u8g2_chart_addData(&chart,sin(k));
 		u8g2_chart_addData(&chart2,cos(k));
 		u8g2_chart_addData(&chart3,tan(k));
