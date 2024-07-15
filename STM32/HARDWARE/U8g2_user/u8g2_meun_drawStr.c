@@ -37,9 +37,6 @@ void u8g2_MenuDrawItemStr(u8g2_uint_t (*u8g2_Draw)(u8g2_t *u8g2, u8g2_uint_t x, 
 void u8g2_MenuDrawStr(char *str)
 {
     char *token;
-    u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
-    if (!menu)
-        return;
     token = strtok(str, "\n");
     while (token != NULL)
     {
@@ -59,9 +56,6 @@ void u8g2_MenuDrawStr(char *str)
 void u8g2_MenuDrawStrX2(char *str)
 {
     char *token;
-    u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
-    if (!menu)
-        return;
     token = strtok(str, "\n");
     while (token != NULL)
     {
@@ -80,10 +74,13 @@ void u8g2_MenuDrawStrX2(char *str)
  */
 void u8g2_MenuDrawUTF8(char *str)
 {
-    u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
-    if (!menu)
-        return;
-    u8g2_MenuDrawItemStr(u8g2_DrawUTF8, str, 1);
+    char *token;
+    token = strtok(str, "\n");
+    while (token != NULL)
+    {
+        u8g2_MenuDrawItemStr(u8g2_DrawUTF8, token, 1);
+        token = strtok(NULL, "\n");
+    }
 }
 
 /**
@@ -96,10 +93,62 @@ void u8g2_MenuDrawUTF8(char *str)
  */
 void u8g2_MenuDrawUTF8X2(char *str)
 {
-    u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
-    if (!menu)
-        return;
-    u8g2_MenuDrawItemStr(u8g2_DrawUTF8X2, str, 2);
+    char *token;
+    token = strtok(str, "\n");
+    while (token != NULL)
+    {
+        u8g2_MenuDrawItemStr(u8g2_DrawUTF8X2, token, 2);
+        token = strtok(NULL, "\n");
+    }
+}
+
+/**
+ * @brief 菜单项绘制密码
+ *
+ * @param u8g2_Draw 绘制函数
+ * @param str 密码
+ * @param mask 掩码
+ * @param multiple 放大倍数
+ *
+ * @return void
+ */
+void u8g2_MenuDrawItemPassword(u8g2_uint_t (*u8g2_Draw)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str), char *str, char mask, u8g2_uint_t multiple)
+{
+    char token[32];
+    uint16_t len;
+    len = strlen(str);
+    if(len > 32 - 1) len = 32 - 1;
+    token[len] = '\0';
+    while (len--) token[len] = mask;
+    u8g2_MenuDrawItemStr(u8g2_Draw, token, multiple);
+}
+
+/**
+ * @brief 密码项显示函数
+ * @note 在菜单项绘制函数中调用本函数来显示密码
+ *
+ * @param str 要显示的密码
+ * @param mask 掩码
+ *
+ * @return void
+ */
+void u8g2_MenuDrawPassword(char *str, char mask)
+{
+    u8g2_MenuDrawItemPassword(u8g2_DrawStr,str,mask,1);
+}
+
+/**
+ * @brief 密码项显示函数 2倍大
+ * @note 在菜单项绘制函数中调用本函数来显示密码
+ *
+ * @param str 要显示的密码
+ * @param mask 掩码
+ *
+ * @return void
+ */
+void u8g2_MenuDrawPasswordX2(char *str, char mask)
+{
+    u8g2_MenuDrawItemPassword(u8g2_DrawStrX2,str,mask,2);
 }
 
 /**

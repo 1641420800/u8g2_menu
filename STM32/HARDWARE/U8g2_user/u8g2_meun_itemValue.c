@@ -298,3 +298,12 @@ void u8g2_MenuItem_menu(menuItem_t menuItem)
 	menu->u8g2_menuValueType = MENU_menu;
 	menu->u8g2_menuValue.menu.menuItem = menuItem;
 }
+void u8g2_MenuItem_str(char *str, uint16_t len)
+{
+	u8g2_menu_t *menu = u8g2_getMenuItemValue(MENU_Writable);
+	if (!menu)
+		return;
+	menu->u8g2_menuValueType = MENU_str;
+	menu->u8g2_menuValue.str.s = str;
+	menu->u8g2_menuValue.str.s_len = len;
+}

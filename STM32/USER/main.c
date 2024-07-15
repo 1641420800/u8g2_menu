@@ -12,7 +12,7 @@
 #include "matrixKey.h"
 
 
-
+u8g2_t u8g2;
 u8g2_menu_t u8g2_menu;
 u8g2_chart_t chart;
 
@@ -30,8 +30,10 @@ float data3[100];
 float data_dis3[LEN(data2)];
 
 uint16_t i;
-int jd;
+int jd = 255;
 uint8_t keys = 0;
+
+char inStr[64];
 
 const uint8_t bmp[] = {
 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -292,11 +294,17 @@ void menuItem_1()
 	u8g2_MenuDrawItemPointChart(&chart2,40,1,-1);
 	u8g2_MenuDrawItemLineChart(&chart3,40,1,-1);
 	
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"456 %c",keys);
+	u8g2_MenuItem_str(inStr,sizeof(inStr));
+	u8g2_MenuDrawPassword(inStr,'*');
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"s:%s",inStr);
 	
-	u8g2_MenuDrawItemProgressBar_bind(&jd,10,-100,100);
+	u8g2_MenuDrawItemProgressBar_bind(&jd,25,5,255);
+	u8g2_SetContrast(&u8g2,jd);
+
+
 
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"123456789123456789123456789");
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"%d",sizeof(u8g2_menu));
 	
 	u8g2_MenuItemValue_uint16(&i,1,0,100);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"%d",i);
@@ -349,25 +357,13 @@ float k = 0;
 void tim2_IRQ(void)
 {
 	keys = get_current_key_value(&matrixKey);
-	switch(keys)
-	{
-		case 'A':
-			u8g2_MenuKeys(&u8g2_menu,MENU_Key_Up);
-			break;
-		case 'B':
-			u8g2_MenuKeys(&u8g2_menu,MENU_Key_Down);
-			break;
-		case 'C':
-			u8g2_MenuKeys(&u8g2_menu,MENU_Key_Enter);
-			break;
+	u8g2_MenuInChar(&u8g2_menu, keys);
 
-	}
 	keyScann();
 }
 
 int main(void)
 {
-	u8g2_t u8g2;
 	delay_init();
 	gpio_init();
 	

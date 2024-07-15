@@ -5,11 +5,15 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
-#define U8G2_MENU_VERSION "1.0.1-alpha"
+#define U8G2_MENU_VERSION "1.1.0-alpha"
 #define U8G2_MENU_DEBUG 0
 
 /* 宏定义 */
+#define U8G2_MENUKeyValue_Back '*'
+#define U8G2_MENUKeyValue_Clear '#'
+
 #ifndef ABS
 #define ABS(s) ((s) < 0 ? -(s) : (s))
 #endif
@@ -52,6 +56,7 @@ typedef enum
 	MENU_V_double,
 	MENU_butten,
 	MENU_menu,
+	MENU_str,
 	MENU_NC
 } MENU_V_type_t;
 typedef enum
@@ -138,10 +143,14 @@ struct u8g2_menu_button_struct
 	u8g2_MenuButton_t but;
 	uint8_t ID;
 };
-
 struct u8g2_menu_menu_struct
 {
 	menuItem_t menuItem;
+};
+struct u8g2_menu_str_struct
+{
+	char * s;
+	uint16_t s_len;
 };
 
 union u8g2_menu_value_uniom
@@ -157,6 +166,7 @@ union u8g2_menu_value_uniom
 	struct u8g2_menu_double_struct v_double;
 	struct u8g2_menu_button_struct button;
 	struct u8g2_menu_menu_struct menu;
+	struct u8g2_menu_str_struct str;
 };
 
 struct u8g2_menu_effect_struct
@@ -217,10 +227,7 @@ struct u8g2_chart_struct
  *  - 合并绑定附加值 - 已分配至分支
  *  - 添加选定后调整的开关附加值
  *  - 添加离开某项 和 进入某项的回调函数
- *  - 分离菜单项
- * 		- 仪表盘
- * 		- 输入框
- * 			- 密码框
+ * 	- 仪表盘
  * 	- 效果器优化 添加时间概念 优化动画基准
  */
 
@@ -315,6 +322,9 @@ u8g2_t *u8g2_MenuGetU8g2(u8g2_menu_t *u8g2_menu);
 // 菜单按键
 void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue);
 
+// 菜单输入字符
+void u8g2_MenuInChar(u8g2_menu_t *u8g2_menu, char c);
+
 /* =============================== | u8g2_meun_drawStr.c | =============================== */
 // 菜单显示字符串
 void u8g2_MenuDrawStr(char *str);
@@ -327,6 +337,12 @@ void u8g2_MenuDrawUTF8(char *str);
 
 // 菜单显示UTF-8字符集 二倍大
 void u8g2_MenuDrawUTF8X2(char *str);
+
+// 菜单显示密码
+void u8g2_MenuDrawPassword(char *str, char mask);
+
+// 菜单显示密码 二倍大
+void u8g2_MenuDrawPasswordX2(char *str, char mask);
 
 // 菜单格式化输出
 void u8g2_MenuPrintf(u8g2_MenuDraw_t u8g2_MenuDraw, const char *fmt, ...);
@@ -420,6 +436,7 @@ void u8g2_MenuItemValue_double(double *value, double adjValue, double minValue, 
 
 void u8g2_MenuItem_button(u8g2_MenuButton_t but, uint8_t ID);
 void u8g2_MenuItem_menu(menuItem_t menuItem);
+void u8g2_MenuItem_str(char *str, uint16_t len);
 
 /* =============================== | u8g2_meun_effect.c | =============================== */
 
