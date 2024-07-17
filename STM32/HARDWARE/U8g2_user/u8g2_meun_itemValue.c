@@ -83,6 +83,9 @@ void u8g2_MenuItemAddS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 	case MENU_V_double:
 		MenuADDK(v_double.value, v_double.adjValue, v_double.maxValue, k);
 		break;
+	case MENU_V_switch:
+		*(u8g2_menu->u8g2_menuValue.v_switch.value) = u8g2_menu->u8g2_menuValue.v_switch.openValue;
+		break;
 	case MENU_butten:
 		break;
 	case MENU_menu:
@@ -148,6 +151,9 @@ void u8g2_MenuItemSubS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 		break;
 	case MENU_V_double:
 		MenuSUBK(v_double.value, v_double.adjValue, v_double.minValue, k);
+		break;
+	case MENU_V_switch:
+		*(u8g2_menu->u8g2_menuValue.v_switch.value) = !u8g2_menu->u8g2_menuValue.v_switch.openValue;
 		break;
 	case MENU_butten:
 		break;
@@ -280,6 +286,15 @@ void u8g2_MenuItemValue_double(double *value, double adjValue, double minValue, 
 	menu->u8g2_menuValue.v_double.adjValue = adjValue;
 	menu->u8g2_menuValue.v_double.minValue = minValue;
 	menu->u8g2_menuValue.v_double.maxValue = maxValue;
+}
+void u8g2_MenuItemValue_switch(uint8_t *value, uint8_t openValue)
+{
+	u8g2_menu_t *menu = u8g2_getMenuItemValue(MENU_Writable);
+	if (!menu)
+		return;
+	menu->u8g2_menuValueType = MENU_V_switch;
+	menu->u8g2_menuValue.v_switch.value = value;
+	menu->u8g2_menuValue.v_switch.openValue = openValue;
 }
 void u8g2_MenuItem_button(u8g2_MenuButton_t but, uint8_t ID)
 {

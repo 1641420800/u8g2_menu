@@ -54,6 +54,7 @@ typedef enum
 	MENU_V_int,
 	MENU_V_float,
 	MENU_V_double,
+	MENU_V_switch,
 	MENU_butten,
 	MENU_menu,
 	MENU_str,
@@ -138,6 +139,11 @@ struct u8g2_menu_double_struct
 	double minValue;
 	double maxValue;
 };
+struct u8g2_menu_switch_struct
+{
+	uint8_t *value;
+	uint8_t openValue;
+};
 struct u8g2_menu_button_struct
 {
 	u8g2_MenuButton_t but;
@@ -164,6 +170,7 @@ union u8g2_menu_value_uniom
 	struct u8g2_menu_int_struct v_int;
 	struct u8g2_menu_float_struct v_float;
 	struct u8g2_menu_double_struct v_double;
+	struct u8g2_menu_switch_struct v_switch;
 	struct u8g2_menu_button_struct button;
 	struct u8g2_menu_menu_struct menu;
 	struct u8g2_menu_str_struct str;
@@ -221,11 +228,8 @@ struct u8g2_chart_struct
 
 /**
  * @todo:
- * 	- 添加菜单风格
- * 	- 显示方向
  *  - 调整动画选项
  *  - 合并绑定附加值 - 已分配至分支
- *  - 添加选定后调整的开关附加值
  *  - 添加离开某项 和 进入某项的回调函数
  * 	- 仪表盘
  * 	- 效果器优化 添加时间概念 优化动画基准
@@ -433,6 +437,8 @@ void u8g2_MenuItemValue_int32(int32_t *value, int32_t adjValue, int32_t minValue
 void u8g2_MenuItemValue_int(int *value, int adjValue, int minValue, int maxValue);
 void u8g2_MenuItemValue_float(float *value, float adjValue, float minValue, float maxValue);
 void u8g2_MenuItemValue_double(double *value, double adjValue, double minValue, double maxValue);
+
+void u8g2_MenuItemValue_switch(uint8_t *value, uint8_t openValue);
 
 void u8g2_MenuItem_button(u8g2_MenuButton_t but, uint8_t ID);
 void u8g2_MenuItem_menu(menuItem_t menuItem);

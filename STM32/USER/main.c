@@ -310,11 +310,14 @@ void menuItem_1()
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"%d",i);
 	u8g2_MenuDrawItemXBM(523,60,bmp);
 }
+uint8_t sw = 1;
 void menuItem_2()
 {
 	u8g2_MenuItem_menu(menuItem_1);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
+
+	u8g2_MenuItemValue_switch(&sw,0);
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello %d",sw);
 	u8g2_MenuPrintf(u8g2_MenuDrawStrX2,"Hello2");
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
@@ -387,5 +390,7 @@ int main(void)
 		oled_display(&u8g2);
 		u8g2_SendBuffer(&u8g2);
 		// LED;
+
+		LED = sw;
 	}
 }
