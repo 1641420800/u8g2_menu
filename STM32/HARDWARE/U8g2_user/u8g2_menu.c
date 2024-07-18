@@ -4,6 +4,38 @@
 u8g2_menu_t *currentMenu = NULL;
 
 /**
+ * @brief 选中菜单项时的处理函数。
+ *
+ * 用户应重写以实现自定义逻辑。默认为空操作。
+ * 在非特权模式下执行，不支持需特权访问的代码。
+ *
+ * @param u8g2_menu 菜单对象
+ * @param item 选中的菜单项索引
+ *
+ * @return void
+ */
+WEAK void u8g2_menuItemEnter(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
+{
+	/* 空函数 */
+}
+
+/**
+ * @brief 离开菜单项时的处理函数。
+ *
+ * 用户应重写以实现自定义逻辑。默认为空操作。
+ * 在非特权模式下执行，不支持需特权访问的代码。
+ *
+ * @param u8g2_menu 菜单对象
+ * @param item 离开的菜单项索引
+ *
+ * @return void
+ */
+WEAK void u8g2_menuItemLeave(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
+{
+	/* 空函数 */
+}
+
+/**
  * @brief 创建一个菜单
  *
  * @param u8g2 u8g2对象
@@ -13,7 +45,7 @@ u8g2_menu_t *currentMenu = NULL;
  *
  * @return void
  */
-void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t menuItem, menuSelector_t menuSelector)
+void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem, menuSelector_cb menuSelector)
 {
 	if (!u8g2 || !u8g2_menu || !menuItem || !menuSelector)
 		return;
@@ -37,7 +69,7 @@ void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t m
  *
  * @return void
  */
-void u8g2_CreateMenu(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t menuItem)
+void u8g2_CreateMenu(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem)
 {
 	u8g2_CreateMenu_Selector(u8g2, u8g2_menu, menuItem, u8g2_MenuSelector);
 }
@@ -50,7 +82,7 @@ void u8g2_CreateMenu(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t menuItem)
  *
  * @return void
  */
-void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_t menuItem)
+void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_cb menuItem)
 {
 	u8g2_menu->menuItem = menuItem;
 	u8g2_menu->currentItem = 0;
@@ -66,7 +98,7 @@ void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_t menuItem)
  *
  * @return void
  */
-void u8g2_MenuReplaceSelector(u8g2_menu_t *u8g2_menu, menuSelector_t menuSelector)
+void u8g2_MenuReplaceSelector(u8g2_menu_t *u8g2_menu, menuSelector_cb menuSelector)
 {
 	u8g2_menu->menuSelector = menuSelector;
 }
@@ -242,10 +274,10 @@ void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
 	h = u8g2_menu->currentItemHeight + u8g2_menu->topMarginSelector;
 
 	// 限制剪裁窗口
-	x = limitingAmplitude(x, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth);
-	y = limitingAmplitude(y, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight);
-	w = limitingAmplitude(x + w, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth) - x;
-	h = limitingAmplitude(y + h, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight) - y;
+	x = limit(x, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth);
+	y = limit(y, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight);
+	w = limit(x + w, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth) - x;
+	h = limit(y + h, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight) - y;
 
 	// 设置剪裁窗口
 	u8g2_SetClipWindow(u8g2_menu->u8g2, x, y, x + w, y + h);
@@ -301,8 +333,8 @@ void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_DrawVSliderBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, float schedule, float proportion)
 {
-	schedule = limitingAmplitude(schedule, 0, 1);
-	proportion = limitingAmplitude(proportion, 0, 1);
+	schedule = limit(schedule, 0, 1);
+	proportion = limit(proportion, 0, 1);
 	u8g2_DrawVLine(u8g2, x + w / 2, y, h);
 	u8g2_DrawBox(u8g2, x, y + h * (1 - proportion) * schedule, w, h * proportion + 1);
 }
@@ -332,6 +364,13 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
 	u8g2_menu->currentDrawItem = 0;
 	u8g2_menu->totalLength = 0;
 	u8g2_menu->u8g2_menuValueType = MENU_NC;
+
+	if (u8g2_menu->currentItemLog != u8g2_menu->currentItem)
+	{
+		u8g2_menuItemLeave(u8g2_menu, u8g2_menu->currentItemLog);
+		u8g2_menuItemEnter(u8g2_menu, u8g2_menu->currentItem);
+	}
+
 	if (u8g2_menu->menuItem)
 		u8g2_menu->menuItem();
 
@@ -360,7 +399,7 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
 			u8g2_menu->u8g2,
 			x + w - 5, y, 5, h,
 			(float)(u8g2_MenuEffectGetPos(u8g2_menu) + y) / (u8g2_menu->totalLength - h),
-			limitingAmplitude((float)h / u8g2_menu->totalLength, 0.2, 1));
+			limit((float)h / u8g2_menu->totalLength, 0.2, 1));
 	}
 	u8g2_menuEffectExpandc_call(u8g2_menu);
 	// 清除当前绘制的菜单
@@ -416,7 +455,6 @@ void u8g2_MenuItemDown(u8g2_menu_t *u8g2_menu)
 {
 	u8g2_MenuItemDownS(u8g2_menu, 1);
 }
-
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 

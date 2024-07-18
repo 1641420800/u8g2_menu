@@ -20,15 +20,30 @@
 #ifndef map
 #define map(v, min1, max1, min2, max2) (((v) - (min1)) * ((max2) - (min2)) / ((max1) - (min1)) + (min2))
 #endif
-#ifndef limitingAmplitude
-#define limitingAmplitude(d, min, max) ((d) < (min) ? (min) : (d) > (max) ? (max) \
-																		  : (d))
+#ifndef limit
+#define limit(d, min, max) ((d) < (min) ? (min) : (d) > (max) ? (max) \
+															  : (d))
 #endif
 #ifndef LEN
 #define LEN(s) (sizeof(s) / sizeof(s[0]))
 #endif
 #ifndef nonNegative
 #define nonNegative(d) ((d) < 0 ? 0 : (d))
+#endif
+#ifdef __CC_ARM /* ARM Compiler */
+    #define WEAK __weak
+#elif defined(__IAR_SYSTEMS_ICC__) /* for IAR Compiler */
+    #define WEAK __weak
+#elif defined(__GNUC__) /* GNU GCC Compiler */
+    #define WEAK __attribute__((weak))
+#elif defined(__ADSPBLACKFIN__) /* for VisualDSP++ Compiler */
+    #define WEAK __attribute__((weak))
+#elif defined(_MSC_VER)
+    #define WEAK
+#elif defined(__TI_COMPILER_VERSION__)
+    #define WEAK
+#else
+    #error not supported tool chain
 #endif
 
 typedef struct u8g2_menu_effect_struct u8g2_menu_effect_t;
@@ -71,10 +86,10 @@ typedef enum
 	MENU_Key_Sub	   // 减
 } u8g2_menuKeyValue_t;
 
-typedef void (*menuItem_t)(void);
-typedef void (*menuSelector_t)(u8g2_menu_t *u8g2_menu);
-typedef void (*u8g2_MenuDraw_t)(char *str);
-typedef void (*u8g2_MenuButton_t)(uint8_t ID, u8g2_menuKeyValue_t key);
+typedef void (*menuItem_cb)(void);
+typedef void (*menuSelector_cb)(u8g2_menu_t *u8g2_menu);
+typedef void (*u8g2_MenuDraw_cb)(char *str);
+typedef void (*u8g2_MenuButton_cb)(uint8_t ID, u8g2_menuKeyValue_t key);
 
 struct u8g2_menu_uint8_struct
 {
@@ -146,16 +161,16 @@ struct u8g2_menu_switch_struct
 };
 struct u8g2_menu_button_struct
 {
-	u8g2_MenuButton_t but;
+	u8g2_MenuButton_cb but;
 	uint8_t ID;
 };
 struct u8g2_menu_menu_struct
 {
-	menuItem_t menuItem;
+	menuItem_cb menuItem;
 };
 struct u8g2_menu_str_struct
 {
-	char * s;
+	char *s;
 	uint16_t s_len;
 };
 
@@ -190,8 +205,8 @@ struct u8g2_menu_effect_struct
 struct u8g2_menu_struct
 {
 	u8g2_t *u8g2;					   // u8g2实例
-	menuItem_t menuItem;			   // 绘制表项的实际函数
-	menuSelector_t menuSelector;	   // 绘制选择展示器的实际函数
+	menuItem_cb menuItem;			   // 绘制表项的实际函数
+	menuSelector_cb menuSelector;	   // 绘制选择展示器的实际函数
 	u8g2_menu_effect_t menuEffect;	   // 绘制效果
 	MENU_V_type_t u8g2_menuValueType;  // 菜单附加值类型
 	u8g2_menu_value_t u8g2_menuValue;  // 菜单附加值
@@ -228,22 +243,19 @@ struct u8g2_chart_struct
 
 /**
  * @todo:
- *  - 调整动画选项
  *  - 合并绑定附加值 - 已分配至分支
- *  - 添加离开某项 和 进入某项的回调函数
- * 	- 仪表盘
  * 	- 效果器优化 添加时间概念 优化动画基准
  */
 
 /* =============================== | u8g2_meun.c | =============================== */
 // 创建菜单 自定义选择展示器
-void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t menuItem, menuSelector_t menuSelector);
+void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem, menuSelector_cb menuSelector);
 
 // 创建菜单 用默认选择展示器
-void u8g2_CreateMenu(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_t menuItem);
+void u8g2_CreateMenu(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem);
 
 // 切换表项
-void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_t menuItem);
+void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_cb menuItem);
 
 // 获取水平偏移量
 u8g2_int_t u8g2_MenuGetHorizontalOffset(u8g2_menu_t *u8g2_menu);
@@ -285,7 +297,7 @@ void u8g2_MenuItemDown(u8g2_menu_t *u8g2_menu);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 // 切换选择器
-void u8g2_MenuReplaceSelector(u8g2_menu_t *u8g2_menu, menuSelector_t menuSelector);
+void u8g2_MenuReplaceSelector(u8g2_menu_t *u8g2_menu, menuSelector_cb menuSelector);
 
 // 获取当前属性
 MENU_Attribute_t u8g2_MenuGetAttribute(u8g2_menu_t *u8g2_menu);
@@ -349,7 +361,7 @@ void u8g2_MenuDrawPassword(char *str, char mask);
 void u8g2_MenuDrawPasswordX2(char *str, char mask);
 
 // 菜单格式化输出
-void u8g2_MenuPrintf(u8g2_MenuDraw_t u8g2_MenuDraw, const char *fmt, ...);
+void u8g2_MenuPrintf(u8g2_MenuDraw_cb u8g2_MenuDraw, const char *fmt, ...);
 
 /* =============================== | u8g2_meun_drawValueBar.c | =============================== */
 // 菜单显示滑块条
@@ -440,8 +452,8 @@ void u8g2_MenuItemValue_double(double *value, double adjValue, double minValue, 
 
 void u8g2_MenuItemValue_switch(uint8_t *value, uint8_t openValue);
 
-void u8g2_MenuItem_button(u8g2_MenuButton_t but, uint8_t ID);
-void u8g2_MenuItem_menu(menuItem_t menuItem);
+void u8g2_MenuItem_button(u8g2_MenuButton_cb but, uint8_t ID);
+void u8g2_MenuItem_menu(menuItem_cb menuItem);
 void u8g2_MenuItem_str(char *str, uint16_t len);
 
 /* =============================== | u8g2_meun_effect.c | =============================== */

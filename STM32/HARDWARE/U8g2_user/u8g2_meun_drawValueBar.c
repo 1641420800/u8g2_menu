@@ -15,8 +15,8 @@
  */
 void u8g2_DrawHSliderBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, float schedule, float proportion)
 {
-    schedule = limitingAmplitude(schedule, 0, 1);
-    proportion = limitingAmplitude(proportion, 0, 1);
+    schedule = limit(schedule, 0, 1);
+    proportion = limit(proportion, 0, 1);
     u8g2_DrawHLine(u8g2, x, y + h / 2, w);
     u8g2_DrawBox(u8g2, x + w * (1 - proportion) * schedule, y, w * proportion + 1, h);
 }
@@ -35,7 +35,7 @@ void u8g2_DrawHSliderBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t
  */
 void u8g2_DrawHProgressBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, float schedule)
 {
-    schedule = limitingAmplitude(schedule, 0, 1);
+    schedule = limit(schedule, 0, 1);
     u8g2_DrawFrame(u8g2, x, y, w, h);
     u8g2_DrawBox(u8g2, x + 2, y + 2, (w - 4) * schedule, h - 4);
 }

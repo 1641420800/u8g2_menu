@@ -112,12 +112,12 @@ void u8g2_drawLineChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_in
 	w = w - 2;
 	x1 = x;
 	y1 = y + h - map(chart->data_dis[0], chart->data_min, chart->data_max, 0, h - 1);
-	y1 = limitingAmplitude(y1, y, y + h - 1);
+	y1 = limit(y1, y, y + h - 1);
 	for (int i = 1; i < chart->data_len; i++)
 	{
 		x2 = x + i * w / chart->data_len;
 		y2 = y + h - map(chart->data_dis[i], chart->data_min, chart->data_max, 0, h - 1);
-		y2 = limitingAmplitude(y2, y, y + h - 1);
+		y2 = limit(y2, y, y + h - 1);
 
 		if (x1 >= 0 && y1 >= 0 && x2 >= 0 && y2 >= 0)
 		{
@@ -152,7 +152,7 @@ void u8g2_drawPointChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_i
 	{
 		X = x + i * w / chart->data_len;
 		Y = y + h - map(chart->data_dis[i], chart->data_min, chart->data_max, 0, h - 1);
-		Y = limitingAmplitude(Y, y, y + h - 1);
+		Y = limit(Y, y, y + h - 1);
 		u8g2_DrawPixel(u8g2, X, Y);
 	}
 }

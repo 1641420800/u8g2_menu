@@ -296,7 +296,7 @@ void u8g2_MenuItemValue_switch(uint8_t *value, uint8_t openValue)
 	menu->u8g2_menuValue.v_switch.value = value;
 	menu->u8g2_menuValue.v_switch.openValue = openValue;
 }
-void u8g2_MenuItem_button(u8g2_MenuButton_t but, uint8_t ID)
+void u8g2_MenuItem_button(u8g2_MenuButton_cb but, uint8_t ID)
 {
 	u8g2_menu_t *menu = u8g2_getMenuItemValue(MENU_Writable);
 	if (!menu)
@@ -305,7 +305,7 @@ void u8g2_MenuItem_button(u8g2_MenuButton_t but, uint8_t ID)
 	menu->u8g2_menuValue.button.but = but;
 	menu->u8g2_menuValue.button.ID = ID;
 }
-void u8g2_MenuItem_menu(menuItem_t menuItem)
+void u8g2_MenuItem_menu(menuItem_cb menuItem)
 {
 	u8g2_menu_t *menu = u8g2_getMenuItemValue(MENU_Writable);
 	if (!menu)

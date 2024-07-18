@@ -161,7 +161,7 @@ void u8g2_MenuDrawPasswordX2(char *str, char mask)
  *
  * @return void
  */
-void u8g2_MenuPrintf(u8g2_MenuDraw_t u8g2_MenuDraw, const char *fmt, ...)
+void u8g2_MenuPrintf(u8g2_MenuDraw_cb u8g2_MenuDraw, const char *fmt, ...)
 {
     char buffer[64];
     va_list arg_ptr;

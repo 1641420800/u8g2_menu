@@ -285,6 +285,7 @@ const uint8_t bmp[] = {
 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
 0x00,0x00,0x00,0xE0,0x01,0x00,0x00,0x00,/*"C:\Users\16414\Pictures\素材\水平花纹素材1.bmp",0*/
 };
+uint16_t a,b;
 
 void menuItem_2(void);
 void menuItem_1()
@@ -319,7 +320,7 @@ void menuItem_2()
 	u8g2_MenuItemValue_switch(&sw,0);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello %d",sw);
 	u8g2_MenuPrintf(u8g2_MenuDrawStrX2,"Hello2");
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2 %d - %d",a,b);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
 }
 
@@ -356,6 +357,7 @@ void keyScann(void)
 	keyLog[2] = key[2];
 }
 
+
 float k = 0;
 void tim2_IRQ(void)
 {
@@ -363,6 +365,14 @@ void tim2_IRQ(void)
 	u8g2_MenuInChar(&u8g2_menu, keys);
 
 	keyScann();
+}
+void u8g2_menuItemEnter(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
+{
+	a = item;
+}
+void u8g2_menuItemLeave(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
+{
+	b = item;
 }
 
 int main(void)
