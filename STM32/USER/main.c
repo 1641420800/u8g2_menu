@@ -16,7 +16,7 @@ u8g2_t u8g2;
 u8g2_menu_t u8g2_menu;
 u8g2_chart_t chart;
 
-float data[10];
+float data[100];
 float data_dis[LEN(data)];
 
 u8g2_chart_t chart2;
@@ -293,7 +293,7 @@ void menuItem_1()
 	u8g2_MenuItem_menu(menuItem_2);
 	u8g2_MenuDrawItemLineChart(&chart,50,0,0);
 	u8g2_MenuDrawItemPointChart(&chart2,40,1,-1);
-	u8g2_MenuDrawItemLineChart(&chart3,40,1,-1);
+	u8g2_MenuDrawItemPointChart(&chart3,40,1,-1);
 	
 	u8g2_MenuItem_str(inStr,sizeof(inStr));
 	u8g2_MenuDrawPassword(inStr,'*');
@@ -367,6 +367,8 @@ void tim2_IRQ(void)
 	keyScann();
 
 	u8g2_MenuTime_ISR(&u8g2_menu,1);
+	
+	LED = sw;
 }
 void u8g2_menuItemEnter(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
 {
@@ -394,16 +396,15 @@ int main(void)
 	tim2_init(1000-1,72-1);
 	while(1)
 	{
-		u8g2_chart_addData(&chart,sin(k));
+		u8g2_chart_addData(&chart,rand());
 		u8g2_chart_addData(&chart2,cos(k));
 		u8g2_chart_addData(&chart3,tan(k));
-		k += 0.08;
+		k += 0.06;
 		u8g2_ClearBuffer(&u8g2);
 		oled_display(&u8g2);
 		u8g2_SendBuffer(&u8g2);
 		// LED;
 
 		delay_ms(60);
-		LED = sw;
 	}
 }

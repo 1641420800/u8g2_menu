@@ -7,14 +7,42 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#define U8G2_MENU_VERSION "1.2.0-beta"
-#define U8G2_MENU_DEBUG 0
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* 宏定义 */
-#define U8G2_MENUKeyValue_Back '*'
-#define U8G2_MENUKeyValue_Clear '#'
+/**
+ * @file u8g2_menu.h
+ * @brief 这是一个基于U8g2构建的菜单库，用于管理和渲染多个菜单。
+ * 
+ * 库包含以下几个模块：
+ * - 核心菜单模块：处理菜单系统的核心功能。
+ * - 选择器模块：管理菜单内的选择。
+ * - 动画模块：为菜单过渡提供动画效果。
+ * - 项目绘制模块：绘制各种类型的菜单项，包括图表、字符串、进度条和图片。
+ * - 附加值模块：向菜单项添加额外功能，可通过菜单操作按键来触发。
+ * - 按键模块：与物理按键交互以供用户操作。
+ * 
+ * 用户界面：
+ * - 与按键相关的功能，用于菜单导航。
+ * - 可选的字符输入功能，用于文本交互。
+ * - 可选的时间相关功能，用于优化动画基准。
+ */
 
-#define U8G2_MENU_DELAY 100
+// 版本信息
+#define U8G2_MENU_VERSION "1.2.1-beta"
+#define U8G2_MENU_DEBUG 0					// 设置为1启用调试模式
+
+// 功能按键相关
+#define U8G2_MENUKeyValue_Back '*'			// 删除一个字符
+#define U8G2_MENUKeyValue_Clear '#'			// 清除整个输入
+
+// 菜单刷新间隔
+#define U8G2_MENU_DELAY 100					// 推理动画之间的延迟，以毫秒为单位
+
+// 图表功能相关
+#define U8G2_MENU_MIN_VALUE_DIFF 0.0f		// 图表幅值的最小值
+#define U8G2_MENU_CHART_SPACE_RATIO 1.1f	// 图表上下留空的比例
 
 #ifndef ABS
 #define ABS(s) ((s) < 0 ? -(s) : (s))
@@ -477,5 +505,10 @@ void u8g2_MenuSelectorRotundity(u8g2_menu_t *u8g2_menu);
 
 // 选择展示器 方形
 void u8g2_MenuSelectorSquare(u8g2_menu_t *u8g2_menu);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

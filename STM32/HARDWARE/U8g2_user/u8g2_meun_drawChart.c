@@ -86,8 +86,14 @@ void u8g2_chart_autoRange(u8g2_chart_t *chart)
 			chart->data_min = chart->data_dis[i];
 		}
 	}
-	chart->data_max += chart->data_max * 0.1;
-	chart->data_min -= chart->data_min * 0.1;
+	chart->data_max = chart->data_max * U8G2_MENU_CHART_SPACE_RATIO;
+	chart->data_min = chart->data_min * U8G2_MENU_CHART_SPACE_RATIO;
+
+	if(chart->data_max - chart->data_min < U8G2_MENU_MIN_VALUE_DIFF)
+	{
+		chart->data_max += U8G2_MENU_MIN_VALUE_DIFF / 2;
+		chart->data_min -= U8G2_MENU_MIN_VALUE_DIFF / 2;
+	}
 }
 
 /**
