@@ -87,7 +87,7 @@ void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_cb menuItem)
 	u8g2_menu->menuItem = menuItem;
 	u8g2_menu->currentItem = 0;
 	u8g2_menu->currentSetValue = -1;
-	u8g2_menuEffectShrink_call(u8g2_menu);
+	u8g2_menuEffect_init_call(u8g2_menu);
 }
 
 /**
@@ -294,7 +294,8 @@ void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
 	if (u8g2_menu->currentDrawItem == u8g2_menu->currentItem)
 	{
 		// 移动到选中的项
-		u8g2_menuEffectMoveItem_call(u8g2_menu);
+		u8g2_menu->pickItemY = u8g2_menu->totalLength;
+		u8g2_menu->pickItemHeight = u8g2_menu->currentItemHeight;
 
 		// 判断选中的项是否宽度超过屏幕
 		if (u8g2_menu->currentItemWidth > w)
@@ -374,6 +375,13 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
 	if (u8g2_menu->menuItem)
 		u8g2_menu->menuItem();
 
+	if(!u8g2_menu->timer_effective) u8g2_menuEffect_run_call(u8g2_menu);
+	while(u8g2_menu->timer_effective && u8g2_menu->timer > U8G2_MENU_DELAY)
+	{
+		u8g2_menu->timer -= U8G2_MENU_DELAY;
+		u8g2_menuEffect_run_call(u8g2_menu);
+	}
+
 	if (u8g2_menu->currentDrawItem == 0)
 	{
 		// 清除当前绘制的菜单
@@ -401,9 +409,24 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
 			(float)(u8g2_MenuEffectGetPos(u8g2_menu) + y) / (u8g2_menu->totalLength - h),
 			limit((float)h / u8g2_menu->totalLength, 0.2, 1));
 	}
-	u8g2_menuEffectExpandc_call(u8g2_menu);
 	// 清除当前绘制的菜单
 	currentMenu = NULL;
+}
+
+/**
+ * @brief 菜单定时器接口
+ * 
+ * @param u8g2_menu 菜单对象
+ * @param ms 所过的毫秒数
+ * 
+ * @return void
+ */
+void u8g2_MenuTime_ISR(u8g2_menu_t *u8g2_menu, uint16_t ms)
+{
+	if(!u8g2_menu || !ms)
+		return;
+	u8g2_menu->timer += ms;
+	u8g2_menu->timer_effective = 1;
 }
 
 /**

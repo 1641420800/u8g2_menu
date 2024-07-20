@@ -7,12 +7,14 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#define U8G2_MENU_VERSION "1.1.0-alpha"
+#define U8G2_MENU_VERSION "1.2.0-beta"
 #define U8G2_MENU_DEBUG 0
 
 /* 宏定义 */
 #define U8G2_MENUKeyValue_Back '*'
 #define U8G2_MENUKeyValue_Clear '#'
+
+#define U8G2_MENU_DELAY 100
 
 #ifndef ABS
 #define ABS(s) ((s) < 0 ? -(s) : (s))
@@ -31,19 +33,19 @@
 #define nonNegative(d) ((d) < 0 ? 0 : (d))
 #endif
 #ifdef __CC_ARM /* ARM Compiler */
-    #define WEAK __weak
+#define WEAK __weak
 #elif defined(__IAR_SYSTEMS_ICC__) /* for IAR Compiler */
-    #define WEAK __weak
+#define WEAK __weak
 #elif defined(__GNUC__) /* GNU GCC Compiler */
-    #define WEAK __attribute__((weak))
+#define WEAK __attribute__((weak))
 #elif defined(__ADSPBLACKFIN__) /* for VisualDSP++ Compiler */
-    #define WEAK __attribute__((weak))
+#define WEAK __attribute__((weak))
 #elif defined(_MSC_VER)
-    #define WEAK
+#define WEAK
 #elif defined(__TI_COMPILER_VERSION__)
-    #define WEAK
+#define WEAK
 #else
-    #error not supported tool chain
+#error not supported tool chain
 #endif
 
 typedef struct u8g2_menu_effect_struct u8g2_menu_effect_t;
@@ -193,14 +195,11 @@ union u8g2_menu_value_uniom
 
 struct u8g2_menu_effect_struct
 {
-	u8g2_int_t (*u8g2_menuEffectExpandc)(u8g2_menu_t *u8g2_menu);
-	u8g2_int_t (*u8g2_menuEffectShrink)(u8g2_menu_t *u8g2_menu);
-	u8g2_int_t (*u8g2_menuEffectMoveItem)(u8g2_menu_t *u8g2_menu);
-	u8g2_int_t (*u8g2_menuEffectMoveSelector)(u8g2_menu_t *u8g2_menu);
+	u8g2_int_t (*u8g2_menuEffect_init)(u8g2_menu_t *u8g2_menu);
+	u8g2_int_t (*u8g2_menuEffect_run)(u8g2_menu_t *u8g2_menu);
 
 	u8g2_int_t _position; // 当前实时位置
 	float _rowHeight;	  // 当前实时行高比例
-	u8g2_int_t spe;		  // 移动速度
 };
 struct u8g2_menu_struct
 {
@@ -226,10 +225,14 @@ struct u8g2_menu_struct
 	u8g2_int_t currentItemHeight;	   // 当前项的高度
 	u8g2_int_t currentContentWidth;	   // 当前菜单内容宽度
 	MENU_Attribute_t currentAttribute; // 当前可调属性
+	u8g2_int_t pickItemY;			   // 选中项的位置
+	u8g2_int_t pickItemHeight;		   // 选中项的高度
 	u8g2_int_t leftMarginSelector;	   // 菜单左边距
 	u8g2_int_t topMarginSelector;	   // 菜单顶边距
 	u8g2_int_t lineSpacingSelector;	   // 菜单行间距
 	u8g2_int_t totalLength;			   // 菜单总长度
+	uint16_t timer;					   // 菜单计时器
+	uint8_t timer_effective;		   // 菜单计时器是否有效
 };
 
 struct u8g2_chart_struct
@@ -240,12 +243,6 @@ struct u8g2_chart_struct
 	float data_min;
 	uint16_t data_len;
 };
-
-/**
- * @todo:
- *  - 合并绑定附加值 - 已分配至分支
- * 	- 效果器优化 添加时间概念 优化动画基准
- */
 
 /* =============================== | u8g2_meun.c | =============================== */
 // 创建菜单 自定义选择展示器
@@ -282,6 +279,9 @@ void u8g2_DrawVSliderBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t
 
 // 绘制菜单
 void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h);
+
+// 菜单时间接口
+void u8g2_MenuTime_ISR(u8g2_menu_t *u8g2_menu, uint16_t ms);
 
 // 上移 i 项
 void u8g2_MenuItemUpS(u8g2_menu_t *u8g2_menu, u8g2_uint_t i);
@@ -464,10 +464,8 @@ void u8g2_MenuEffectBind(u8g2_menu_t *u8g2_menu, u8g2_menu_effect_t *u8g2_menu_e
 u8g2_int_t u8g2_MenuEffectGetPos(u8g2_menu_t *u8g2_menu);
 float u8g2_MenuEffectGetRowHeight(u8g2_menu_t *u8g2_menu);
 
-u8g2_int_t u8g2_menuEffectExpandc_call(u8g2_menu_t *u8g2_menu);
-u8g2_int_t u8g2_menuEffectShrink_call(u8g2_menu_t *u8g2_menu);
-u8g2_int_t u8g2_menuEffectMoveItem_call(u8g2_menu_t *u8g2_menu);
-u8g2_int_t u8g2_menuEffectMoveSelector_call(u8g2_menu_t *u8g2_menu);
+u8g2_int_t u8g2_menuEffect_init_call(u8g2_menu_t *u8g2_menu);
+u8g2_int_t u8g2_menuEffect_run_call(u8g2_menu_t *u8g2_menu);
 
 /* =============================== | u8g2_meun_selector.c | =============================== */
 

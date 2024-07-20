@@ -315,7 +315,7 @@ uint8_t sw = 1;
 void menuItem_2()
 {
 	u8g2_MenuItem_menu(menuItem_1);
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,U8G2_MENU_VERSION);
 
 	u8g2_MenuItemValue_switch(&sw,0);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello %d",sw);
@@ -365,6 +365,8 @@ void tim2_IRQ(void)
 	u8g2_MenuInChar(&u8g2_menu, keys);
 
 	keyScann();
+
+	u8g2_MenuTime_ISR(&u8g2_menu,1);
 }
 void u8g2_menuItemEnter(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
 {
@@ -401,6 +403,7 @@ int main(void)
 		u8g2_SendBuffer(&u8g2);
 		// LED;
 
+		delay_ms(60);
 		LED = sw;
 	}
 }

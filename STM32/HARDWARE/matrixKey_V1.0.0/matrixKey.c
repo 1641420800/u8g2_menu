@@ -3,39 +3,39 @@
 #include "delay.h"      /* delay_us */
 
 /*
-½ÓÏßËµÃ÷:
-    Ä¬ÈÏ½Ó : PA0 ~ PA7
+æ¥çº¿è¯´æ˜:
+    é»˜è®¤æ¥ : PA0 ~ PA7
 
-×¢Òâ:
-   ¼üÖµÄ¬ÈÏÎª:
+æ³¨æ„:
+   é”®å€¼é»˜è®¤ä¸º:
         '1','2','3','A',
         '4','5','6','B',
         '7','8','9','C',
         '*','0','#','D',
-    Èç¹ûºÍÊµ¼ÊµÄ²»Ò»Ñù¿ÉÒÔ¸Ä Õâ¸öÊÇ³£ÓÃµÄÄÇ¸ö¼üÅÌ
+    å¦‚æœå’Œå®é™…çš„ä¸ä¸€æ ·å¯ä»¥æ”¹ è¿™ä¸ªæ˜¯å¸¸ç”¨çš„é‚£ä¸ªé”®ç›˜
 
-Ê¹ÓÃËµÃ÷:
+ä½¿ç”¨è¯´æ˜:
 
 #include "matrixKey.h"
 
 
 uint8_t keys = 0;
  
-	matrixKey_init_def();   							// ¾ØÕó¼üÅÌ³õÊ¼»¯
+	matrixKey_init_def();   							// çŸ©é˜µé”®ç›˜åˆå§‹åŒ–
     
    
-		keys = check_key_pressed(&matrixKey);           // ¼ì²âÊÇ·ñÓĞ°´¼ü°´ÏÂ£¬ÓĞ°´¼ü°´ÏÂ·µ»Ø1£¬Ã»ÓĞ·µ»Ø0
+		keys = check_key_pressed(&matrixKey);           // æ£€æµ‹æ˜¯å¦æœ‰æŒ‰é”®æŒ‰ä¸‹ï¼Œæœ‰æŒ‰é”®æŒ‰ä¸‹è¿”å›1ï¼Œæ²¡æœ‰è¿”å›0
 
-		keys = is_pressed(&matrixKey, (uint8_t)'A');    // ·µ»ØÄ³¸ö¼üÖµµÄ°´¼üÊÇ·ñ°´ÏÂ£¬°´ÏÂ·µ»Ø1£¬Ã»ÓĞ·µ»Ø0£¬ÀïÃæµÄA¿ÉÒÔÌæ»»³É 0123456789ABCD*# ¾ÍÊÇÏÂ±ßÄÇ¸öºÍÓ²¼şÉÏµÄÓ¦¸ÃÊÇÒ»Ò»¶ÔÓ¦µÄ±íÀïµÄ
+		keys = is_pressed(&matrixKey, (uint8_t)'A');    // è¿”å›æŸä¸ªé”®å€¼çš„æŒ‰é”®æ˜¯å¦æŒ‰ä¸‹ï¼ŒæŒ‰ä¸‹è¿”å›1ï¼Œæ²¡æœ‰è¿”å›0ï¼Œé‡Œé¢çš„Aå¯ä»¥æ›¿æ¢æˆ 0123456789ABCD*# å°±æ˜¯ä¸‹è¾¹é‚£ä¸ªå’Œç¡¬ä»¶ä¸Šçš„åº”è¯¥æ˜¯ä¸€ä¸€å¯¹åº”çš„è¡¨é‡Œçš„
         
-		keys = get_current_key_value(&matrixKey);       // ·µ»Øµ±Ç°°´¼ü¼üÖµ£¬·¶Î§ 0123456789ABCD*# ¾ÍÊÇÏÂ±ßÄÇ¸öºÍÓ²¼şÉÏµÄÓ¦¸ÃÊÇÒ»Ò»¶ÔÓ¦µÄ±íÀïµÄ
+		keys = get_current_key_value(&matrixKey);       // è¿”å›å½“å‰æŒ‰é”®é”®å€¼ï¼ŒèŒƒå›´ 0123456789ABCD*# å°±æ˜¯ä¸‹è¾¹é‚£ä¸ªå’Œç¡¬ä»¶ä¸Šçš„åº”è¯¥æ˜¯ä¸€ä¸€å¯¹åº”çš„è¡¨é‡Œçš„
 
 */
 
 matrixKey_t matrixKey;
 
 static const uint8_t keyList_def[] = 
-{   // ºÍÓ²¼şÉÏµÄÓ¦¸ÃÊÇÒ»Ò»¶ÔÓ¦µÄ
+{   // å’Œç¡¬ä»¶ä¸Šçš„åº”è¯¥æ˜¯ä¸€ä¸€å¯¹åº”çš„
     '1','2','3','A',
     '4','5','6','B',
     '7','8','9','C',
@@ -44,32 +44,45 @@ static const uint8_t keyList_def[] =
 void hardware_init_func_def(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);   // Ê¹ÄÜGPIOAÊ±ÖÓ
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);   // ä½¿èƒ½GPIOAæ—¶é’Ÿ
 
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     
-    // ÅäÖÃĞĞÒı½ÅGPIOÊä³öÄ£Ê½Îª¿ªÂ©Êä³ö
+    // é…ç½®è¡Œå¼•è„šGPIOè¾“å‡ºæ¨¡å¼ä¸ºå¼€æ¼è¾“å‡º
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;    // ¿ªÂ©Êä³ö
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;    // å¼€æ¼è¾“å‡º
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
     
-    // ÅäÖÃÁĞÒı½ÅGPIOÊäÈëÄ£Ê½ÎªÉÏÀ­ÊäÈë
+    // é…ç½®åˆ—å¼•è„šGPIOè¾“å…¥æ¨¡å¼ä¸ºä¸Šæ‹‰è¾“å…¥
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_10 | GPIO_Pin_11;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;       // ÉÏÀ­ÊäÈë
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;       // ä¸Šæ‹‰è¾“å…¥
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
+
+void matrixKey_delay_us(u32 nTimer)
+{
+	u32 i=0;
+	for(i=0;i<nTimer;i++){
+		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+	}
+}
+
 void ctrl_read_func_def(uint8_t * outPin, uint8_t * inPin)
 {
-    // ½« outPin Êı×éµÄÔªËØ·Ö±ğĞ´ÈëÏàÓ¦µÄÒı½Å£¬ÉèÖÃÊä³ö×´Ì¬
+    // å°† outPin æ•°ç»„çš„å…ƒç´ åˆ†åˆ«å†™å…¥ç›¸åº”çš„å¼•è„šï¼Œè®¾ç½®è¾“å‡ºçŠ¶æ€
     GPIO_WriteBit(GPIOA,GPIO_Pin_4,(BitAction)outPin[0]);
     GPIO_WriteBit(GPIOA,GPIO_Pin_5,(BitAction)outPin[1]);
     GPIO_WriteBit(GPIOA,GPIO_Pin_6,(BitAction)outPin[2]);
     GPIO_WriteBit(GPIOA,GPIO_Pin_7,(BitAction)outPin[3]);
     
-    // ¶ÌÔİÑÓ³Ù£¬ÒÔÈ·±£Êı¾İÎÈ¶¨ Êµ²âÃ»ÓĞÑÓÊ±»áµ¼ÖÂ¶ÁÈ¡³ö´í
-    delay_us(1);
+    // çŸ­æš‚å»¶è¿Ÿï¼Œä»¥ç¡®ä¿æ•°æ®ç¨³å®š å®æµ‹æ²¡æœ‰å»¶æ—¶ä¼šå¯¼è‡´è¯»å–å‡ºé”™
+    matrixKey_delay_us(1);
     
-    // ¶ÁÈ¡ÊäÈëÒı½Å£¬½«½á¹û´æ´¢ÔÚ inPin Êı×éÖĞ
+    // è¯»å–è¾“å…¥å¼•è„šï¼Œå°†ç»“æœå­˜å‚¨åœ¨ inPin æ•°ç»„ä¸­
     inPin[0] = (uint8_t)GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_0);
     inPin[1] = (uint8_t)GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_1);
     inPin[2] = (uint8_t)GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_10);
@@ -78,40 +91,40 @@ void ctrl_read_func_def(uint8_t * outPin, uint8_t * inPin)
 /* ------------------------------------------------------------------------------------------ */
 
 /*
-ÃèÊö£º³õÊ¼»¯Ö¸¶¨¼üÅÌ³ß´çºÍ°´¼ü¼üÖµ¡£
-Óï·¨£º
+æè¿°ï¼šåˆå§‹åŒ–æŒ‡å®šé”®ç›˜å°ºå¯¸å’ŒæŒ‰é”®é”®å€¼ã€‚
+è¯­æ³•ï¼š
     uint8_t matrixKey_init(matrixKey_t * matrixKey, uint8_t col_count, uint8_t row_count, const uint8_t * key_values_ptr);
-²ÎÊı£º
-    matrixKey£ºÖ¸ÏòmatrixKey_t½á¹¹ÌåµÄÖ¸Õë£¬ÓÃÓÚ´æ´¢¾ØÕó°´¼üµÄĞÅÏ¢¡£
-    col_count£º¼üÅÌµÄÁĞÊı¡£
-    row_count£º¼üÅÌµÄĞĞÊı¡£
-    key_values_ptr£º¼üÅÌµÄ°´¼ü¼üÖµÊı×éÖ¸Õë¡£Èç¹ûÎªNULL£¬ÔòÊ¹ÓÃÄ¬ÈÏÖµ¡£
-·µ»ØÖµ£º
-    ·µ»Ø³õÊ¼»¯½á¹û¡£Èç¹û³õÊ¼»¯³É¹¦£¬·µ»Ø0£»·ñÔò·µ»Ø·ÇÁãÖµ¡£
-¼òÒ×ÓÃ·¨:
+å‚æ•°ï¼š
+    matrixKeyï¼šæŒ‡å‘matrixKey_tç»“æ„ä½“çš„æŒ‡é’ˆï¼Œç”¨äºå­˜å‚¨çŸ©é˜µæŒ‰é”®çš„ä¿¡æ¯ã€‚
+    col_countï¼šé”®ç›˜çš„åˆ—æ•°ã€‚
+    row_countï¼šé”®ç›˜çš„è¡Œæ•°ã€‚
+    key_values_ptrï¼šé”®ç›˜çš„æŒ‰é”®é”®å€¼æ•°ç»„æŒ‡é’ˆã€‚å¦‚æœä¸ºNULLï¼Œåˆ™ä½¿ç”¨é»˜è®¤å€¼ã€‚
+è¿”å›å€¼ï¼š
+    è¿”å›åˆå§‹åŒ–ç»“æœã€‚å¦‚æœåˆå§‹åŒ–æˆåŠŸï¼Œè¿”å›0ï¼›å¦åˆ™è¿”å›éé›¶å€¼ã€‚
+ç®€æ˜“ç”¨æ³•:
     matrixKey_init_def()
 */
 uint8_t matrixKey_init(matrixKey_t * matrixKey,uint8_t col_count,uint8_t row_count,const uint8_t * key_values_ptr)
 {
-    // ¼ì²é matrixKey ÊÇ·ñÎª¿ÕÖ¸Õë
+    // æ£€æŸ¥ matrixKey æ˜¯å¦ä¸ºç©ºæŒ‡é’ˆ
     if(!matrixKey) return 1;
     
-    // ³õÊ¼»¯ matrixKey µÄĞĞºÍÁĞÊı
+    // åˆå§‹åŒ– matrixKey çš„è¡Œå’Œåˆ—æ•°
     matrixKey->row_count = row_count;
     matrixKey->col_count = col_count;
     
     if(key_values_ptr)
     {
-         // Èç¹û¸ø¶¨ÁË key_values_ptr£¬Ôò½« matrixKey µÄ key_values_ptr Ö¸Ïò¸ø¶¨µÄÖ¸Õë
+         // å¦‚æœç»™å®šäº† key_values_ptrï¼Œåˆ™å°† matrixKey çš„ key_values_ptr æŒ‡å‘ç»™å®šçš„æŒ‡é’ˆ
         matrixKey->key_values_ptr = key_values_ptr;
     }
     else
     {
-        // Èç¹ûÃ»ÓĞ¸ø¶¨ key_values_ptr£¬Ôò½« matrixKey µÄ key_values_ptr Ö¸ÏòÄ¬ÈÏÖµ
+        // å¦‚æœæ²¡æœ‰ç»™å®š key_values_ptrï¼Œåˆ™å°† matrixKey çš„ key_values_ptr æŒ‡å‘é»˜è®¤å€¼
         matrixKey->key_values_ptr = keyList_def;
     }
     
-    // Îª matrixKey µÄ outPin¡¢inPin ºÍ keyValueTable ·ÖÅäÄÚ´æ
+    // ä¸º matrixKey çš„ outPinã€inPin å’Œ keyValueTable åˆ†é…å†…å­˜
     matrixKey->outPin = (uint8_t *)calloc(col_count,sizeof(uint8_t));
     if(!matrixKey->outPin) goto ERROR;
     matrixKey->inPin  = (uint8_t *)calloc(row_count,sizeof(uint8_t));
@@ -119,16 +132,16 @@ uint8_t matrixKey_init(matrixKey_t * matrixKey,uint8_t col_count,uint8_t row_cou
     matrixKey->keyValueTable = (uint8_t *)calloc(row_count * col_count,sizeof(uint8_t));
     if(!matrixKey->keyValueTable) goto ERROR;
     
-    // Èç¹ûÓ²¼ş³õÊ¼»¯º¯ÊıºÍ¿ØÖÆ¶ÁÈ¡º¯ÊıÎª¿Õ£¬Ôò½«Æä³õÊ¼»¯ÎªÄ¬ÈÏº¯Êı
+    // å¦‚æœç¡¬ä»¶åˆå§‹åŒ–å‡½æ•°å’Œæ§åˆ¶è¯»å–å‡½æ•°ä¸ºç©ºï¼Œåˆ™å°†å…¶åˆå§‹åŒ–ä¸ºé»˜è®¤å‡½æ•°
     if(!matrixKey->hardware_init_func) matrixKey->hardware_init_func = hardware_init_func_def;
     if(!matrixKey->ctrl_read_func) matrixKey->ctrl_read_func = ctrl_read_func_def;
     
-    // Ö´ĞĞÓ²¼ş³õÊ¼»¯º¯Êı
+    // æ‰§è¡Œç¡¬ä»¶åˆå§‹åŒ–å‡½æ•°
     matrixKey->hardware_init_func();
     
     return 0;
 ERROR:
-    // ·¢Éú´íÎóÊ±£¬ÊÍ·Å·ÖÅäµÄÄÚ´æ£¬²¢½«Ö¸ÕëÉèÎªNULL
+    // å‘ç”Ÿé”™è¯¯æ—¶ï¼Œé‡Šæ”¾åˆ†é…çš„å†…å­˜ï¼Œå¹¶å°†æŒ‡é’ˆè®¾ä¸ºNULL
     free(matrixKey->outPin);
     free(matrixKey->inPin);
     free(matrixKey->keyValueTable);
@@ -141,111 +154,111 @@ ERROR:
 }
 
 /*
-ÃèÊö£º¼ì²éÊÇ·ñÓĞ°´¼ü°´ÏÂ¡£
-Óï·¨£º
+æè¿°ï¼šæ£€æŸ¥æ˜¯å¦æœ‰æŒ‰é”®æŒ‰ä¸‹ã€‚
+è¯­æ³•ï¼š
     uint8_t check_key_pressed(matrixKey_t * matrixKey);
-²ÎÊı£º
-    matrixKey£ºÖ¸ÏòmatrixKey_t½á¹¹ÌåµÄÖ¸Õë£¬ÓÃÓÚ´æ´¢¾ØÕó°´¼üµÄĞÅÏ¢¡£
-·µ»ØÖµ£º
-    Èç¹û´æÔÚ°´¼ü°´ÏÂ£¬·µ»Ø1£»·ñÔò·µ»Ø0¡£
+å‚æ•°ï¼š
+    matrixKeyï¼šæŒ‡å‘matrixKey_tç»“æ„ä½“çš„æŒ‡é’ˆï¼Œç”¨äºå­˜å‚¨çŸ©é˜µæŒ‰é”®çš„ä¿¡æ¯ã€‚
+è¿”å›å€¼ï¼š
+    å¦‚æœå­˜åœ¨æŒ‰é”®æŒ‰ä¸‹ï¼Œè¿”å›1ï¼›å¦åˆ™è¿”å›0ã€‚
 */
 uint8_t check_key_pressed(matrixKey_t * matrixKey)
 {
     uint8_t loopVariable;
     
-    // ½« outPin Êı×éµÄËùÓĞÔªËØÉèÖÃÎª Bit_RESET£¬±íÊ¾½«ËùÓĞĞĞÒı½ÅÖÃµÍ
+    // å°† outPin æ•°ç»„çš„æ‰€æœ‰å…ƒç´ è®¾ç½®ä¸º Bit_RESETï¼Œè¡¨ç¤ºå°†æ‰€æœ‰è¡Œå¼•è„šç½®ä½
     for(loopVariable = 0; loopVariable < matrixKey->row_count; ++loopVariable)
     {
         matrixKey->outPin[loopVariable] = Bit_RESET;
     }
     
-    // µ÷ÓÃ ctrl_read_func º¯Êı£¬¶ÁÈ¡ÊäÈëÒı½ÅµÄ×´Ì¬£¬²¢½«½á¹û´æ´¢ÔÚ inPin Êı×éÖĞ
+    // è°ƒç”¨ ctrl_read_func å‡½æ•°ï¼Œè¯»å–è¾“å…¥å¼•è„šçš„çŠ¶æ€ï¼Œå¹¶å°†ç»“æœå­˜å‚¨åœ¨ inPin æ•°ç»„ä¸­
     matrixKey->ctrl_read_func(matrixKey->outPin,matrixKey->inPin);
     
-    // ¼ì²éÊÇ·ñÓĞ°´¼ü°´ÏÂ
-    // ÔÚÁĞÒı½ÅÖĞÖ»ÒªÓĞÒ»¸öÒı½ÅÎªµÍµçÆ½£¨Bit_RESET£©£¬Ôò±íÊ¾ÓĞ°´¼ü°´ÏÂ
+    // æ£€æŸ¥æ˜¯å¦æœ‰æŒ‰é”®æŒ‰ä¸‹
+    // åœ¨åˆ—å¼•è„šä¸­åªè¦æœ‰ä¸€ä¸ªå¼•è„šä¸ºä½ç”µå¹³ï¼ˆBit_RESETï¼‰ï¼Œåˆ™è¡¨ç¤ºæœ‰æŒ‰é”®æŒ‰ä¸‹
     for(loopVariable = 0; loopVariable < matrixKey->col_count; ++loopVariable)
     {
-        if(matrixKey->inPin[loopVariable] == Bit_RESET) return 1; // ·µ»Ø1±íÊ¾ÓĞ°´¼ü°´ÏÂ
+        if(matrixKey->inPin[loopVariable] == Bit_RESET) return 1; // è¿”å›1è¡¨ç¤ºæœ‰æŒ‰é”®æŒ‰ä¸‹
     }
     
-    return 0; // ·µ»Ø0±íÊ¾Ã»ÓĞ°´¼ü°´ÏÂ
+    return 0; // è¿”å›0è¡¨ç¤ºæ²¡æœ‰æŒ‰é”®æŒ‰ä¸‹
 }
 
 /*
-ÃèÊö£º²é¿´Ö¸¶¨Î»ÖÃµÄ°´¼üÊÇ·ñ°´ÏÂ¡£
-Óï·¨£º
+æè¿°ï¼šæŸ¥çœ‹æŒ‡å®šä½ç½®çš„æŒ‰é”®æ˜¯å¦æŒ‰ä¸‹ã€‚
+è¯­æ³•ï¼š
     uint8_t is_pressed_position(matrixKey_t * matrixKey, uint8_t key_col, uint8_t key_row);
-²ÎÊı£º
-    matrixKey£ºÖ¸ÏòmatrixKey_t½á¹¹ÌåµÄÖ¸Õë£¬ÓÃÓÚ´æ´¢¾ØÕó°´¼üµÄĞÅÏ¢¡£
-    key_col£º°´¼üµÄÁĞÎ»ÖÃ¡£
-    key_row£º°´¼üµÄĞĞÎ»ÖÃ¡£
-·µ»ØÖµ£º
-    Èç¹ûÖ¸¶¨Î»ÖÃµÄ°´¼ü°´ÏÂ£¬·µ»Ø1£»·ñÔò·µ»Ø0¡£
+å‚æ•°ï¼š
+    matrixKeyï¼šæŒ‡å‘matrixKey_tç»“æ„ä½“çš„æŒ‡é’ˆï¼Œç”¨äºå­˜å‚¨çŸ©é˜µæŒ‰é”®çš„ä¿¡æ¯ã€‚
+    key_colï¼šæŒ‰é”®çš„åˆ—ä½ç½®ã€‚
+    key_rowï¼šæŒ‰é”®çš„è¡Œä½ç½®ã€‚
+è¿”å›å€¼ï¼š
+    å¦‚æœæŒ‡å®šä½ç½®çš„æŒ‰é”®æŒ‰ä¸‹ï¼Œè¿”å›1ï¼›å¦åˆ™è¿”å›0ã€‚
 */
 uint8_t  is_pressed_position(matrixKey_t * matrixKey,uint8_t key_col,uint8_t key_row)
 {
     uint8_t loopVariable;
     
-    // ¼ì²é¸ø¶¨µÄ°´¼üĞĞºÍÁĞÊÇ·ñ³¬³ö·¶Î§
-    if(key_row >= matrixKey->row_count) return 0; // ·µ»Ø0±íÊ¾Î»ÖÃ³¬³ö·¶Î§
-    if(key_col >= matrixKey->col_count) return 0; // ·µ»Ø0±íÊ¾Î»ÖÃ³¬³ö·¶Î§
+    // æ£€æŸ¥ç»™å®šçš„æŒ‰é”®è¡Œå’Œåˆ—æ˜¯å¦è¶…å‡ºèŒƒå›´
+    if(key_row >= matrixKey->row_count) return 0; // è¿”å›0è¡¨ç¤ºä½ç½®è¶…å‡ºèŒƒå›´
+    if(key_col >= matrixKey->col_count) return 0; // è¿”å›0è¡¨ç¤ºä½ç½®è¶…å‡ºèŒƒå›´
     
-    // ½« outPin Êı×éµÄËùÓĞĞĞÒı½ÅÖÃ¸ß£¨Bit_SET£©
+    // å°† outPin æ•°ç»„çš„æ‰€æœ‰è¡Œå¼•è„šç½®é«˜ï¼ˆBit_SETï¼‰
     for(loopVariable = 0; loopVariable < matrixKey->row_count; ++loopVariable)
     {
         matrixKey->outPin[loopVariable] = Bit_SET;
     }
     
-    // ½«Ö¸¶¨°´¼üµÄĞĞÒı½ÅÖÃµÍ£¨Bit_RESET£©
+    // å°†æŒ‡å®šæŒ‰é”®çš„è¡Œå¼•è„šç½®ä½ï¼ˆBit_RESETï¼‰
     matrixKey->outPin[key_row] = Bit_RESET;
     
-    // µ÷ÓÃ ctrl_read_func º¯Êı£¬¶ÁÈ¡ÊäÈëÒı½ÅµÄ×´Ì¬£¬²¢½«½á¹û´æ´¢ÔÚ inPin Êı×éÖĞ
+    // è°ƒç”¨ ctrl_read_func å‡½æ•°ï¼Œè¯»å–è¾“å…¥å¼•è„šçš„çŠ¶æ€ï¼Œå¹¶å°†ç»“æœå­˜å‚¨åœ¨ inPin æ•°ç»„ä¸­
     matrixKey->ctrl_read_func(matrixKey->outPin,matrixKey->inPin);
     
-    // ¼ì²é°´¼üÖ¸¶¨Î»ÖÃµÄÁĞÒı½Å×´Ì¬ÊÇ·ñÎªµÍµçÆ½£¨Bit_RESET£©
-    // Èç¹ûÊÇµÍµçÆ½£¬Ôò±íÊ¾¸ø¶¨Î»ÖÃµÄ°´¼ü±»°´ÏÂ
+    // æ£€æŸ¥æŒ‰é”®æŒ‡å®šä½ç½®çš„åˆ—å¼•è„šçŠ¶æ€æ˜¯å¦ä¸ºä½ç”µå¹³ï¼ˆBit_RESETï¼‰
+    // å¦‚æœæ˜¯ä½ç”µå¹³ï¼Œåˆ™è¡¨ç¤ºç»™å®šä½ç½®çš„æŒ‰é”®è¢«æŒ‰ä¸‹
     return (matrixKey->inPin[key_col] == Bit_RESET);
 }
 
 /*
-ÃèÊö£º²é¿´Ö¸¶¨¼üÖµµÄ°´¼üÊÇ·ñ°´ÏÂ¡£
-Óï·¨£º
+æè¿°ï¼šæŸ¥çœ‹æŒ‡å®šé”®å€¼çš„æŒ‰é”®æ˜¯å¦æŒ‰ä¸‹ã€‚
+è¯­æ³•ï¼š
     uint8_t is_pressed(matrixKey_t * matrixKey, uint8_t key_value);
-²ÎÊı£º
-    matrixKey£ºÖ¸ÏòmatrixKey_t½á¹¹ÌåµÄÖ¸Õë£¬ÓÃÓÚ´æ´¢¾ØÕó°´¼üµÄĞÅÏ¢¡£
-    key_value£º°´¼üµÄ¼üÖµ¡£
-·µ»ØÖµ£º
-    Èç¹ûÖ¸¶¨¼üÖµµÄ°´¼ü°´ÏÂ£¬·µ»Ø1£»·ñÔò·µ»Ø0¡£
+å‚æ•°ï¼š
+    matrixKeyï¼šæŒ‡å‘matrixKey_tç»“æ„ä½“çš„æŒ‡é’ˆï¼Œç”¨äºå­˜å‚¨çŸ©é˜µæŒ‰é”®çš„ä¿¡æ¯ã€‚
+    key_valueï¼šæŒ‰é”®çš„é”®å€¼ã€‚
+è¿”å›å€¼ï¼š
+    å¦‚æœæŒ‡å®šé”®å€¼çš„æŒ‰é”®æŒ‰ä¸‹ï¼Œè¿”å›1ï¼›å¦åˆ™è¿”å›0ã€‚
 */
 uint8_t is_pressed(matrixKey_t * matrixKey,uint8_t key_value)
 {
     uint8_t loopVariable;
     
-    // ¼ì²é key_values_ptr ÊÇ·ñÎªNULL
-    if(!matrixKey->key_values_ptr) return 0; // ·µ»Ø0±íÊ¾ key_values_ptr ÎªNULL
+    // æ£€æŸ¥ key_values_ptr æ˜¯å¦ä¸ºNULL
+    if(!matrixKey->key_values_ptr) return 0; // è¿”å›0è¡¨ç¤º key_values_ptr ä¸ºNULL
     
-    // ±éÀú key_values_ptr Êı×é£¬²éÕÒÓë¸ø¶¨µÄ key_value ÏàÆ¥ÅäµÄÖµ
+    // éå† key_values_ptr æ•°ç»„ï¼ŒæŸ¥æ‰¾ä¸ç»™å®šçš„ key_value ç›¸åŒ¹é…çš„å€¼
     for(loopVariable = 0; loopVariable < matrixKey->row_count * matrixKey->col_count; ++loopVariable)
     {
         if(matrixKey->key_values_ptr[loopVariable] == key_value)
         {
-            // Èç¹ûÕÒµ½Æ¥ÅäµÄÖµ£¬Ôòµ÷ÓÃ is_pressed_position º¯Êı£¬ÅĞ¶Ï¶ÔÓ¦Î»ÖÃµÄ°´¼üÊÇ·ñ±»°´ÏÂ
+            // å¦‚æœæ‰¾åˆ°åŒ¹é…çš„å€¼ï¼Œåˆ™è°ƒç”¨ is_pressed_position å‡½æ•°ï¼Œåˆ¤æ–­å¯¹åº”ä½ç½®çš„æŒ‰é”®æ˜¯å¦è¢«æŒ‰ä¸‹
             return is_pressed_position(matrixKey,loopVariable%(matrixKey->row_count),loopVariable/(matrixKey->row_count));
         }
     }
-    return 0; // ·µ»Ø0±íÊ¾Î´ÕÒµ½Æ¥ÅäµÄÖµ»òÕß key_values_ptr ÎªNULL
+    return 0; // è¿”å›0è¡¨ç¤ºæœªæ‰¾åˆ°åŒ¹é…çš„å€¼æˆ–è€… key_values_ptr ä¸ºNULL
 }
 
 /*
-ÃèÊö£º·µ»ØËùÓĞ°´ÏÂµÄ°´¼ü¼üÖµÁĞ±í¡£
-Óï·¨£º
+æè¿°ï¼šè¿”å›æ‰€æœ‰æŒ‰ä¸‹çš„æŒ‰é”®é”®å€¼åˆ—è¡¨ã€‚
+è¯­æ³•ï¼š
     uint8_t* get_pressed_keys(matrixKey_t * matrixKey, uint8_t * num_keys);
-²ÎÊı£º
-    matrixKey£ºÖ¸ÏòmatrixKey_t½á¹¹ÌåµÄÖ¸Õë£¬ÓÃÓÚ´æ´¢¾ØÕó°´¼üµÄĞÅÏ¢¡£
-    num_keys£º°´ÏÂµÄ°´¼üÊıÁ¿¡£
-·µ»ØÖµ£º
-    °´ÏÂµÄ°´¼ü¼üÖµÁĞ±íµÄÖ¸Õë¡£
+å‚æ•°ï¼š
+    matrixKeyï¼šæŒ‡å‘matrixKey_tç»“æ„ä½“çš„æŒ‡é’ˆï¼Œç”¨äºå­˜å‚¨çŸ©é˜µæŒ‰é”®çš„ä¿¡æ¯ã€‚
+    num_keysï¼šæŒ‰ä¸‹çš„æŒ‰é”®æ•°é‡ã€‚
+è¿”å›å€¼ï¼š
+    æŒ‰ä¸‹çš„æŒ‰é”®é”®å€¼åˆ—è¡¨çš„æŒ‡é’ˆã€‚
 */
 uint8_t* get_pressed_keys(matrixKey_t * matrixKey,uint8_t * num_keys)
 {
@@ -254,75 +267,75 @@ uint8_t* get_pressed_keys(matrixKey_t * matrixKey,uint8_t * num_keys)
     uint8_t loopVariable_col;
     uint8_t _num_keys = 0;
     
-    // ±éÀúÁĞÒı½Å£¬Öğ¸öÖÃµÍ²¢¶ÁÈ¡ÊäÈëÒı½Å×´Ì¬£¬È·¶¨±»°´ÏÂµÄ°´¼ü
+    // éå†åˆ—å¼•è„šï¼Œé€ä¸ªç½®ä½å¹¶è¯»å–è¾“å…¥å¼•è„šçŠ¶æ€ï¼Œç¡®å®šè¢«æŒ‰ä¸‹çš„æŒ‰é”®
     for(loopVariable_col = 0; loopVariable_col < matrixKey->col_count; ++loopVariable_col)
     {
-        // ½« outPin Êı×éµÄËùÓĞĞĞÒı½ÅÖÃ¸ß£¨Bit_SET£©
+        // å°† outPin æ•°ç»„çš„æ‰€æœ‰è¡Œå¼•è„šç½®é«˜ï¼ˆBit_SETï¼‰
         for(loopVariable = 0; loopVariable < matrixKey->row_count; ++loopVariable)
         {
             matrixKey->outPin[loopVariable] = Bit_SET;
         }
         
-        // ½«µ±Ç°ÁĞÒı½ÅÖÃµÍ£¨Bit_RESET£©
+        // å°†å½“å‰åˆ—å¼•è„šç½®ä½ï¼ˆBit_RESETï¼‰
         matrixKey->outPin[loopVariable_col] = Bit_RESET;
         
-        // µ÷ÓÃ ctrl_read_func º¯Êı£¬¶ÁÈ¡ÊäÈëÒı½ÅµÄ×´Ì¬£¬²¢½«½á¹û´æ´¢ÔÚ inPin Êı×éÖĞ
+        // è°ƒç”¨ ctrl_read_func å‡½æ•°ï¼Œè¯»å–è¾“å…¥å¼•è„šçš„çŠ¶æ€ï¼Œå¹¶å°†ç»“æœå­˜å‚¨åœ¨ inPin æ•°ç»„ä¸­
         matrixKey->ctrl_read_func(matrixKey->outPin,matrixKey->inPin);
         
-        // ±éÀúĞĞÒı½Å£¬¼ì²éÊÇ·ñÓĞ°´¼ü±»°´ÏÂ
+        // éå†è¡Œå¼•è„šï¼Œæ£€æŸ¥æ˜¯å¦æœ‰æŒ‰é”®è¢«æŒ‰ä¸‹
         for(loopVariable_row = 0; loopVariable_row < matrixKey->row_count; ++loopVariable_row)
         {
             if(matrixKey->inPin[loopVariable_row] == Bit_RESET)
             {
-                // Èç¹û¼ì²âµ½°´¼ü±»°´ÏÂ£¬Ôò½«¸Ã°´¼üµÄÖµ´æ´¢ÔÚ keyValueTable Êı×éÖĞ
+                // å¦‚æœæ£€æµ‹åˆ°æŒ‰é”®è¢«æŒ‰ä¸‹ï¼Œåˆ™å°†è¯¥æŒ‰é”®çš„å€¼å­˜å‚¨åœ¨ keyValueTable æ•°ç»„ä¸­
                 matrixKey->keyValueTable[_num_keys++] = matrixKey->key_values_ptr[loopVariable_col * 4 + loopVariable_row];
             }
         }
     }
     
-    // ½«¼ì²âµ½µÄ°´¼üÊıÁ¿´æ´¢ÔÚ num_keys ±äÁ¿ÖĞ
+    // å°†æ£€æµ‹åˆ°çš„æŒ‰é”®æ•°é‡å­˜å‚¨åœ¨ num_keys å˜é‡ä¸­
     *num_keys = _num_keys;
-    // ·µ»Ø keyValueTable Êı×éµÄÖ¸Õë
+    // è¿”å› keyValueTable æ•°ç»„çš„æŒ‡é’ˆ
     return matrixKey->keyValueTable;
 }
 
 /*
-ÃèÊö£º·µ»Øµ±Ç°°´ÏÂµÄ°´¼ü¼üÖµ¡£
-Óï·¨£º
+æè¿°ï¼šè¿”å›å½“å‰æŒ‰ä¸‹çš„æŒ‰é”®é”®å€¼ã€‚
+è¯­æ³•ï¼š
     uint8_t get_current_key_value(matrixKey_t * matrixKey);
-²ÎÊı£º
-    matrixKey£ºÖ¸ÏòmatrixKey_t½á¹¹ÌåµÄÖ¸Õë£¬ÓÃÓÚ´æ´¢¾ØÕó°´¼üµÄĞÅÏ¢¡£
-·µ»ØÖµ£º
-    µ±Ç°°´ÏÂµÄ°´¼ü¼üÖµ(°´¼ü¿¿Ç°ÓÅÏÈ¼¶¸ß)¡£
+å‚æ•°ï¼š
+    matrixKeyï¼šæŒ‡å‘matrixKey_tç»“æ„ä½“çš„æŒ‡é’ˆï¼Œç”¨äºå­˜å‚¨çŸ©é˜µæŒ‰é”®çš„ä¿¡æ¯ã€‚
+è¿”å›å€¼ï¼š
+    å½“å‰æŒ‰ä¸‹çš„æŒ‰é”®é”®å€¼(æŒ‰é”®é å‰ä¼˜å…ˆçº§é«˜)ã€‚
     
-Ê¹ÓÃÊ¾Àı:ÏÂÃæÊÇÒ»Ğ©Ê¹ÓÃº¯Êı¿âÖĞº¯ÊıµÄÊ¾Àı´úÂë¡£
+ä½¿ç”¨ç¤ºä¾‹:ä¸‹é¢æ˜¯ä¸€äº›ä½¿ç”¨å‡½æ•°åº“ä¸­å‡½æ•°çš„ç¤ºä¾‹ä»£ç ã€‚
 */
 uint8_t get_current_key_value(matrixKey_t * matrixKey)
 {
     uint8_t num_keys;
     static uint8_t keyValueLog = 0;
     
-    // »ñÈ¡µ±Ç°±»°´ÏÂµÄ°´¼üÖµ£¬²¢´æ´¢ÔÚ keyValueTable Êı×éÖĞ
+    // è·å–å½“å‰è¢«æŒ‰ä¸‹çš„æŒ‰é”®å€¼ï¼Œå¹¶å­˜å‚¨åœ¨ keyValueTable æ•°ç»„ä¸­
     get_pressed_keys(matrixKey,&num_keys);
     if(num_keys)
     {
-        // Èç¹ûÓĞ°´¼ü±»°´ÏÂ
+        // å¦‚æœæœ‰æŒ‰é”®è¢«æŒ‰ä¸‹
         if(keyValueLog != matrixKey->keyValueTable[0])
         {
-            // Èç¹ûµ±Ç°°´¼üµÄÖµÓëÖ®Ç°¼ÇÂ¼µÄ°´¼üÖµ²»Í¬
+            // å¦‚æœå½“å‰æŒ‰é”®çš„å€¼ä¸ä¹‹å‰è®°å½•çš„æŒ‰é”®å€¼ä¸åŒ
             keyValueLog = matrixKey->keyValueTable[0];
-            return matrixKey->keyValueTable[0]; // ·µ»Øµ±Ç°°´¼üµÄÖµ
+            return matrixKey->keyValueTable[0]; // è¿”å›å½“å‰æŒ‰é”®çš„å€¼
         }
         else
         {
-            // Èç¹ûµ±Ç°°´¼üµÄÖµÓëÖ®Ç°¼ÇÂ¼µÄ°´¼üÖµÏàÍ¬
-            return 0; // ·µ»Ø0±íÊ¾µ±Ç°Ã»ÓĞĞÂµÄ°´¼üÖµ
+            // å¦‚æœå½“å‰æŒ‰é”®çš„å€¼ä¸ä¹‹å‰è®°å½•çš„æŒ‰é”®å€¼ç›¸åŒ
+            return 0; // è¿”å›0è¡¨ç¤ºå½“å‰æ²¡æœ‰æ–°çš„æŒ‰é”®å€¼
         }
     }
     else
     {
-        // Èç¹ûÃ»ÓĞ°´¼ü±»°´ÏÂ
+        // å¦‚æœæ²¡æœ‰æŒ‰é”®è¢«æŒ‰ä¸‹
         keyValueLog = 0;
-        return 0; // ·µ»Ø0±íÊ¾µ±Ç°Ã»ÓĞ°´¼ü±»°´ÏÂ
+        return 0; // è¿”å›0è¡¨ç¤ºå½“å‰æ²¡æœ‰æŒ‰é”®è¢«æŒ‰ä¸‹
     }
 }

@@ -10,6 +10,7 @@
         "stdio.h": "c",
         "sys.h": "c",
         "tim.h": "c",
-        "matrixkey.h": "c"
+        "matrixkey.h": "c",
+        "delay.h": "c"
     }
 }
