@@ -11,6 +11,16 @@
         "sys.h": "c",
         "tim.h": "c",
         "matrixkey.h": "c",
-        "delay.h": "c"
+        "delay.h": "c",
+        "stdlib.h": "c",
+        "atomic": "c",
+        "compare": "c",
+        "cstddef": "c",
+        "limits": "c",
+        "memory": "c",
+        "type_traits": "c",
+        "xmemory": "c",
+        "xstring": "c",
+        "xutility": "c"
     }
 }

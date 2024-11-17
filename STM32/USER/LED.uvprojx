@@ -774,6 +774,11 @@
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\U8g2_user\u8g2_meun_drawPic.c</FilePath>
             </File>
+            <File>
+              <FileName>u8g2_meun_layer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\U8g2_user\u8g2_meun_layer.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

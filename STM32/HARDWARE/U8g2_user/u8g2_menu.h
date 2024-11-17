@@ -507,6 +507,13 @@ void u8g2_MenuSelectorRotundity(u8g2_menu_t *u8g2_menu);
 void u8g2_MenuSelectorSquare(u8g2_menu_t *u8g2_menu);
 
 
+/* =============================== | u8g2_meun_layer.c | =============================== */
+
+typedef enum {LayerAND, LayerOR, LayerXOR, LayerXNOR} Layer_t;
+
+u8g2_t *u8g2_MenuStartLayer(void);
+void u8g2_MenuEndLayer(Layer_t layer);
+
 #ifdef __cplusplus
 }
 #endif
