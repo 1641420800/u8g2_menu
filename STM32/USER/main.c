@@ -42,7 +42,7 @@ void menuItem_1()
 {
 	u8g2_MenuItem_menu(menuItem_2);
 	u8g2_MenuDrawItemLineChart(&chart,50,0,0);
-	u8g2_MenuDrawItemPointChart(&chart2,40,1,-1);
+	u8g2_MenuDrawItemPointChart(&chart2,40,0,0);
 	u8g2_MenuDrawItemPointChart(&chart3,40,1,-1);
 	
 	u8g2_MenuItem_str(inStr,sizeof(inStr));
@@ -52,22 +52,11 @@ void menuItem_1()
 	u8g2_MenuDrawItemProgressBar_bind(&jd,25,5,255);
 	u8g2_SetContrast(&u8g2,jd);
 
-
-
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"123456789123456789123456789");
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"%d",sizeof(u8g2_menu));
 	
 	u8g2_MenuItemValue_uint16(&i,1,0,100);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"%d",i);
-
-	
-    u8g2_t * u8g2 = u8g2_MenuStartLayer();
-	if(u8g2)
-	{
-		u8g2_SetMaxClipWindow(u8g2);
-		u8g2_DrawBox(u8g2,3, 7, 25, 15);
-		u8g2_MenuEndLayer(LayerXOR);
-	}
 }
 uint8_t sw = 1;
 void menuItem_2()

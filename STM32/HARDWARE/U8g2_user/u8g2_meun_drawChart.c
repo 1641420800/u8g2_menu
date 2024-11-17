@@ -72,6 +72,8 @@ void u8g2_chart_setRange(u8g2_chart_t *chart, float max, float min)
  */
 void u8g2_chart_autoRange(u8g2_chart_t *chart)
 {
+	float median = 0;
+	float amplitude = 0;
 	chart->data_max = chart->data_dis[0];
 	chart->data_min = chart->data_dis[0];
 
@@ -86,14 +88,14 @@ void u8g2_chart_autoRange(u8g2_chart_t *chart)
 			chart->data_min = chart->data_dis[i];
 		}
 	}
-	chart->data_max = chart->data_max * U8G2_MENU_CHART_SPACE_RATIO;
-	chart->data_min = chart->data_min * U8G2_MENU_CHART_SPACE_RATIO;
-
-	if(chart->data_max - chart->data_min < U8G2_MENU_MIN_VALUE_DIFF)
+	median = (chart->data_max + chart->data_min) / 2;
+	amplitude = (chart->data_max - chart->data_min) * U8G2_MENU_CHART_SPACE_RATIO;
+	if (amplitude < U8G2_MENU_MIN_VALUE_DIFF)
 	{
-		chart->data_max += U8G2_MENU_MIN_VALUE_DIFF / 2;
-		chart->data_min -= U8G2_MENU_MIN_VALUE_DIFF / 2;
+		amplitude = U8G2_MENU_MIN_VALUE_DIFF;
 	}
+	chart->data_max = median + amplitude / 2;
+	chart->data_min = median - amplitude / 2;
 }
 
 /**
@@ -176,7 +178,7 @@ void u8g2_drawPointChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_i
  */
 void u8g2_MenuDrawItemChart(u8g2_chart_t *chart, void (*drawChart)(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h), u8g2_uint_t h, float max, float min)
 {
-	if(!drawChart || !chart || !chart->data_len)
+	if (!drawChart || !chart || !chart->data_len)
 		return;
 	u8g2_menu_t *menu = u8g2_MenuDrawItemStart();
 	u8g2_t *u8g2 = u8g2_MenuGetU8g2(menu);
