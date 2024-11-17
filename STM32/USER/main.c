@@ -35,7 +35,13 @@ uint8_t keys = 0;
 
 char inStr[64];
 
-uint16_t a,b;
+void u8g2_menuValueAdd(void * p)
+{
+	if(p == &i)
+	{
+		LED = !LED;
+	}
+}
 
 void menuItem_2(void);
 void menuItem_1()
@@ -58,16 +64,11 @@ void menuItem_1()
 	u8g2_MenuItemValue_uint16(&i,1,0,100);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"%d",i);
 }
-uint8_t sw = 1;
 void menuItem_2()
 {
 	u8g2_MenuItem_menu(menuItem_1);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,U8G2_MENU_VERSION);
 
-	u8g2_MenuItemValue_switch(&sw,0);
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello %d",sw);
-	u8g2_MenuPrintf(u8g2_MenuDrawStrX2,"Hello2");
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2 %d - %d",a,b);
 	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello2");
 }
 
@@ -114,16 +115,6 @@ void tim2_IRQ(void)
 	keyScann();
 
 	u8g2_MenuTime_ISR(&u8g2_menu,1);
-	
-	LED = sw;
-}
-void u8g2_menuItemEnter(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
-{
-	a = item;
-}
-void u8g2_menuItemLeave(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
-{
-	b = item;
 }
 
 int main(void)
