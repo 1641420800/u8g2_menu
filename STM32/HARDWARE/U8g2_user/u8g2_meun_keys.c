@@ -94,7 +94,7 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
 		u8g2_MenuItemSub(u8g2_menu);
 		break;
 	}
-	if (u8g2_menu->u8g2_menuValueType == MENU_butten)
+	if (u8g2_menu->u8g2_menuValueType == MENU_button)
 	{
 		u8g2_menu->u8g2_menuValue.button.but(u8g2_menu->u8g2_menuValue.button.ID, u8g2_menuKeyValue);
 	}

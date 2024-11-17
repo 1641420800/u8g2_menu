@@ -104,7 +104,7 @@ typedef enum
 	MENU_V_float,
 	MENU_V_double,
 	MENU_V_switch,
-	MENU_butten,
+	MENU_button,
 	MENU_menu,
 	MENU_str,
 	MENU_NC
