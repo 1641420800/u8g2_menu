@@ -1,6 +1,48 @@
 #include "u8g2_menu.h"
 
 /**
+ * @brief 菜单按键扫描
+ *
+ * @param u8g2_menu 菜单对象
+ * @param u8g2_menuKeyValue 按键值
+ * @param key 按键状态
+ * @param time 执行周期
+ *
+ * @return void
+ */
+void u8g2_MenuKeyScann(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue, uint8_t key, uint16_t time)
+{
+	static uint8_t	keyLog[MENU_Key_Num] = {0};
+	static uint16_t	keyTim[MENU_Key_Num] = {0};
+	if(u8g2_menuKeyValue >= MENU_Key_Num) return;
+
+	keyTim[u8g2_menuKeyValue] += time;
+	if(keyTim[u8g2_menuKeyValue] > MenuKey_holdTime && keyTim[u8g2_menuKeyValue] < MenuKey_holdTime + MenuKey_repeatTime && key != 0)
+	{
+		keyTim[u8g2_menuKeyValue] = MenuKey_holdTime + MenuKey_repeatTime;
+		u8g2_MenuKeys(u8g2_menu,u8g2_menuKeyValue);
+	}
+	else if(keyTim[u8g2_menuKeyValue] > MenuKey_holdTime + MenuKey_repeatTime * 2 && key != 0)
+	{
+		keyTim[u8g2_menuKeyValue] = MenuKey_holdTime + MenuKey_repeatTime;
+		u8g2_MenuKeys(u8g2_menu,u8g2_menuKeyValue);
+	}
+
+	if(key == 0 && keyLog[u8g2_menuKeyValue] != 0)
+	{
+		keyTim[u8g2_menuKeyValue] = 0;
+	}
+	if(key != 0 && keyLog[u8g2_menuKeyValue] == 0)
+	{
+		if(keyTim[u8g2_menuKeyValue] <= MenuKey_holdTime)
+		{
+			u8g2_MenuKeys(u8g2_menu,u8g2_menuKeyValue);
+		}
+	}
+	
+	keyLog[u8g2_menuKeyValue] = key;
+}
+/**
  * @brief 菜单按键处理
  *
  * @param u8g2_menu 菜单对象

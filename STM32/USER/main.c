@@ -80,29 +80,9 @@ void oled_display(u8g2_t * u8g2)
 
 void keyScann(void)
 {
-	static uint8_t	keyLog[4]	= {0};
-	uint8_t	key[4];
-	
-	key[0] = KEY_1;
-	key[1] = KEY_2;
-	key[2] = KEY_3;
-	
-	if(key[0] == 0 && keyLog[0] != 0)
-	{
-		u8g2_MenuKeys(&u8g2_menu,MENU_Key_Up);
-	}
-	if(key[1] == 0 && keyLog[1] != 0)
-	{
-		u8g2_MenuKeys(&u8g2_menu,MENU_Key_Down);
-	}
-	if(key[2] == 0 && keyLog[2] != 0)
-	{
-		u8g2_MenuKeys(&u8g2_menu,MENU_Key_Enter);
-	}
-	
-	keyLog[0] = key[0];
-	keyLog[1] = key[1];
-	keyLog[2] = key[2];
+	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Up,!KEY_1,1);
+	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Down,!KEY_2,1);
+	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Enter,!KEY_3,1);
 }
 
 

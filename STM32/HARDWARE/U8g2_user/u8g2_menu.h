@@ -30,7 +30,7 @@ extern "C" {
  */
 
 // 版本信息
-#define U8G2_MENU_VERSION "1.2.1-beta"
+#define U8G2_MENU_VERSION "1.2.2-beta"
 #define U8G2_MENU_DEBUG 0					// 设置为1启用调试模式
 
 // 功能按键相关
@@ -43,6 +43,10 @@ extern "C" {
 // 图表功能相关
 #define U8G2_MENU_MIN_VALUE_DIFF 0.0f		// 图表幅值的最小值
 #define U8G2_MENU_CHART_SPACE_RATIO 1.1f	// 图表上下留空的比例
+
+// 菜单按键相关
+#define MenuKey_holdTime 800				// 菜单按键的长按触发时间
+#define MenuKey_repeatTime 200				// 菜单按键的长按重复触发时间
 
 #ifndef ABS
 #define ABS(s) ((s) < 0 ? -(s) : (s))
@@ -113,7 +117,8 @@ typedef enum
 	MENU_Key_Enter,	   // 确认
 	MENU_Key_Return,   // 返回
 	MENU_Key_Add,	   // 加
-	MENU_Key_Sub	   // 减
+	MENU_Key_Sub,	   // 减
+	MENU_Key_Num,	   // 按键数量
 } u8g2_menuKeyValue_t;
 
 typedef void (*menuItem_cb)(void);
@@ -363,6 +368,9 @@ u8g2_menu_t *u8g2_MenuGetCurrentMenu(void);
 u8g2_t *u8g2_MenuGetU8g2(u8g2_menu_t *u8g2_menu);
 
 /* =============================== | u8g2_meun_keys.c | =============================== */
+// 菜单按键扫描
+void u8g2_MenuKeyScann(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue, uint8_t key, uint16_t time);
+
 // 菜单按键
 void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue);
 
