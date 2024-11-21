@@ -8,7 +8,7 @@
 #define KEY_2 PAin(1)
 #define KEY_3 PAin(2)
 
-void gpio_init(void);//��ʼ��
+void gpio_init(void);
 
 				    
 #endif
