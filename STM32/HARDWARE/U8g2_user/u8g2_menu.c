@@ -365,7 +365,7 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
 	// 绘制表项
 	u8g2_menu->currentDrawItem = 0;
 	u8g2_menu->totalLength = 0;
-	// u8g2_menu->u8g2_menuValueType = MENU_NC;
+	u8g2_menu->_u8g2_menuValueType = MENU_NC;
 
 	if (u8g2_menu->currentItemLog != u8g2_menu->currentItem)
 	{
@@ -376,6 +376,8 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
 	if (u8g2_menu->menuItem)
 		u8g2_menu->menuItem();
 
+	u8g2_menu->u8g2_menuValueType = u8g2_menu->_u8g2_menuValueType;
+	
 	if(!u8g2_menu->timer_effective) u8g2_menuEffect_run_call(u8g2_menu);
 	while(u8g2_menu->timer_effective && u8g2_menu->timer > U8G2_MENU_DELAY)
 	{

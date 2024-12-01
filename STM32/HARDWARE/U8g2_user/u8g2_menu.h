@@ -241,6 +241,7 @@ struct u8g2_menu_struct
 	menuSelector_cb menuSelector;	   // 绘制选择展示器的实际函数
 	u8g2_menu_effect_t menuEffect;	   // 绘制效果
 	MENU_V_type_t u8g2_menuValueType;  // 菜单附加值类型
+	MENU_V_type_t _u8g2_menuValueType;  // 菜单附加值类型
 	u8g2_menu_value_t u8g2_menuValue;  // 菜单附加值
 	u8g2_int_t currentSetValue;		   // 当前选中状态 -1 表示未选中
 	u8g2_int_t currentItem;			   // 当前选中的项
