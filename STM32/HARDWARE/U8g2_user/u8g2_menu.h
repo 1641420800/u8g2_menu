@@ -30,7 +30,7 @@ extern "C" {
  */
 
 // 版本信息
-#define U8G2_MENU_VERSION "1.2.2-beta"
+#define U8G2_MENU_VERSION "1.2.3-beta"
 #define U8G2_MENU_DEBUG 0					// 设置为1启用调试模式
 
 // 功能按键相关
@@ -288,6 +288,9 @@ void u8g2_CreateMenu(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem)
 // 切换表项
 void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_cb menuItem);
 
+// 获取表项
+menuItem_cb u8g2_MenuGetItem(u8g2_menu_t *u8g2_menu);
+
 // 获取水平偏移量
 u8g2_int_t u8g2_MenuGetHorizontalOffset(u8g2_menu_t *u8g2_menu);
 
@@ -328,6 +331,9 @@ void u8g2_MenuItemDownS(u8g2_menu_t *u8g2_menu, u8g2_uint_t i);
 
 // 下移 1 项
 void u8g2_MenuItemDown(u8g2_menu_t *u8g2_menu);
+
+// 移动到某项
+void u8g2_MenuItemMove(u8g2_menu_t *u8g2_menu, u8g2_uint_t i);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 // 切换选择器

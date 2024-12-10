@@ -10,7 +10,7 @@
 // 推理展开效果 - 初始化
 u8g2_int_t u8g2_Menu_init(u8g2_menu_t *u8g2_menu)
 {
-	u8g2_menu->menuEffect._rowHeight = 0;
+	u8g2_menu->menuEffect._rowHeight = 0.4f;
     return 0;
 }
 #define ROW_HEIGHT_INCREMENT 0.2f // 定义行高度增加量
@@ -50,6 +50,7 @@ u8g2_menu_effect_t u8g2_MenuEffect = {u8g2_Menu_init, u8g2_Menu_run};
 void u8g2_MenuEffectBind(u8g2_menu_t *u8g2_menu, u8g2_menu_effect_t *u8g2_menu_effect)
 {
     u8g2_menu->menuEffect = *u8g2_menu_effect;
+    u8g2_menu->menuEffect.u8g2_menuEffect_init(u8g2_menu);
 }
 
 // 获取当前位置
