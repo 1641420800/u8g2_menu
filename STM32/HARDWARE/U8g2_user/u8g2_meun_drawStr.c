@@ -24,6 +24,11 @@ void u8g2_MenuDrawItemStr(u8g2_uint_t (*u8g2_Draw)(u8g2_t *u8g2, u8g2_uint_t x, 
     u8g2_Draw(u8g2, u8g2_MenuGetHorizontalOffset(menu), YH + u8g2_GetDescent(u8g2), str);
     
     u8g2_MenuDrawItemEnd(menu);
+    
+    
+    #if U8G2_MENU_RECORD
+    u8g2_MenuRecordAdd(str);
+    #endif
 }
 
 /**

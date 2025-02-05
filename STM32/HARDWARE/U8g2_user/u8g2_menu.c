@@ -3,6 +3,12 @@
 // 当前正在绘制的菜单
 u8g2_menu_t *currentMenu = NULL;
 
+// 菜单记录
+#if U8G2_MENU_RECORD
+char u8g2_menuRecord[U8G2_MENU_RECORD_SIZE] = "";
+uint16_t u8g2_menuRecordLen = 0;
+#endif
+
 /**
  * @brief 选中菜单项时的处理函数。
  *
@@ -419,8 +425,13 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
 	}
 
 	if (u8g2_menu->menuItem)
+    {
+        #if U8G2_MENU_RECORD
+        u8g2_MenuRecordClear();
+        u8g2_MenuRecordAdd("\r\n---------------");
+        #endif
 		u8g2_menu->menuItem();
-
+    }
 	u8g2_menu->u8g2_menuValueType = u8g2_menu->_u8g2_menuValueType;
 	
 	// todo : 待优化
@@ -655,3 +666,46 @@ u8g2_t *u8g2_MenuGetU8g2(u8g2_menu_t *u8g2_menu)
 		return NULL;
 	return u8g2_menu->u8g2;
 }
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+#if U8G2_MENU_RECORD
+
+/**
+ * @brief 清除记录文本
+ *
+ * @return void
+ */
+void u8g2_MenuRecordClear(void)
+{
+    u8g2_menuRecordLen = 0;
+    u8g2_menuRecord[0] = 0;
+}
+
+/**
+ * @brief 添加记录文本
+ * @note 要记录的文本
+ *
+ * @return void
+ */
+void u8g2_MenuRecordAdd(const char * text)
+{
+    while(*text != '\0' && u8g2_menuRecordLen < U8G2_MENU_RECORD_SIZE - 1)
+    {
+        u8g2_menuRecord[u8g2_menuRecordLen++] = *text;
+        ++text;
+    }
+    u8g2_menuRecord[u8g2_menuRecordLen] = '\0';
+}
+
+/**
+ * @brief 获取记录文本
+ *
+ * @return char* 记录文本
+
+ */
+const char* u8g2_MenuRecord(void)
+{
+    return u8g2_menuRecord;
+}
+#endif

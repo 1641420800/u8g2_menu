@@ -27,10 +27,14 @@ extern "C" {
  * - 与按键相关的功能，用于菜单导航。
  * - 可选的字符输入功能，用于文本交互。
  * - 可选的时间相关功能，用于优化动画基准。
+ * 
+ * 附加记录功能：
+ * - 启用记录功能，允许用户记录菜单本次绘制的内容。
+ * - 记录功能可用于以文本形式展示菜单内容。
  */
 
 // 版本信息
-#define U8G2_MENU_VERSION "1.2.3-beta"
+#define U8G2_MENU_VERSION "1.2.4-beta"
 #define U8G2_MENU_DEBUG 0					// 设置为1启用调试模式
 
 // 功能按键相关
@@ -47,6 +51,15 @@ extern "C" {
 // 菜单按键相关
 #define MenuKey_holdTime 800				// 菜单按键的长按触发时间
 #define MenuKey_repeatTime 200				// 菜单按键的长按重复触发时间
+
+// 动画相关相关
+#define ROW_HEIGHT_INCREMENT 0.2f			// 定义行高度增加量
+#define MAX_ROW_HEIGHT 1.0f					// 定义最大行高度
+#define SPE_ADJUSTMENT 2.0f					// 定义SPE调整量
+
+// 记录功能相关
+#define U8G2_MENU_RECORD 1					// 启用记录功能
+#define U8G2_MENU_RECORD_SIZE 256			// 记录缓冲区大小
 
 #ifndef ABS
 #define ABS(s) ((s) < 0 ? -(s) : (s))
@@ -335,6 +348,16 @@ void u8g2_MenuItemDown(u8g2_menu_t *u8g2_menu);
 // 移动到某项
 void u8g2_MenuItemMove(u8g2_menu_t *u8g2_menu, u8g2_uint_t i);
 
+#if U8G2_MENU_RECORD
+// 清除记录
+void u8g2_MenuRecordClear(void);
+
+// 添加记录字符串
+void u8g2_MenuRecordAdd(const char * text);
+
+// 获取记录字符串
+const char* u8g2_MenuRecord(void);
+#endif
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 // 切换选择器
 void u8g2_MenuReplaceSelector(u8g2_menu_t *u8g2_menu, menuSelector_cb menuSelector);

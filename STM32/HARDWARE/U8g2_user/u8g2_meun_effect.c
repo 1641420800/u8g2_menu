@@ -10,12 +10,10 @@
 // 推理展开效果 - 初始化
 u8g2_int_t u8g2_Menu_init(u8g2_menu_t *u8g2_menu)
 {
-	u8g2_menu->menuEffect._rowHeight = 0.4f;
+	u8g2_menu->menuEffect._rowHeight = ROW_HEIGHT_INCREMENT;
     return 0;
 }
-#define ROW_HEIGHT_INCREMENT 0.2f // 定义行高度增加量
-#define MAX_ROW_HEIGHT 1.0f // 定义最大行高度
-#define SPE_ADJUSTMENT 2.0f // 定义SPE调整量
+
 // 推理表项移动效果
 u8g2_int_t u8g2_Menu_run(u8g2_menu_t *u8g2_menu)
 {
