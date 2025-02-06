@@ -15,10 +15,11 @@
 u8g2_t u8g2;
 u8g2_menu_t u8g2_menu;
 
+uint32_t deBug;
 void menuItem_1()
 {
-	for(int i = 0; i < 500; i++)
-		u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello World! %d", i);
+	u8g2_MenuItemValue_uint32(&deBug,2,0,100); 
+	u8g2_MenuPrintf(u8g2_MenuDrawStr,"Hello World! %d", deBug);
 }
 
 void oled_display(u8g2_t * u8g2)
