@@ -1,42 +1,6 @@
 #include "u8g2_menu.h"
 
 /**
- * @brief 托管给菜单的值增加了。
- *
- * @param p 变化值的地址
- *
- * @return void
- */
-WEAK void u8g2_menuValueAdd(void * p)
-{
-	/* 空函数 */
-}
-
-/**
- * @brief 托管给菜单的值减少了。
- *
- * @param p 变化值的地址
- *
- * @return void
- */
-WEAK void u8g2_menuValueSub(void * p)
-{
-	/* 空函数 */
-}
-
-/**
- * @brief 托管给菜单的值变化了。
- *
- * @param p 变化值的地址
- *
- * @return void
- */
-WEAK void u8g2_menuValueChange(void * p)
-{
-	/* 空函数 */
-}
-
-/**
  * @brief 选中当前选中的表项
  *
  * @param u8g2_menu 菜单对象

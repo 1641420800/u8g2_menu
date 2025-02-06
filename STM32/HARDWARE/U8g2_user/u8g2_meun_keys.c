@@ -93,6 +93,8 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
 	case MENU_Key_Sub:
 		u8g2_MenuItemSub(u8g2_menu);
 		break;
+	default:
+		break;
 	}
 	if (u8g2_menu->u8g2_menuValueType == MENU_button)
 	{
