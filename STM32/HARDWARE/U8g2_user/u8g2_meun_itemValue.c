@@ -86,38 +86,41 @@ u8g2_int_t u8g2_MenuGetItemSelect(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_MenuItemAddS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 {
-#define MenuADDK(v, a, m, k)                                                                                   \
-	if (*(u8g2_menu->u8g2_menuValue.v) + (u8g2_menu->u8g2_menuValue.a) * (k) <= (u8g2_menu->u8g2_menuValue.m)) \
-	*(u8g2_menu->u8g2_menuValue.v) += (u8g2_menu->u8g2_menuValue.a) * (k)
+#define MenuADDK(s, k)\
+    do {\
+		*(u8g2_menu->u8g2_menuValue.s.value) += (u8g2_menu->u8g2_menuValue.s.adjValue) * (k);\
+        if (*(u8g2_menu->u8g2_menuValue.s.value) < (u8g2_menu->u8g2_menuValue.s.minValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.maxValue);\
+        if (*(u8g2_menu->u8g2_menuValue.s.value) > (u8g2_menu->u8g2_menuValue.s.maxValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.maxValue);\
+    } while (0)
 
 	switch (u8g2_menu->u8g2_menuValueType)
 	{
 	case MENU_V_uint8:
-		MenuADDK(v_uint8.value, v_uint8.adjValue, v_uint8.maxValue, k);
+		MenuADDK(v_uint8, k);
 		break;
 	case MENU_V_uint16:
-		MenuADDK(v_uint16.value, v_uint16.adjValue, v_uint16.maxValue, k);
+		MenuADDK(v_uint16, k);
 		break;
 	case MENU_V_uint32:
-		MenuADDK(v_uint32.value, v_uint32.adjValue, v_uint32.maxValue, k);
+		MenuADDK(v_uint32, k);
 		break;
 	case MENU_V_int8:
-		MenuADDK(v_int8.value, v_int8.adjValue, v_int8.maxValue, k);
+		MenuADDK(v_int8, k);
 		break;
 	case MENU_V_int16:
-		MenuADDK(v_int16.value, v_int16.adjValue, v_int16.maxValue, k);
+		MenuADDK(v_int16, k);
 		break;
 	case MENU_V_int32:
-		MenuADDK(v_int32.value, v_int32.adjValue, v_int32.maxValue, k);
+		MenuADDK(v_int32, k);
 		break;
 	case MENU_V_int:
-		MenuADDK(v_int.value, v_int.adjValue, v_int.maxValue, k);
+		MenuADDK(v_int, k);
 		break;
 	case MENU_V_float:
-		MenuADDK(v_float.value, v_float.adjValue, v_float.maxValue, k);
+		MenuADDK(v_float, k);
 		break;
 	case MENU_V_double:
-		MenuADDK(v_double.value, v_double.adjValue, v_double.maxValue, k);
+		MenuADDK(v_double, k);
 		break;
 	case MENU_V_switch:
 		*(u8g2_menu->u8g2_menuValue.v_switch.value) = u8g2_menu->u8g2_menuValue.v_switch.openValue;
@@ -155,38 +158,41 @@ void u8g2_MenuItemAdd(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_MenuItemSubS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 {
-#define MenuSUBK(v, a, m, k)                                                                                   \
-	if (*(u8g2_menu->u8g2_menuValue.v) - (u8g2_menu->u8g2_menuValue.a) * (k) >= (u8g2_menu->u8g2_menuValue.m)) \
-	*(u8g2_menu->u8g2_menuValue.v) -= (u8g2_menu->u8g2_menuValue.a) * (k)
+#define MenuSUBK(s, k)\
+    do {\
+		*(u8g2_menu->u8g2_menuValue.s.value) -= (u8g2_menu->u8g2_menuValue.s.adjValue) * (k);\
+        if (*(u8g2_menu->u8g2_menuValue.s.value) < (u8g2_menu->u8g2_menuValue.s.minValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.minValue);\
+        if (*(u8g2_menu->u8g2_menuValue.s.value) > (u8g2_menu->u8g2_menuValue.s.maxValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.minValue);\
+    } while (0)
 
 	switch (u8g2_menu->u8g2_menuValueType)
 	{
 	case MENU_V_uint8:
-		MenuSUBK(v_uint8.value, v_uint8.adjValue, v_uint8.minValue, k);
+		MenuSUBK(v_uint8, k);
 		break;
 	case MENU_V_uint16:
-		MenuSUBK(v_uint16.value, v_uint16.adjValue, v_uint16.minValue, k);
+		MenuSUBK(v_uint16, k);
 		break;
 	case MENU_V_uint32:
-		MenuSUBK(v_uint32.value, v_uint32.adjValue, v_uint32.minValue, k);
+		MenuSUBK(v_uint32, k);
 		break;
 	case MENU_V_int8:
-		MenuSUBK(v_int8.value, v_int8.adjValue, v_int8.minValue, k);
+		MenuSUBK(v_int8, k);
 		break;
 	case MENU_V_int16:
-		MenuSUBK(v_int16.value, v_int16.adjValue, v_int16.minValue, k);
+		MenuSUBK(v_int16, k);
 		break;
 	case MENU_V_int32:
-		MenuSUBK(v_int32.value, v_int32.adjValue, v_int32.minValue, k);
+		MenuSUBK(v_int32, k);
 		break;
 	case MENU_V_int:
-		MenuSUBK(v_int.value, v_int.adjValue, v_int.minValue, k);
+		MenuSUBK(v_int, k);
 		break;
 	case MENU_V_float:
-		MenuSUBK(v_float.value, v_float.adjValue, v_float.minValue, k);
+		MenuSUBK(v_float, k);
 		break;
 	case MENU_V_double:
-		MenuSUBK(v_double.value, v_double.adjValue, v_double.minValue, k);
+		MenuSUBK(v_double, k);
 		break;
 	case MENU_V_switch:
 		*(u8g2_menu->u8g2_menuValue.v_switch.value) = !u8g2_menu->u8g2_menuValue.v_switch.openValue;
