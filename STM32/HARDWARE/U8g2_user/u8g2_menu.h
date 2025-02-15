@@ -291,6 +291,21 @@ struct u8g2_chart_struct
 	uint16_t data_len;
 };
 
+/* =============================== | u8g2_meun_weak.c | =============================== */
+// 选中某项
+void u8g2_menuItemEnter(u8g2_menu_t *u8g2_menu, u8g2_uint_t item);
+
+// 离开某项
+void u8g2_menuItemLeave(u8g2_menu_t *u8g2_menu, u8g2_uint_t item);
+
+// 某值增加
+void u8g2_menuValueAdd(void * p);
+
+// 某值减小
+void u8g2_menuValueSub(void * p);
+
+// 某值变化
+void u8g2_menuValueChange(void * p);
 /* =============================== | u8g2_meun.c | =============================== */
 // 创建菜单 自定义选择展示器
 void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem, menuSelector_cb menuSelector);

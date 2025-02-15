@@ -1,42 +1,6 @@
 #include "u8g2_menu.h"
 
 /**
- * @brief 托管给菜单的值增加了。
- *
- * @param p 变化值的地址
- *
- * @return void
- */
-WEAK void u8g2_menuValueAdd(void * p)
-{
-	/* 空函数 */
-}
-
-/**
- * @brief 托管给菜单的值减少了。
- *
- * @param p 变化值的地址
- *
- * @return void
- */
-WEAK void u8g2_menuValueSub(void * p)
-{
-	/* 空函数 */
-}
-
-/**
- * @brief 托管给菜单的值变化了。
- *
- * @param p 变化值的地址
- *
- * @return void
- */
-WEAK void u8g2_menuValueChange(void * p)
-{
-	/* 空函数 */
-}
-
-/**
  * @brief 选中当前选中的表项
  *
  * @param u8g2_menu 菜单对象
@@ -89,7 +53,7 @@ void u8g2_MenuItemAddS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 #define MenuADDK(s, k)\
     do {\
 		*(u8g2_menu->u8g2_menuValue.s.value) += (u8g2_menu->u8g2_menuValue.s.adjValue) * (k);\
-        if (*(u8g2_menu->u8g2_menuValue.s.value) < (u8g2_menu->u8g2_menuValue.s.minValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.minValue);\
+        if (*(u8g2_menu->u8g2_menuValue.s.value) < (u8g2_menu->u8g2_menuValue.s.minValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.maxValue);\
         if (*(u8g2_menu->u8g2_menuValue.s.value) > (u8g2_menu->u8g2_menuValue.s.maxValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.maxValue);\
     } while (0)
 
@@ -162,7 +126,7 @@ void u8g2_MenuItemSubS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
     do {\
 		*(u8g2_menu->u8g2_menuValue.s.value) -= (u8g2_menu->u8g2_menuValue.s.adjValue) * (k);\
         if (*(u8g2_menu->u8g2_menuValue.s.value) < (u8g2_menu->u8g2_menuValue.s.minValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.minValue);\
-        if (*(u8g2_menu->u8g2_menuValue.s.value) > (u8g2_menu->u8g2_menuValue.s.maxValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.maxValue);\
+        if (*(u8g2_menu->u8g2_menuValue.s.value) > (u8g2_menu->u8g2_menuValue.s.maxValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.minValue);\
     } while (0)
 
 	switch (u8g2_menu->u8g2_menuValueType)
