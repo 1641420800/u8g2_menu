@@ -573,8 +573,6 @@ void u8g2_MenuSelectorRotundity(u8g2_menu_t *u8g2_menu);
 
 // 选择展示器 方形
 void u8g2_MenuSelectorSquare(u8g2_menu_t *u8g2_menu);
-
-
 /* =============================== | u8g2_meun_layer.c | =============================== */
 uint8_t *u8g2_MenuGetLayerBuff(void);
 u8g2_t *u8g2_MenuStartLayer(u8g2_t *u8g2);

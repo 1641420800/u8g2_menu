@@ -218,10 +218,10 @@ void u8g2_MenuSetPositionOffsetSpe(u8g2_menu_t *u8g2_menu, float spe)
 {
 	if(!u8g2_menu)
 		return;
-	if (spe > 0)
+	if (spe < 0)
 		spe = -spe;
 	if (spe == 0)
-		spe = -0.01;
+		spe = 0.01;
 	u8g2_menu->positionOffset_spe = spe;
 }
 
