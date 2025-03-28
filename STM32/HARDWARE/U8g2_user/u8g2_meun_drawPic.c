@@ -31,6 +31,7 @@ void u8g2_MenuDrawItemPic(void (*drawXBM)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint
 	drawXBM(u8g2, u8g2_MenuGetHorizontalOffset(menu), Y, w, h, bitmap);
 
 	u8g2_MenuDrawItemEnd(menu);
+    u8g2_MenuRecordAdd(menu, "Pic");
 }
 
 /**

@@ -16,10 +16,27 @@ u8g2_t u8g2;
 u8g2_menu_t u8g2_menu;
 
 uint32_t deBug;
+
+void oled_displayBoard(u8g2_t * u8g2)
+{
+    u8g2_DrawLine(u8g2,10, 3, 5, 32);
+    u8g2_DrawTriangle(u8g2,20,5, 27,50, 5,32);
+    u8g2_SetFont(u8g2,u8g2_font_unifont_t_symbols);
+    u8g2_DrawUTF8(u8g2,5, 20, "Snowman: ☃");
+	u8g2_SetFont(u8g2,u8g2_font_10x20_tf);
+}
+
 void menuItem_1()
 {
+	u8g2_MenuUTF8Printf(U8G2_MENU_VERSION);
 	u8g2_MenuItemValue_uint32(&deBug,2,0,100);
-	u8g2_MenuPrintf(u8g2_MenuDrawStr,"%d", deBug);
+	u8g2_MenuUTF8Printf("%d", deBug);
+    u8g2_MenuUTF8Printf("siz:%d", sizeof(u8g2_menu));
+
+    u8g2_MenuDrawItemBoard(oled_displayBoard,120,60);
+//    u8g2_MenuDrawItemBoard(oled_displayBoard,120,60);
+//    u8g2_MenuDrawItemBoard(oled_displayBoard,120,60);
+//    u8g2_MenuDrawItemBoard(oled_displayBoard,120,60);
 }
 
 void oled_display(u8g2_t * u8g2)
@@ -29,15 +46,15 @@ void oled_display(u8g2_t * u8g2)
 
 void keyScann(uint16_t time)
 {
-	static uint16_t key_shakeFree[3] = {0};
+	static uint16_t key_shakeFree[3] = {0,0,0};
 	static uint16_t key_state[3] = {0};
 
-	if(key_shakeFree[0] < 10 && KEY_1) key_shakeFree[0]++;
-	if(key_shakeFree[1] < 10 && KEY_2) key_shakeFree[1]++;
-	if(key_shakeFree[2] < 10 && KEY_3) key_shakeFree[2]++;
-	if(key_shakeFree[0] > 0 && !KEY_1) key_shakeFree[0]--;
-	if(key_shakeFree[1] > 0 && !KEY_2) key_shakeFree[1]--;
-	if(key_shakeFree[2] > 0 && !KEY_3) key_shakeFree[2]--;
+	if(key_shakeFree[0] < 10 && !KEY_1) key_shakeFree[0]++;
+	if(key_shakeFree[1] < 10 && !KEY_2) key_shakeFree[1]++;
+	if(key_shakeFree[2] < 10 && !KEY_3) key_shakeFree[2]++;
+	if(key_shakeFree[0] > 0 && KEY_1) key_shakeFree[0]--;
+	if(key_shakeFree[1] > 0 && KEY_2) key_shakeFree[1]--;
+	if(key_shakeFree[2] > 0 && KEY_3) key_shakeFree[2]--;
 
 	for(int i = 0; i < 3; i++)
 	{
@@ -51,9 +68,9 @@ void keyScann(uint16_t time)
 		}
 	}
 	
-	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Up,key_state[0],time);
-	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Down,key_state[1],time);
-	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Enter,key_state[2],time);
+	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Up,!key_state[0],time);
+	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Down,!key_state[1],time);
+	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Enter,!key_state[2],time);
 
 	/*
 	// 无消抖写法

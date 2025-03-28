@@ -205,6 +205,7 @@ void u8g2_MenuDrawItemChart(u8g2_chart_t *chart, void (*drawChart)(u8g2_t *u8g2,
 	drawChart(u8g2, chart, X, Y, W, H);
 
 	u8g2_MenuDrawItemEnd(menu);
+    u8g2_MenuRecordAdd(menu, "Chart");
 }
 
 /**

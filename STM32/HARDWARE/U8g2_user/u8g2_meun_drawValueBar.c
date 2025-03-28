@@ -64,6 +64,7 @@ void u8g2_MenuDrawItemSliderProportion(float position, float proportion)
     u8g2_DrawHSliderBar(u8g2, x, y + 2, w, h - 4, position, proportion);
 
     u8g2_MenuDrawItemEnd(menu);
+    u8g2_MenuRecordAdd(menu, "SliderProportion");
 }
 
 /**
@@ -117,6 +118,7 @@ void u8g2_MenuDrawItemProgressBar(float position)
     u8g2_DrawHProgressBar(u8g2, x, y + 2, w, h - 4, position);
 
     u8g2_MenuDrawItemEnd(menu);
+    u8g2_MenuRecordAdd(menu, "ProgressBar");
 }
 
 /**

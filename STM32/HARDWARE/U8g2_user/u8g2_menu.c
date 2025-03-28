@@ -3,12 +3,6 @@
 // 当前正在绘制的菜单
 u8g2_menu_t *currentMenu = NULL;
 
-// 菜单记录
-#if U8G2_MENU_RECORD
-char u8g2_menuRecord[U8G2_MENU_RECORD_SIZE] = "";
-uint16_t u8g2_menuRecordLen = 0;
-#endif
-
 /**
  * @brief 创建一个菜单
  *
@@ -394,10 +388,8 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
 
 	if (u8g2_menu->menuItem)
     {
-        #if U8G2_MENU_RECORD
-        u8g2_MenuRecordClear();
-        u8g2_MenuRecordAdd("\r\n---------------");
-        #endif
+        u8g2_MenuRecordClear(u8g2_menu);
+        u8g2_MenuRecordAdd(u8g2_menu,"\r\n---------------");
 		u8g2_menu->menuItem();
     }
 	u8g2_menu->u8g2_menuValueType = u8g2_menu->_u8g2_menuValueType;
@@ -637,43 +629,64 @@ u8g2_t *u8g2_MenuGetU8g2(u8g2_menu_t *u8g2_menu)
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if U8G2_MENU_RECORD
-
 /**
  * @brief 清除记录文本
+ * @param u8g2_menu 菜单对象
  *
  * @return void
  */
-void u8g2_MenuRecordClear(void)
+void u8g2_MenuRecordClear(u8g2_menu_t *u8g2_menu)
 {
-    u8g2_menuRecordLen = 0;
-    u8g2_menuRecord[0] = 0;
+	if (!u8g2_menu)
+		return;
+#if U8G2_MENU_RECORD
+    u8g2_menu->u8g2_menuRecordLen = 0;
+    u8g2_menu->u8g2_menuRecord[0] = 0;
+#endif
 }
 
 /**
  * @brief 添加记录文本
+ * @param u8g2_menu 菜单对象
  * @note 要记录的文本
  *
  * @return void
  */
-void u8g2_MenuRecordAdd(const char * text)
+void u8g2_MenuRecordAdd(u8g2_menu_t *u8g2_menu, const char * text)
 {
-    while(*text != '\0' && u8g2_menuRecordLen < U8G2_MENU_RECORD_SIZE - 1)
+	if (!u8g2_menu)
+		return;
+#if U8G2_MENU_RECORD
+    while(*text != '\0' && u8g2_menu->u8g2_menuRecordLen < U8G2_MENU_RECORD_SIZE - 1)
     {
-        u8g2_menuRecord[u8g2_menuRecordLen++] = *text;
+        u8g2_menu->u8g2_menuRecord[u8g2_menu->u8g2_menuRecordLen++] = *text;
         ++text;
     }
-    u8g2_menuRecord[u8g2_menuRecordLen] = '\0';
+    if(*text != '\0')
+    {
+        // 空间不足
+        u8g2_menu->u8g2_menuRecord[u8g2_menu->u8g2_menuRecordLen - 1] = '.';
+        u8g2_menu->u8g2_menuRecord[u8g2_menu->u8g2_menuRecordLen - 2] = '.';
+        u8g2_menu->u8g2_menuRecord[u8g2_menu->u8g2_menuRecordLen - 3] = '.';
+    }
+    u8g2_menu->u8g2_menuRecord[u8g2_menu->u8g2_menuRecordLen] = '\0';
+#endif
 }
 
 /**
  * @brief 获取记录文本
+ * @param u8g2_menu 菜单对象
  *
  * @return char* 记录文本
 
  */
-const char* u8g2_MenuRecord(void)
+const char* u8g2_MenuRecord(u8g2_menu_t *u8g2_menu)
 {
-    return u8g2_menuRecord;
-}
+	if (!u8g2_menu)
+		return NULL;
+#if U8G2_MENU_RECORD
+    return u8g2_menu->u8g2_menuRecord;
+#else
+    return NULL;
 #endif
+}

@@ -17,18 +17,14 @@ void u8g2_MenuDrawItemStr(u8g2_uint_t (*u8g2_Draw)(u8g2_t *u8g2, u8g2_uint_t x, 
     u8g2_t *u8g2 = u8g2_MenuGetU8g2(menu);
     if (!menu)
         return;
-    u8g2_MenuDrawItemSetSize(menu,u8g2_GetStrWidth(u8g2, str) * multiple, u8g2_GetMaxCharHeight(u8g2) * multiple);
+    u8g2_MenuDrawItemSetSize(menu,u8g2_GetUTF8Width(u8g2, str) * multiple, u8g2_GetMaxCharHeight(u8g2) * multiple);
     u8g2_MenuSelectorCall(menu);
 
     u8g2_int_t YH = u8g2_MenuGetY(menu) + u8g2_MenuGetH(menu);
     u8g2_Draw(u8g2, u8g2_MenuGetHorizontalOffset(menu), YH + u8g2_GetDescent(u8g2), str);
     
     u8g2_MenuDrawItemEnd(menu);
-    
-    
-    #if U8G2_MENU_RECORD
-    u8g2_MenuRecordAdd(str);
-    #endif
+    u8g2_MenuRecordAdd(menu, str);
 }
 
 /**
@@ -174,4 +170,23 @@ void u8g2_MenuPrintf(u8g2_MenuDraw_cb u8g2_MenuDraw, const char *fmt, ...)
     vsnprintf(buffer, 64, fmt, arg_ptr);
     va_end(arg_ptr);
     u8g2_MenuDraw(buffer);
+}
+
+/**
+ * @brief 字符串项格式化显示函数 - 快捷函数 固定调用 u8g2_MenuDrawUTF8
+ * @note 在菜单项绘制函数中调用本函数来显示字符串
+ *
+ * @param fmt 格式化字符串
+ * @param ... 参数
+ *
+ * @return void
+ */
+void u8g2_MenuUTF8Printf(const char *fmt, ...)
+{
+    char buffer[64];
+    va_list arg_ptr;
+    va_start(arg_ptr, fmt);
+    vsnprintf(buffer, 64, fmt, arg_ptr);
+    va_end(arg_ptr);
+    u8g2_MenuDrawUTF8(buffer);
 }

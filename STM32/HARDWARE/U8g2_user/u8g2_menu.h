@@ -134,10 +134,13 @@ typedef enum
 	MENU_Key_Num,	   // 按键数量
 } u8g2_menuKeyValue_t;
 
+
+typedef enum {LayerAND, LayerOR, LayerXOR, LayerXNOR} Layer_t;
 typedef void (*menuItem_cb)(void);
 typedef void (*menuSelector_cb)(u8g2_menu_t *u8g2_menu);
 typedef void (*u8g2_MenuDraw_cb)(char *str);
 typedef void (*u8g2_MenuButton_cb)(uint8_t ID, u8g2_menuKeyValue_t key);
+typedef void (*u8g2_MenuDrawBoard_cb)(u8g2_t *u8g2);
 
 struct u8g2_menu_uint8_struct
 {
@@ -254,7 +257,7 @@ struct u8g2_menu_struct
 	menuSelector_cb menuSelector;	   // 绘制选择展示器的实际函数
 	u8g2_menu_effect_t menuEffect;	   // 绘制效果
 	MENU_V_type_t u8g2_menuValueType;  // 菜单附加值类型
-	MENU_V_type_t _u8g2_menuValueType;  // 菜单附加值类型
+	MENU_V_type_t _u8g2_menuValueType; // 菜单附加值类型
 	u8g2_menu_value_t u8g2_menuValue;  // 菜单附加值
 	u8g2_int_t currentSetValue;		   // 当前选中状态 -1 表示未选中
 	u8g2_int_t currentItem;			   // 当前选中的项
@@ -280,6 +283,12 @@ struct u8g2_menu_struct
 	u8g2_int_t totalLength;			   // 菜单总长度
 	uint16_t timer;					   // 菜单计时器
 	uint8_t timer_effective;		   // 菜单计时器是否有效
+	uint8_t keyLog[MENU_Key_Num];      // 按键状态记录
+	uint16_t keyTim[MENU_Key_Num];     // 按键状态计时
+#if U8G2_MENU_RECORD                   // 菜单记录
+    uint16_t u8g2_menuRecordLen;
+    char u8g2_menuRecord[U8G2_MENU_RECORD_SIZE];
+#endif
 };
 
 struct u8g2_chart_struct
@@ -363,16 +372,14 @@ void u8g2_MenuItemDown(u8g2_menu_t *u8g2_menu);
 // 移动到某项
 void u8g2_MenuItemMove(u8g2_menu_t *u8g2_menu, u8g2_uint_t i);
 
-#if U8G2_MENU_RECORD
 // 清除记录
-void u8g2_MenuRecordClear(void);
+void u8g2_MenuRecordClear(u8g2_menu_t *u8g2_menu);
 
 // 添加记录字符串
-void u8g2_MenuRecordAdd(const char * text);
+void u8g2_MenuRecordAdd(u8g2_menu_t *u8g2_menu, const char * text);
 
 // 获取记录字符串
-const char* u8g2_MenuRecord(void);
-#endif
+const char* u8g2_MenuRecord(u8g2_menu_t *u8g2_menu);
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 // 切换选择器
 void u8g2_MenuReplaceSelector(u8g2_menu_t *u8g2_menu, menuSelector_cb menuSelector);
@@ -422,6 +429,11 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
 // 菜单输入字符
 void u8g2_MenuInChar(u8g2_menu_t *u8g2_menu, char c);
 
+/* =============================== | u8g2_meun_drawBoard.c | =============================== */
+
+// 菜单显示画板
+void u8g2_MenuDrawItemBoard(u8g2_MenuDrawBoard_cb u8g2_MenuDrawBoard, u8g2_uint_t width, u8g2_uint_t height);
+
 /* =============================== | u8g2_meun_drawStr.c | =============================== */
 // 菜单显示字符串
 void u8g2_MenuDrawStr(char *str);
@@ -443,6 +455,9 @@ void u8g2_MenuDrawPasswordX2(char *str, char mask);
 
 // 菜单格式化输出
 void u8g2_MenuPrintf(u8g2_MenuDraw_cb u8g2_MenuDraw, const char *fmt, ...);
+
+// 菜单格式化输出 - 快捷函数 固定调用 u8g2_MenuDrawUTF8
+void u8g2_MenuUTF8Printf(const char *fmt, ...);
 
 /* =============================== | u8g2_meun_drawValueBar.c | =============================== */
 // 菜单显示滑块条
@@ -561,10 +576,8 @@ void u8g2_MenuSelectorSquare(u8g2_menu_t *u8g2_menu);
 
 
 /* =============================== | u8g2_meun_layer.c | =============================== */
-
-typedef enum {LayerAND, LayerOR, LayerXOR, LayerXNOR} Layer_t;
-
-u8g2_t *u8g2_MenuStartLayer(void);
+uint8_t *u8g2_MenuGetLayerBuff(void);
+u8g2_t *u8g2_MenuStartLayer(u8g2_t *u8g2);
 void u8g2_MenuEndLayer(Layer_t layer);
 
 #ifdef __cplusplus
