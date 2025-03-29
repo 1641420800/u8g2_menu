@@ -2,6 +2,7 @@
 #define U8G2_MENU_H
 
 #include "u8g2.h"
+#include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
@@ -60,6 +61,10 @@ extern "C" {
 // 记录功能相关
 #define U8G2_MENU_RECORD 1					// 启用记录功能
 #define U8G2_MENU_RECORD_SIZE 256			// 记录缓冲区大小
+
+// 消息功能相关
+#define U8G2_MENU_MESSAGEBOX 1				// 启用消息框
+
 
 #ifndef ABS
 #define ABS(s) ((s) < 0 ? -(s) : (s))
@@ -133,14 +138,14 @@ typedef enum
 	MENU_Key_Sub,	   // 减
 	MENU_Key_Num,	   // 按键数量
 } u8g2_menuKeyValue_t;
-
-
 typedef enum {LayerAND, LayerOR, LayerXOR, LayerXNOR} Layer_t;
+
 typedef void (*menuItem_cb)(void);
 typedef void (*menuSelector_cb)(u8g2_menu_t *u8g2_menu);
 typedef void (*u8g2_MenuDraw_cb)(char *str);
 typedef void (*u8g2_MenuButton_cb)(uint8_t ID, u8g2_menuKeyValue_t key);
 typedef void (*u8g2_MenuDrawBoard_cb)(u8g2_t *u8g2);
+typedef void (*u8g2_MenuDrawMessageBox_cb)(u8g2_t *u8g2, u8g2_uint_t width, u8g2_uint_t height, void *message);
 
 struct u8g2_menu_uint8_struct
 {
@@ -289,6 +294,13 @@ struct u8g2_menu_struct
     uint16_t u8g2_menuRecordLen;
     char u8g2_menuRecord[U8G2_MENU_RECORD_SIZE];
 #endif
+#if U8G2_MENU_MESSAGEBOX                  // 消息框
+    u8g2_MenuDrawMessageBox_cb drawMessageBox;
+    void *message;
+    uint32_t drawMessageBoxTim;
+    u8g2_uint_t messageBoxWidth;
+    u8g2_uint_t messageBoxHeight;
+#endif
 };
 
 struct u8g2_chart_struct
@@ -428,6 +440,23 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
 
 // 菜单输入字符
 void u8g2_MenuInChar(u8g2_menu_t *u8g2_menu, char c);
+
+/* =============================== | u8g2_meun_message.c | =============================== */
+
+// 菜单消息框时间接口
+void u8g2_MenuMessageBoxTime_ISR(u8g2_menu_t *u8g2_menu, uint16_t ms);
+
+// 处理消息框显示相关
+void u8g2_menuMessageBoxCall(u8g2_menu_t *u8g2_menu);
+
+// 设置弹窗信息
+void u8g2_MenuDrawMessageBox(u8g2_menu_t *u8g2_menu, u8g2_MenuDrawMessageBox_cb drawMessageBox, void *message, u8g2_uint_t messageBoxWidth, u8g2_uint_t messageBoxHeight, uint32_t drawMessageBoxTim);
+
+// 清除弹窗信息
+void u8g2_MenuDrawMessageBoxClose(u8g2_menu_t *u8g2_menu);
+
+// 显示字符串消息
+void u8g2_MenuDrawMessageBox_str(u8g2_menu_t *u8g2_menu, const char * str, uint32_t drawMessageBoxTim);
 
 /* =============================== | u8g2_meun_drawBoard.c | =============================== */
 

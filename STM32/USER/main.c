@@ -34,9 +34,9 @@ void menuItem_2()
 }
 void menuItem_1()
 {
-	u8g2_MenuUTF8Printf("1");
-	u8g2_MenuUTF8Printf("2");
-	u8g2_MenuUTF8Printf("3");
+	u8g2_MenuUTF8Printf("112312342345245324523452345");
+	u8g2_MenuUTF8Printf("112312342345245324523452345");
+	u8g2_MenuUTF8Printf("112312342345245324523452345");
     // 显示版本号
 	u8g2_MenuUTF8Printf(U8G2_MENU_VERSION);
     
@@ -47,8 +47,8 @@ void menuItem_1()
     u8g2_MenuDrawItemXBM(523,60,bmp);
     
 
-    u8g2_MenuDrawItemBoard(oled_displayBoard,120,60);
-    u8g2_MenuDrawItemBoard(oled_displayBoard,120,60);
+//    u8g2_MenuDrawItemBoard(oled_displayBoard,120,60);
+//    u8g2_MenuDrawItemBoard(oled_displayBoard,120,60);
 }
 
 void oled_display(u8g2_t * u8g2)
@@ -100,7 +100,7 @@ void tim2_IRQ(void)
 	keyScann(/*time = */1);
 	u8g2_MenuTime_ISR(&u8g2_menu,1);
 }
-
+void u8g2_MenuDrawMessageBoxTest(u8g2_menu_t *u8g2_menu);
 int main(void)
 {
 	delay_init();
@@ -113,6 +113,8 @@ int main(void)
 	u8g2_MenuSetPositionOffsetStrHeaderLen(&u8g2_menu,0);
 	matrixKey_init_def();   							// 矩阵键盘初始化
 	tim2_init(1000-1,72-1);
+    
+    u8g2_MenuDrawMessageBox_str(&u8g2_menu, "Hello U8g2", 3000);
 	while(1)
 	{
 		u8g2_ClearBuffer(&u8g2);

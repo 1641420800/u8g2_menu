@@ -394,6 +394,8 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
     }
 	u8g2_menu->u8g2_menuValueType = u8g2_menu->_u8g2_menuValueType;
 	
+    u8g2_menuMessageBoxCall(u8g2_menu);
+    
 	// todo : 待优化
 	if(!u8g2_menu->timer_effective) u8g2_menuEffect_run_call(u8g2_menu);
 	if(u8g2_menu->timer_effective && u8g2_menu->timer > U8G2_MENU_DELAY)
@@ -447,6 +449,8 @@ void u8g2_MenuTime_ISR(u8g2_menu_t *u8g2_menu, uint16_t ms)
 		return;
 	u8g2_menu->timer += ms;
 	u8g2_menu->timer_effective = 1;
+    
+    u8g2_MenuMessageBoxTime_ISR(u8g2_menu, ms);
 }
 
 /**

@@ -29,6 +29,8 @@ u8g2_t *u8g2_MenuStartLayer(u8g2_t *u8g2)
 
 void u8g2_MenuEndLayer(Layer_t layer)
 {
+    if (!layerU8g2)
+        return;
     uint8_t *_layerBuff = u8g2_GetBufferPtr(layerU8g2);
 
     switch (layer)

@@ -789,6 +789,11 @@
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\U8g2_user\u8g2_meun_weak.c</FilePath>
             </File>
+            <File>
+              <FileName>u8g2_meun_message.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\U8g2_user\u8g2_meun_message.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
