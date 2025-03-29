@@ -34,7 +34,7 @@ extern "C" {
  */
 
 // 版本信息
-#define U8G2_MENU_VERSION "1.2.4-beta"
+#define U8G2_MENU_VERSION "1.2.5-beta"
 #define U8G2_MENU_DEBUG 0					// 设置为1启用调试模式
 
 // 功能按键相关
@@ -564,6 +564,9 @@ u8g2_int_t u8g2_menuEffect_init_call(u8g2_menu_t *u8g2_menu);
 u8g2_int_t u8g2_menuEffect_run_call(u8g2_menu_t *u8g2_menu);
 
 /* =============================== | u8g2_meun_selector.c | =============================== */
+
+// 选择器记录
+void u8g2_MenuSelector_Record(u8g2_menu_t *u8g2_menu);
 
 // 默认的选择展示器
 void u8g2_MenuSelector(u8g2_menu_t *u8g2_menu);

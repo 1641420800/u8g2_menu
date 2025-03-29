@@ -45,7 +45,6 @@ void u8g2_MenuDrawItemBoard(u8g2_MenuDrawBoard_cb u8g2_MenuDrawBoard, u8g2_uint_
     {
         for (int _w = x < 0 ? -x : 0; _w < width; ++_w)
         {
-            if(_w + x >= width || _h + y >= width) continue;
 #define GET_PIXEL(_X, _Y) ((uint8_t(*)[128])_layerBuff)[(_Y) / 8][(_X)] & (1 << (_Y) % 8)
 #define SET_PIXEL(_X, _Y) ((uint8_t(*)[128])layerBuff)[(_Y) / 8][(_X)] |= (1 << ((_Y) % 8))
 #define CLR_PIXEL(_X, _Y) ((uint8_t(*)[128])layerBuff)[(_Y) / 8][(_X)] &= (~(1 << (_Y) % 8))

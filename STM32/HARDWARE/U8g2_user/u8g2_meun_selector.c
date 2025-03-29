@@ -2,7 +2,7 @@
 
 #define nonNegative(d) ((d) < 0 ? 0 : (d))
 
-static void u8g2_MenuSelector_Record(u8g2_menu_t *u8g2_menu)
+void u8g2_MenuSelector_Record(u8g2_menu_t *u8g2_menu)
 {
     switch (u8g2_MenuGetAttribute(u8g2_menu))
     {
@@ -56,8 +56,6 @@ void u8g2_MenuSelectorRotundity(u8g2_menu_t *u8g2_menu)
         u8g2_DrawDisc(u8g2, x - 10, y + h / 2, 5, U8G2_DRAW_ALL);
         break;
     }
-    
-    u8g2_MenuSelector_Record(u8g2_menu);
 }
 
 // 选择展示器 方形
@@ -91,6 +89,4 @@ void u8g2_MenuSelectorSquare(u8g2_menu_t *u8g2_menu)
         u8g2_DrawBox(u8g2,x - 12, y + h / 2 - 4, 8, 8);
         break;
     }
-    
-    u8g2_MenuSelector_Record(u8g2_menu);
 }

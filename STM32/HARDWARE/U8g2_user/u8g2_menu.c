@@ -530,6 +530,7 @@ u8g2_menu_t *u8g2_MenuDrawItemStart(void)
 	if (!menu)
 		return NULL;
 	menu->totalLength = menu->totalLength - u8g2_MenuEffectGetPos(menu);
+	u8g2_MenuSelector_Record(menu);
 	return menu;
 }
 
