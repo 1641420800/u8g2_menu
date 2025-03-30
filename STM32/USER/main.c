@@ -93,12 +93,16 @@ void keyScann(uint16_t time)
 	*/
 }
 
+uint16_t debugTime = 0;
+
 void tim2_IRQ(void)
 {
 	char keys = get_current_key_value(&matrixKey);
 	u8g2_MenuInChar(&u8g2_menu, keys);
 	keyScann(/*time = */1);
 	u8g2_MenuTime_ISR(&u8g2_menu,1);
+    
+    if(debugTime) --debugTime;
 }
 void u8g2_MenuDrawMessageBoxTest(u8g2_menu_t *u8g2_menu);
 int main(void)
@@ -114,9 +118,13 @@ int main(void)
 	matrixKey_init_def();   							// 矩阵键盘初始化
 	tim2_init(1000-1,72-1);
     
-    u8g2_MenuDrawMessageBox_str(&u8g2_menu, "Hello U8g2", 3000);
 	while(1)
 	{
+        if(!debugTime)
+        {
+            debugTime = 10 * 1000;
+            u8g2_MenuDrawMessageBox_str(&u8g2_menu, "Hello", 3000);
+        }
 		u8g2_ClearBuffer(&u8g2);
 		oled_display(&u8g2);
 		u8g2_SendBuffer(&u8g2);

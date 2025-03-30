@@ -20,9 +20,10 @@ extern "C" {
  * - 核心菜单模块：处理菜单系统的核心功能。
  * - 选择器模块：管理菜单内的选择。
  * - 动画模块：为菜单过渡提供动画效果。
- * - 项目绘制模块：绘制各种类型的菜单项，包括图表、字符串、进度条和图片。
+ * - 项目绘制模块：绘制各种类型的菜单项，包括图表、字符串、进度条和图片等。
  * - 附加值模块：向菜单项添加额外功能，可通过菜单操作按键来触发。
  * - 按键模块：与物理按键交互以供用户操作。
+ * - 消息模块：提供向用户弹出消息的功能。
  * 
  * 用户界面：
  * - 与按键相关的功能，用于菜单导航。
@@ -36,35 +37,35 @@ extern "C" {
 
 // 版本信息
 #define U8G2_MENU_VERSION "1.2.5-beta"
-#define U8G2_MENU_DEBUG 0					// 设置为1启用调试模式
+#define U8G2_MENU_DEBUG 0                       // 设置为1启用调试模式
 
 // 功能按键相关
-#define U8G2_MENUKeyValue_Back '*'			// 删除一个字符
-#define U8G2_MENUKeyValue_Clear '#'			// 清除整个输入
+#define U8G2_MENUKeyValue_Back '*'              // 删除一个字符
+#define U8G2_MENUKeyValue_Clear '#'             // 清除整个输入
 
 // 菜单刷新间隔
-#define U8G2_MENU_DELAY 100					// 推理动画之间的延迟，以毫秒为单位
+#define U8G2_MENU_DELAY 100                     // 推理动画之间的延迟，以毫秒为单位
 
 // 图表功能相关
-#define U8G2_MENU_MIN_VALUE_DIFF 0.0f		// 图表幅值的最小值
-#define U8G2_MENU_CHART_SPACE_RATIO 1.1f	// 图表上下留空的比例
+#define U8G2_MENU_MIN_VALUE_DIFF 0.0f           // 图表幅值的最小值
+#define U8G2_MENU_CHART_SPACE_RATIO 1.1f        // 图表上下留空的比例
 
 // 菜单按键相关
-#define MenuKey_holdTime 800				// 菜单按键的长按触发时间
-#define MenuKey_repeatTime 200				// 菜单按键的长按重复触发时间
+#define MenuKey_holdTime 800                    // 菜单按键的长按触发时间
+#define MenuKey_repeatTime 200                  // 菜单按键的长按重复触发时间
 
 // 动画相关相关
-#define ROW_HEIGHT_INCREMENT 0.2f			// 定义行高度增加量
-#define MAX_ROW_HEIGHT 1.0f					// 定义最大行高度
-#define SPE_ADJUSTMENT 2.0f					// 定义SPE调整量
+#define ROW_HEIGHT_INCREMENT 0.2f               // 定义行高度增加量
+#define MAX_ROW_HEIGHT 1.0f                     // 定义最大行高度
+#define SPE_ADJUSTMENT 2.0f                     // 定义SPE调整量
 
 // 记录功能相关
-#define U8G2_MENU_RECORD 1					// 启用记录功能
-#define U8G2_MENU_RECORD_SIZE 256			// 记录缓冲区大小
+#define U8G2_MENU_RECORD 1                      // 启用记录功能
+#define U8G2_MENU_RECORD_SIZE 256               // 记录缓冲区大小
 
 // 消息功能相关
-#define U8G2_MENU_MESSAGEBOX 1				// 启用消息框
-
+#define U8G2_MENU_MESSAGEBOX 1                  // 启用消息框
+#define U8G2_MENU_INFINITE_TIMEOUT UINT32_MAX   // 不自动收回
 
 #ifndef ABS
 #define ABS(s) ((s) < 0 ? -(s) : (s))
@@ -73,8 +74,7 @@ extern "C" {
 #define map(v, min1, max1, min2, max2) (((v) - (min1)) * ((max2) - (min2)) / ((max1) - (min1)) + (min2))
 #endif
 #ifndef limit
-#define limit(d, min, max) ((d) < (min) ? (min) : (d) > (max) ? (max) \
-															  : (d))
+#define limit(d, min, max) ((d) < (min) ? (min) : (d) > (max) ? (max) : (d))
 #endif
 #ifndef LEN
 #define LEN(s) (sizeof(s) / sizeof(s[0]))
@@ -297,7 +297,8 @@ struct u8g2_menu_struct
 #if U8G2_MENU_MESSAGEBOX                  // 消息框
     u8g2_MenuDrawMessageBox_cb drawMessageBox;
     void *message;
-    uint32_t drawMessageBoxTim;
+    uint32_t drawMessageBoxTimer;
+    uint32_t drawMessageBoxTimerLeft;
     u8g2_uint_t messageBoxWidth;
     u8g2_uint_t messageBoxHeight;
 #endif
@@ -450,13 +451,13 @@ void u8g2_MenuMessageBoxTime_ISR(u8g2_menu_t *u8g2_menu, uint16_t ms);
 void u8g2_menuMessageBoxCall(u8g2_menu_t *u8g2_menu);
 
 // 设置弹窗信息
-void u8g2_MenuDrawMessageBox(u8g2_menu_t *u8g2_menu, u8g2_MenuDrawMessageBox_cb drawMessageBox, void *message, u8g2_uint_t messageBoxWidth, u8g2_uint_t messageBoxHeight, uint32_t drawMessageBoxTim);
+void u8g2_MenuDrawMessageBox(u8g2_menu_t *u8g2_menu, u8g2_MenuDrawMessageBox_cb drawMessageBox, void *message, u8g2_uint_t messageBoxWidth, u8g2_uint_t messageBoxHeight, uint32_t drawMessageBoxTimer);
 
 // 清除弹窗信息
 void u8g2_MenuDrawMessageBoxClose(u8g2_menu_t *u8g2_menu);
 
 // 显示字符串消息
-void u8g2_MenuDrawMessageBox_str(u8g2_menu_t *u8g2_menu, const char * str, uint32_t drawMessageBoxTim);
+void u8g2_MenuDrawMessageBox_str(u8g2_menu_t *u8g2_menu, const char * str, uint32_t drawMessageBoxTimer);
 
 /* =============================== | u8g2_meun_drawBoard.c | =============================== */
 
@@ -489,6 +490,12 @@ void u8g2_MenuPrintf(u8g2_MenuDraw_cb u8g2_MenuDraw, const char *fmt, ...);
 void u8g2_MenuUTF8Printf(const char *fmt, ...);
 
 /* =============================== | u8g2_meun_drawValueBar.c | =============================== */
+// 绘制滑块条
+void u8g2_DrawHSliderBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, float schedule, float proportion);
+
+// 绘制进度条
+void u8g2_DrawHProgressBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, float schedule);
+
 // 菜单显示滑块条
 void u8g2_MenuDrawItemSlider(float position);
 
