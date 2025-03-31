@@ -328,6 +328,9 @@ void u8g2_menuValueSub(void * p);
 
 // 某值变化
 void u8g2_menuValueChange(void * p);
+
+// 按键输入
+void u8g2_menuKeyEvent(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue);
 /* =============================== | u8g2_meun.c | =============================== */
 // 创建菜单 自定义选择展示器
 void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem, menuSelector_cb menuSelector);
@@ -441,7 +444,6 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
 
 // 菜单输入字符
 void u8g2_MenuInChar(u8g2_menu_t *u8g2_menu, char c);
-
 /* =============================== | u8g2_meun_message.c | =============================== */
 
 // 菜单消息框时间接口
@@ -459,8 +461,10 @@ void u8g2_MenuDrawMessageBoxClose(u8g2_menu_t *u8g2_menu);
 // 显示字符串消息
 void u8g2_MenuDrawMessageBox_str(u8g2_menu_t *u8g2_menu, const char * str, uint32_t drawMessageBoxTimer);
 
-/* =============================== | u8g2_meun_drawBoard.c | =============================== */
+// 显示图片消息
+void u8g2_MenuDrawMessageBox_xbm(u8g2_menu_t *u8g2_menu, u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap, uint32_t drawMessageBoxTimer);
 
+/* =============================== | u8g2_meun_drawBoard.c | =============================== */
 // 菜单显示画板
 void u8g2_MenuDrawItemBoard(u8g2_MenuDrawBoard_cb u8g2_MenuDrawBoard, u8g2_uint_t width, u8g2_uint_t height);
 

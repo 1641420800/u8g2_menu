@@ -5,6 +5,12 @@ typedef struct
     uint8_t line;
     const char *text[];
 } MessageBox_drawStr_t;
+typedef struct
+{
+    u8g2_uint_t w;
+    u8g2_uint_t h;
+    const uint8_t *bitmap;
+} MessageBox_drawXbm_t;
 
 /**
  * @brief 消息框时间基准 已包含在菜单时间接口中 无需重复调用
@@ -51,6 +57,7 @@ void u8g2_menuMessageBoxCall(u8g2_menu_t *u8g2_menu)
             free(u8g2_menu->message);
             u8g2_menu->message = NULL;
         }
+        u8g2_menu->drawMessageBoxTimer = 0;
         return;
     }
     
@@ -101,7 +108,7 @@ void u8g2_MenuDrawMessageBox(u8g2_menu_t *u8g2_menu, u8g2_MenuDrawMessageBox_cb 
         free(u8g2_menu->message);
         u8g2_menu->message = NULL;
     }
-    
+    if(drawMessageBoxTimer == 0) drawMessageBoxTimer = U8G2_MENU_INFINITE_TIMEOUT;
     u8g2_menu->drawMessageBox = drawMessageBox;
     u8g2_menu->message = message;
     u8g2_menu->messageBoxWidth = messageBoxWidth;
@@ -121,6 +128,40 @@ void u8g2_MenuDrawMessageBox(u8g2_menu_t *u8g2_menu, u8g2_MenuDrawMessageBox_cb 
 void u8g2_MenuDrawMessageBoxClose(u8g2_menu_t *u8g2_menu)
 {
     u8g2_MenuDrawMessageBox(u8g2_menu, NULL, NULL, 0, 0, 0);
+}
+
+/**
+ * @brief 获取当前总显示时间
+ *
+ * @param u8g2_menu u8g2菜单对象指针
+ *
+ * @return void
+ */
+uint32_t u8g2_MenuGetMessageBoxTimer(u8g2_menu_t *u8g2_menu)
+{
+    if(!u8g2_menu) return 0;
+#if U8G2_MENU_MESSAGEBOX
+    return u8g2_menu->drawMessageBoxTimer;
+#else
+    return 0;
+#endif  
+}
+
+/**
+ * @brief 获取剩余显示时间
+ *
+ * @param u8g2_menu u8g2菜单对象指针
+ *
+ * @return void
+ */
+uint32_t u8g2_MenuGetMessageBoxTimerLeft(u8g2_menu_t *u8g2_menu)
+{
+    if(!u8g2_menu) return 0;
+#if U8G2_MENU_MESSAGEBOX
+    return u8g2_menu->drawMessageBoxTimerLeft;
+#else
+    return 0;
+#endif  
 }
 
 /**
@@ -208,7 +249,52 @@ void u8g2_MenuDrawMessageBox_str(u8g2_menu_t *u8g2_menu, const char * str, uint3
         if(width < _width) width = _width;
     }
     
-    if(drawMessageBoxTimer == 0) drawMessageBoxTimer = U8G2_MENU_INFINITE_TIMEOUT;
-    u8g2_MenuDrawMessageBox(u8g2_menu, u8g2_MenuDrawMessageBox_drawStr, (void*)p, width + 4, u8g2_GetMaxCharHeight(u8g2_menu->u8g2) * num_lines, drawMessageBoxTimer);
+    u8g2_MenuDrawMessageBox(u8g2_menu, u8g2_MenuDrawMessageBox_drawStr, (void*)p, width + 4, u8g2_GetMaxCharHeight(u8g2_menu->u8g2) * num_lines + 4, drawMessageBoxTimer);
+#endif
+}
+
+/**
+ * @brief 图片消息框绘制函数
+ *
+ * @param u8g2 u8g2对象指针
+ * @param width 消息框宽度
+ * @param height 消息框高度
+ * @param message 消息结构体指针（MessageBox_drawXbm_t类型）
+ *
+ * @return void
+ */
+void u8g2_MenuDrawMessageBox_drawXbm(u8g2_t *u8g2, u8g2_uint_t width, u8g2_uint_t height, void *message)
+{
+    if (!message) return;
+#if U8G2_MENU_MESSAGEBOX
+    MessageBox_drawXbm_t *p = message;
+    u8g2_uint_t x = (u8g2_GetDisplayWidth(u8g2) - width) / 2 + 1;
+    u8g2_uint_t y = (u8g2_GetDisplayHeight(u8g2) - height) / 2 + 1;
+    
+    u8g2_DrawXBMP(u8g2,x,y,p->w,p->h,p->bitmap);
+#endif
+}
+
+/**
+ * @brief 显示图片消息框
+ *
+ * @param u8g2_menu u8g2菜单对象指针
+ * @param w 图片宽度
+ * @param h 图片高度
+ * @param bitmap 图片数据
+ * @param drawMessageBoxTimer 消息框显示时长（0表示无限）
+ *
+ * @return void
+ */
+void u8g2_MenuDrawMessageBox_xbm(u8g2_menu_t *u8g2_menu, u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap, uint32_t drawMessageBoxTimer)
+{
+    if (!bitmap || !u8g2_menu) return;
+#if U8G2_MENU_MESSAGEBOX
+    MessageBox_drawXbm_t *p = (MessageBox_drawXbm_t*)malloc(sizeof(MessageBox_drawXbm_t));
+    p->w = w;
+    p->h = h;
+    p->bitmap = bitmap;
+    
+    u8g2_MenuDrawMessageBox(u8g2_menu, u8g2_MenuDrawMessageBox_drawXbm, (void*)p, w + 2, h + 2, drawMessageBoxTimer);
 #endif
 }

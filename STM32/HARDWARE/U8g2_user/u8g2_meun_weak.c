@@ -68,3 +68,16 @@ WEAK void u8g2_menuValueChange(void * p)
 {
 	/* 空函数 */
 }
+
+/**
+ * @brief 按键输入事件。
+ *
+ * @param u8g2_menu 菜单对象
+ * @param u8g2_menuKeyValue 事件按键 - 可在此修改
+ *
+ * @return void
+ */
+WEAK void u8g2_menuKeyEvent(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue)
+{
+	/* 空函数 */
+}

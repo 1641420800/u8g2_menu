@@ -69,6 +69,9 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
 			return;
 		}
 	}
+    
+    u8g2_menuKeyEvent(u8g2_menu, &u8g2_menuKeyValue);
+    
 	switch (u8g2_menuKeyValue)
 	{
 	case MENU_Key_None:
