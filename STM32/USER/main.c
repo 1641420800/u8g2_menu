@@ -20,6 +20,26 @@ uint32_t deBug;
 const uint8_t bmp[];
 const uint8_t bmp2[];
 
+
+void u8g2_MenuButton(u8g2_menu_t *u8g2_menu, uint8_t ID, u8g2_menuKeyValue_t key)
+{
+    if(key == MENU_Key_Enter)
+    {
+        u8g2_MenuItemDeSelect(u8g2_menu);
+        switch(ID)
+        {
+            case 0:
+                u8g2_MenuDrawMessageBox_str(u8g2_menu, "Hello\nU8g2", 6000);
+                break;
+            case 1:
+                u8g2_MenuDrawMessageBox_xbm(u8g2_menu, 32, 32, bmp2, 6000);
+                break;
+            case 2:
+                u8g2_MenuDrawMessageBoxClose(u8g2_menu);
+                break;
+        }
+    }
+}
 void oled_displayBoard(u8g2_t * u8g2)
 {
     u8g2_DrawLine(u8g2,10, 3, 5, 32);
@@ -35,7 +55,12 @@ void menuItem_2()
 }
 void menuItem_1()
 {
-	u8g2_MenuUTF8Printf("112312342345245324523452345");
+    u8g2_MenuItem_button(u8g2_MenuButton,0);
+	u8g2_MenuUTF8Printf("str");
+    u8g2_MenuItem_button(u8g2_MenuButton,1);
+	u8g2_MenuUTF8Printf("xbm");
+    u8g2_MenuItem_button(u8g2_MenuButton,2);
+	u8g2_MenuUTF8Printf("close");
 	u8g2_MenuUTF8Printf("112312342345245324523452345");
 	u8g2_MenuUTF8Printf("112312342345245324523452345");
     // 显示版本号
@@ -94,16 +119,12 @@ void keyScann(uint16_t time)
 	*/
 }
 
-uint16_t debugTime = 0;
-
 void tim2_IRQ(void)
 {
 	char keys = get_current_key_value(&matrixKey);
 	u8g2_MenuInChar(&u8g2_menu, keys);
 	keyScann(/*time = */1);
 	u8g2_MenuTime_ISR(&u8g2_menu,1);
-    
-    if(debugTime) --debugTime;
 }
 void u8g2_MenuDrawMessageBoxTest(u8g2_menu_t *u8g2_menu);
 int main(void)
@@ -121,12 +142,7 @@ int main(void)
     
 	while(1)
 	{
-        if(!debugTime)
-        {
-            debugTime = 10 * 1000;
-            // u8g2_MenuDrawMessageBox_str(&u8g2_menu, "Hello\nU8g2", 3000);
-            u8g2_MenuDrawMessageBox_xbm(&u8g2_menu, 32, 32, bmp2, 3000);
-        }
+
 		u8g2_ClearBuffer(&u8g2);
 		oled_display(&u8g2);
 		u8g2_SendBuffer(&u8g2);

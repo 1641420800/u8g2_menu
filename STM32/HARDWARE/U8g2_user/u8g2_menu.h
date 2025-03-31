@@ -143,7 +143,7 @@ typedef enum {LayerAND, LayerOR, LayerXOR, LayerXNOR} Layer_t;
 typedef void (*menuItem_cb)(void);
 typedef void (*menuSelector_cb)(u8g2_menu_t *u8g2_menu);
 typedef void (*u8g2_MenuDraw_cb)(char *str);
-typedef void (*u8g2_MenuButton_cb)(uint8_t ID, u8g2_menuKeyValue_t key);
+typedef void (*u8g2_MenuButton_cb)(u8g2_menu_t *u8g2_menu, uint8_t ID, u8g2_menuKeyValue_t key);
 typedef void (*u8g2_MenuDrawBoard_cb)(u8g2_t *u8g2);
 typedef void (*u8g2_MenuDrawMessageBox_cb)(u8g2_t *u8g2, u8g2_uint_t width, u8g2_uint_t height, void *message);
 
@@ -445,7 +445,6 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
 // 菜单输入字符
 void u8g2_MenuInChar(u8g2_menu_t *u8g2_menu, char c);
 /* =============================== | u8g2_meun_message.c | =============================== */
-
 // 菜单消息框时间接口
 void u8g2_MenuMessageBoxTime_ISR(u8g2_menu_t *u8g2_menu, uint16_t ms);
 

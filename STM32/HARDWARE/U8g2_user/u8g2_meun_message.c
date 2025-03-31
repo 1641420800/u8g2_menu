@@ -100,7 +100,7 @@ void u8g2_menuMessageBoxCall(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_MenuDrawMessageBox(u8g2_menu_t *u8g2_menu, u8g2_MenuDrawMessageBox_cb drawMessageBox, void *message, u8g2_uint_t messageBoxWidth, u8g2_uint_t messageBoxHeight, uint32_t drawMessageBoxTimer)
 {
-    if(!u8g2_menu || !drawMessageBox) return;
+    if(!u8g2_menu) return;
 #if U8G2_MENU_MESSAGEBOX
     
     if(u8g2_menu->message)
