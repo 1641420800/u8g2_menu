@@ -1,6 +1,40 @@
 #include "u8g2_menu.h"
 
 /**
+ * @brief 菜单按键扫描(消抖)
+ *
+ * @param u8g2_menu 菜单对象
+ * @param u8g2_menuKeyValue 按键值
+ * @param key 按键状态
+ * @param time 执行周期
+ *
+ * @return void
+ */
+void u8g2_MenuKeyScannDebounce(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue, uint8_t key, uint16_t time)
+{
+	if(u8g2_menu->key_shakeFree[u8g2_menuKeyValue] < MenuKey_debouncePeriod && key)
+	{
+		u8g2_menu->key_shakeFree[u8g2_menuKeyValue] += time;
+	}
+	if(u8g2_menu->key_shakeFree[u8g2_menuKeyValue] > 0 && !key)
+	{
+		u8g2_menu->key_shakeFree[u8g2_menuKeyValue] -= time;
+	}
+
+
+	if(u8g2_menu->key_shakeFree[u8g2_menuKeyValue] < MenuKey_triggerLow && u8g2_menu->key_state[u8g2_menuKeyValue] == 0)
+	{
+		u8g2_menu->key_state[u8g2_menuKeyValue] = 1;
+	}
+	if(u8g2_menu->key_shakeFree[u8g2_menuKeyValue] > MenuKey_triggerHigh && u8g2_menu->key_state[u8g2_menuKeyValue] == 1)
+	{
+		u8g2_menu->key_state[u8g2_menuKeyValue] = 0;
+	}
+
+	u8g2_MenuKeyScann(u8g2_menu,u8g2_menuKeyValue,!u8g2_menu->key_state[u8g2_menuKeyValue],time);
+}
+
+/**
  * @brief 菜单按键扫描
  *
  * @param u8g2_menu 菜单对象

@@ -84,39 +84,9 @@ void oled_display(u8g2_t * u8g2)
 
 void keyScann(uint16_t time)
 {
-    // 消抖写法
-	static uint16_t key_shakeFree[3] = {0,0,0};
-	static uint16_t key_state[3] = {0};
-
-	if(key_shakeFree[0] < 10 && !KEY_1) key_shakeFree[0]++;
-	if(key_shakeFree[1] < 10 && !KEY_2) key_shakeFree[1]++;
-	if(key_shakeFree[2] < 10 && !KEY_3) key_shakeFree[2]++;
-	if(key_shakeFree[0] > 0 && KEY_1) key_shakeFree[0]--;
-	if(key_shakeFree[1] > 0 && KEY_2) key_shakeFree[1]--;
-	if(key_shakeFree[2] > 0 && KEY_3) key_shakeFree[2]--;
-
-	for(int i = 0; i < 3; i++)
-	{
-		if(key_shakeFree[i] < 2 && key_state[i] == 0)
-		{
-			key_state[i] = 1;
-		}
-		if(key_shakeFree[i] > 8 && key_state[i] == 1)
-		{
-			key_state[i] = 0;
-		}
-	}
-	
-	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Up,!key_state[0],time);
-	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Down,!key_state[1],time);
-	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Enter,!key_state[2],time);
-
-	/*
-	// 无消抖写法
-	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Up,!KEY_1,time);
-	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Down,!KEY_2,time);
-	u8g2_MenuKeyScann(&u8g2_menu,MENU_Key_Enter,!KEY_3,time);
-	*/
+	u8g2_MenuKeyScannDebounce(&u8g2_menu,MENU_Key_Up,!KEY_1,time);
+	u8g2_MenuKeyScannDebounce(&u8g2_menu,MENU_Key_Down,!KEY_2,time);
+	u8g2_MenuKeyScannDebounce(&u8g2_menu,MENU_Key_Enter,!KEY_3,time);
 }
 
 void tim2_IRQ(void)

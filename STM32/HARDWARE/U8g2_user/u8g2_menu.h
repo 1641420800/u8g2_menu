@@ -53,6 +53,9 @@ extern "C" {
 // 菜单按键相关
 #define MenuKey_holdTime 800                    // 菜单按键的长按触发时间
 #define MenuKey_repeatTime 200                  // 菜单按键的长按重复触发时间
+#define MenuKey_debouncePeriod 20     					// 按键消抖稳定检测周期(单位:ms)
+#define MenuKey_triggerHigh 18                  // 按键触发高电平阈值
+#define MenuKey_triggerLow 2                    // 按键释放低电平阈值
 
 // 动画相关相关
 #define ROW_HEIGHT_INCREMENT 0.2f               // 定义行高度增加量
@@ -66,6 +69,7 @@ extern "C" {
 // 消息功能相关
 #define U8G2_MENU_MESSAGEBOX 1                  // 启用消息框
 #define U8G2_MENU_INFINITE_TIMEOUT UINT32_MAX   // 不自动收回
+
 
 #ifndef ABS
 #define ABS(s) ((s) < 0 ? -(s) : (s))
@@ -290,6 +294,8 @@ struct u8g2_menu_struct
 	uint8_t timer_effective;		   // 菜单计时器是否有效
 	uint8_t keyLog[MENU_Key_Num];      // 按键状态记录
 	uint16_t keyTim[MENU_Key_Num];     // 按键状态计时
+	uint16_t key_shakeFree[MENU_Key_Num];
+	uint16_t key_state[MENU_Key_Num];
 #if U8G2_MENU_RECORD                   // 菜单记录
     uint16_t u8g2_menuRecordLen;
     char u8g2_menuRecord[U8G2_MENU_RECORD_SIZE];
@@ -436,6 +442,9 @@ u8g2_menu_t *u8g2_MenuGetCurrentMenu(void);
 u8g2_t *u8g2_MenuGetU8g2(u8g2_menu_t *u8g2_menu);
 
 /* =============================== | u8g2_meun_keys.c | =============================== */
+// 菜单按键扫描(消抖)
+void u8g2_MenuKeyScannDebounce(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue, uint8_t key, uint16_t time);
+
 // 菜单按键扫描
 void u8g2_MenuKeyScann(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue, uint8_t key, uint16_t time);
 
