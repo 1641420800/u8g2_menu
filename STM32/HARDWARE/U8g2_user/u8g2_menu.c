@@ -15,18 +15,18 @@ u8g2_menu_t *currentMenu = NULL;
  */
 void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem, menuSelector_cb menuSelector)
 {
-	if (!u8g2 || !u8g2_menu || !menuItem || !menuSelector)
-		return;
+    if (!u8g2 || !u8g2_menu || !menuItem || !menuSelector)
+        return;
 
-	memset(u8g2_menu, 0, sizeof(u8g2_menu_t));
-	u8g2_menu->u8g2 = u8g2;
-	u8g2_menu->menuItem = menuItem;
-	u8g2_menu->menuSelector = menuSelector;
-	u8g2_menu->currentSetValue = -1;
-	u8g2_menu->positionOffset_spe = 0.2;
-	u8g2_menu->positionOffset_strHeaderLen = 5;
-	u8g2_menu->u8g2_menuValueType = MENU_NC;
-	u8g2_MenuEffectBind(u8g2_menu, &u8g2_MenuEffect);
+    memset(u8g2_menu, 0, sizeof(u8g2_menu_t));
+    u8g2_menu->u8g2 = u8g2;
+    u8g2_menu->menuItem = menuItem;
+    u8g2_menu->menuSelector = menuSelector;
+    u8g2_menu->currentSetValue = -1;
+    u8g2_menu->positionOffset_spe = 0.2;
+    u8g2_menu->positionOffset_strHeaderLen = 5;
+    u8g2_menu->u8g2_menuValueType = MENU_NC;
+    u8g2_MenuEffectBind(u8g2_menu, &u8g2_MenuEffect);
 }
 
 /**
@@ -40,7 +40,7 @@ void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb 
  */
 void u8g2_CreateMenu(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem)
 {
-	u8g2_CreateMenu_Selector(u8g2, u8g2_menu, menuItem, u8g2_MenuSelector);
+    u8g2_CreateMenu_Selector(u8g2, u8g2_menu, menuItem, u8g2_MenuSelector);
 }
 
 /**
@@ -53,12 +53,12 @@ void u8g2_CreateMenu(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem)
  */
 void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_cb menuItem)
 {
-	if(!u8g2_menu)
-		return;
-	u8g2_menu->menuItem = menuItem;
-	u8g2_menu->currentItem = 0;
-	u8g2_menu->currentSetValue = -1;
-	u8g2_menuEffect_init_call(u8g2_menu);
+    if(!u8g2_menu)
+        return;
+    u8g2_menu->menuItem = menuItem;
+    u8g2_menu->currentItem = 0;
+    u8g2_menu->currentSetValue = -1;
+    u8g2_menuEffect_init_call(u8g2_menu);
 }
 
 /**
@@ -70,9 +70,9 @@ void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_cb menuItem)
  */
 menuItem_cb u8g2_MenuGetItem(u8g2_menu_t *u8g2_menu)
 {
-	if(!u8g2_menu)
-		return NULL;
-	return u8g2_menu->menuItem;
+    if(!u8g2_menu)
+        return NULL;
+    return u8g2_menu->menuItem;
 }
 
 /**
@@ -85,9 +85,9 @@ menuItem_cb u8g2_MenuGetItem(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_MenuReplaceSelector(u8g2_menu_t *u8g2_menu, menuSelector_cb menuSelector)
 {
-	if(!u8g2_menu)
-		return;
-	u8g2_menu->menuSelector = menuSelector;
+    if(!u8g2_menu)
+        return;
+    u8g2_menu->menuSelector = menuSelector;
 }
 
 /**
@@ -99,13 +99,13 @@ void u8g2_MenuReplaceSelector(u8g2_menu_t *u8g2_menu, menuSelector_cb menuSelect
  */
 MENU_Attribute_t u8g2_MenuGetAttribute(u8g2_menu_t *u8g2_menu)
 {
-	if(!u8g2_menu)
-		return MENU_None;
-	if (u8g2_menu->currentDrawItem == u8g2_menu->currentItem)
-	{
-		return u8g2_menu->currentAttribute;
-	}
-	return MENU_None;
+    if(!u8g2_menu)
+        return MENU_None;
+    if (u8g2_menu->currentDrawItem == u8g2_menu->currentItem)
+    {
+        return u8g2_menu->currentAttribute;
+    }
+    return MENU_None;
 }
 
 /**
@@ -122,13 +122,13 @@ MENU_Attribute_t u8g2_MenuGetAttribute(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_MenuSetPosition(u8g2_menu_t *u8g2_menu, u8g2_uint_t leftMarginSelector, u8g2_uint_t topMarginSelector, u8g2_uint_t lineSpacingSelector)
 {
-	if(!u8g2_menu)
-		return;
-	u8g2_menu->leftMarginSelector = leftMarginSelector;
-	u8g2_menu->topMarginSelector = topMarginSelector;
-	u8g2_menu->lineSpacingSelector = lineSpacingSelector;
+    if(!u8g2_menu)
+        return;
+    u8g2_menu->leftMarginSelector = leftMarginSelector;
+    u8g2_menu->topMarginSelector = topMarginSelector;
+    u8g2_menu->lineSpacingSelector = lineSpacingSelector;
 
-	u8g2_menu->totalLength += u8g2_menu->topMarginSelector;
+    u8g2_menu->totalLength += u8g2_menu->topMarginSelector;
 }
 
 /**
@@ -141,9 +141,9 @@ void u8g2_MenuSetPosition(u8g2_menu_t *u8g2_menu, u8g2_uint_t leftMarginSelector
  */
 u8g2_int_t u8g2_MenuGetX(u8g2_menu_t *u8g2_menu)
 {
-	if(!u8g2_menu)
-		return 0;
-	return u8g2_menu->currentX + u8g2_menu->leftMarginSelector;
+    if(!u8g2_menu)
+        return 0;
+    return u8g2_menu->currentX + u8g2_menu->leftMarginSelector;
 }
 
 /**
@@ -156,9 +156,9 @@ u8g2_int_t u8g2_MenuGetX(u8g2_menu_t *u8g2_menu)
  */
 u8g2_int_t u8g2_MenuGetY(u8g2_menu_t *u8g2_menu)
 {
-	if(!u8g2_menu)
-		return 0;
-	return u8g2_menu->totalLength - u8g2_menu->currentItemHeight + u8g2_menu->topMarginSelector;
+    if(!u8g2_menu)
+        return 0;
+    return u8g2_menu->totalLength - u8g2_menu->currentItemHeight + u8g2_menu->topMarginSelector;
 }
 
 /**
@@ -171,9 +171,9 @@ u8g2_int_t u8g2_MenuGetY(u8g2_menu_t *u8g2_menu)
  */
 u8g2_int_t u8g2_MenuGetH(u8g2_menu_t *u8g2_menu)
 {
-	if(!u8g2_menu)
-		return 0;
-	return u8g2_menu->currentItemHeight - u8g2_menu->topMarginSelector;
+    if(!u8g2_menu)
+        return 0;
+    return u8g2_menu->currentItemHeight - u8g2_menu->topMarginSelector;
 }
 
 /**
@@ -186,9 +186,9 @@ u8g2_int_t u8g2_MenuGetH(u8g2_menu_t *u8g2_menu)
  */
 u8g2_int_t u8g2_MenuGetW(u8g2_menu_t *u8g2_menu)
 {
-	if(!u8g2_menu)
-		return 0;
-	return u8g2_menu->currentWidth - u8g2_menu->leftMarginSelector;
+    if(!u8g2_menu)
+        return 0;
+    return u8g2_menu->currentWidth - u8g2_menu->leftMarginSelector;
 }
 
 /**
@@ -201,9 +201,9 @@ u8g2_int_t u8g2_MenuGetW(u8g2_menu_t *u8g2_menu)
  */
 u8g2_int_t u8g2_MenuGetHorizontalOffset(u8g2_menu_t *u8g2_menu)
 {
-	if(!u8g2_menu)
-		return 0;
-	return u8g2_menu->currentX + u8g2_menu->leftMarginSelector + u8g2_menu->_positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2);
+    if(!u8g2_menu)
+        return 0;
+    return u8g2_menu->currentX + u8g2_menu->leftMarginSelector + u8g2_menu->_positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2);
 }
 
 /**
@@ -216,13 +216,13 @@ u8g2_int_t u8g2_MenuGetHorizontalOffset(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_MenuSetPositionOffsetSpe(u8g2_menu_t *u8g2_menu, float spe)
 {
-	if(!u8g2_menu)
-		return;
-	if (spe < 0)
-		spe = -spe;
-	if (spe == 0)
-		spe = 0.01;
-	u8g2_menu->positionOffset_spe = spe;
+    if(!u8g2_menu)
+        return;
+    if (spe < 0)
+        spe = -spe;
+    if (spe == 0)
+        spe = 0.01;
+    u8g2_menu->positionOffset_spe = spe;
 }
 
 /**
@@ -235,9 +235,9 @@ void u8g2_MenuSetPositionOffsetSpe(u8g2_menu_t *u8g2_menu, float spe)
  */
 void u8g2_MenuSetPositionOffsetStrHeaderLen(u8g2_menu_t *u8g2_menu, float strHeaderLen)
 {
-	if(!u8g2_menu)
-		return;
-	u8g2_menu->positionOffset_strHeaderLen = strHeaderLen;
+    if(!u8g2_menu)
+        return;
+    u8g2_menu->positionOffset_strHeaderLen = strHeaderLen;
 }
 
 /**
@@ -250,85 +250,85 @@ void u8g2_MenuSetPositionOffsetStrHeaderLen(u8g2_menu_t *u8g2_menu, float strHea
  */
 void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
 {
-	u8g2_int_t x = 0, y = 0, w = 0, h = 0;
+    u8g2_int_t x = 0, y = 0, w = 0, h = 0;
 
-	if (!u8g2_menu)
-		return;
-	// 是否处于选中状态
-	if (u8g2_menu->currentSetValue != -1 && u8g2_menu->currentDrawItem == u8g2_menu->currentItem && u8g2_menu->currentItem == u8g2_menu->currentSetValue)
-	{
-		// 当前菜单项处于可写状态则选中 否则恢复
-		if (u8g2_menu->currentAttribute == MENU_Writable)
-		{
-			u8g2_menu->currentAttribute = MENU_WritableSelect;
-		}
-		else if (u8g2_menu->currentAttribute == MENU_Fix)
-		{
-			u8g2_menu->currentSetValue = -1;
-		}
-	}
-	u8g2_SetClipWindow(u8g2_menu->u8g2, u8g2_menu->currentX, u8g2_menu->currentY, u8g2_menu->currentX + u8g2_menu->currentWidth, u8g2_menu->currentY + u8g2_menu->currentHeight);
-	// 调用选择器函数
-	if (u8g2_menu->menuSelector)
-		u8g2_menu->menuSelector(u8g2_menu);
+    if (!u8g2_menu)
+        return;
+    // 是否处于选中状态
+    if (u8g2_menu->currentSetValue != -1 && u8g2_menu->currentDrawItem == u8g2_menu->currentItem && u8g2_menu->currentItem == u8g2_menu->currentSetValue)
+    {
+        // 当前菜单项处于可写状态则选中 否则恢复
+        if (u8g2_menu->currentAttribute == MENU_Writable)
+        {
+            u8g2_menu->currentAttribute = MENU_WritableSelect;
+        }
+        else if (u8g2_menu->currentAttribute == MENU_Fix)
+        {
+            u8g2_menu->currentSetValue = -1;
+        }
+    }
+    u8g2_SetClipWindow(u8g2_menu->u8g2, u8g2_menu->currentX, u8g2_menu->currentY, u8g2_menu->currentX + u8g2_menu->currentWidth, u8g2_menu->currentY + u8g2_menu->currentHeight);
+    // 调用选择器函数
+    if (u8g2_menu->menuSelector)
+        u8g2_menu->menuSelector(u8g2_menu);
 
-	// 计算剪裁窗口
-	x = u8g2_menu->currentX + u8g2_menu->leftMarginSelector;
-	y = u8g2_menu->totalLength - u8g2_menu->currentItemHeight;
-	w = u8g2_menu->currentWidth - u8g2_menu->leftMarginSelector;
-	h = u8g2_menu->currentItemHeight + u8g2_menu->topMarginSelector;
+    // 计算剪裁窗口
+    x = u8g2_menu->currentX + u8g2_menu->leftMarginSelector;
+    y = u8g2_menu->totalLength - u8g2_menu->currentItemHeight;
+    w = u8g2_menu->currentWidth - u8g2_menu->leftMarginSelector;
+    h = u8g2_menu->currentItemHeight + u8g2_menu->topMarginSelector;
 
-	// 限制剪裁窗口
-	x = limit(x, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth);
-	y = limit(y, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight);
-	w = limit(x + w, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth) - x;
-	h = limit(y + h, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight) - y;
+    // 限制剪裁窗口
+    x = limit(x, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth);
+    y = limit(y, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight);
+    w = limit(x + w, u8g2_menu->currentX, u8g2_menu->currentX + u8g2_menu->currentWidth) - x;
+    h = limit(y + h, u8g2_menu->currentY, u8g2_menu->currentY + u8g2_menu->currentHeight) - y;
 
-	// 设置剪裁窗口
-	u8g2_SetClipWindow(u8g2_menu->u8g2, x, y, x + w, y + h);
+    // 设置剪裁窗口
+    u8g2_SetClipWindow(u8g2_menu->u8g2, x, y, x + w, y + h);
 
-	// 水平滚动
-	if (u8g2_menu->currentItemLog != u8g2_menu->currentItem)
-	{
-		u8g2_menu->positionOffset = u8g2_menu->positionOffset_strHeaderLen;
-		u8g2_menu->currentItemLog = u8g2_menu->currentItem;
-	}
-	u8g2_menu->_positionOffset = 0;
+    // 水平滚动
+    if (u8g2_menu->currentItemLog != u8g2_menu->currentItem)
+    {
+        u8g2_menu->positionOffset = u8g2_menu->positionOffset_strHeaderLen;
+        u8g2_menu->currentItemLog = u8g2_menu->currentItem;
+    }
+    u8g2_menu->_positionOffset = 0;
 
-	// 判断绘制到选中的项
-	if (u8g2_menu->currentDrawItem == u8g2_menu->currentItem)
-	{
-		// 移动到选中的项
-		u8g2_menu->pickItemY = u8g2_menu->totalLength;
-		u8g2_menu->pickItemHeight = u8g2_menu->currentItemHeight;
+    // 判断绘制到选中的项
+    if (u8g2_menu->currentDrawItem == u8g2_menu->currentItem)
+    {
+        // 移动到选中的项
+        u8g2_menu->pickItemY = u8g2_menu->totalLength;
+        u8g2_menu->pickItemHeight = u8g2_menu->currentItemHeight;
 
-		// 判断选中的项是否宽度超过屏幕
-		if (u8g2_menu->currentItemWidth > w)
-		{
-			// 起点坐标向左偏移
-			u8g2_menu->positionOffset -= u8g2_menu->positionOffset_spe;
-			// 判断移动完成
-			if (u8g2_menu->positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2) + u8g2_menu->currentItemWidth <= u8g2_menu->positionOffset_strHeaderLen)
-			{
-				u8g2_menu->positionOffset = u8g2_menu->positionOffset_strHeaderLen;
-			}
+        // 判断选中的项是否宽度超过屏幕
+        if (u8g2_menu->currentItemWidth > w)
+        {
+            // 起点坐标向左偏移
+            u8g2_menu->positionOffset -= u8g2_menu->positionOffset_spe;
+            // 判断移动完成
+            if (u8g2_menu->positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2) + u8g2_menu->currentItemWidth <= u8g2_menu->positionOffset_strHeaderLen)
+            {
+                u8g2_menu->positionOffset = u8g2_menu->positionOffset_strHeaderLen;
+            }
 
-			// 判断偏移量
-			if (u8g2_menu->positionOffset > 0)
-				u8g2_menu->_positionOffset = 0;
-			else if (u8g2_menu->positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2) + u8g2_menu->currentItemWidth <= w)
-				u8g2_menu->_positionOffset = (float)(w - u8g2_menu->currentItemWidth) / u8g2_GetMaxCharWidth(u8g2_menu->u8g2);
-			else
-				u8g2_menu->_positionOffset = u8g2_menu->positionOffset;
-			
-			// 高宽都超过的处理办法
-		}
-		else
-		{
-			// 只有高度超过的处理办法
-		}
-		// 判断选中的项是否高度超过屏幕
-	}
+            // 判断偏移量
+            if (u8g2_menu->positionOffset > 0)
+                u8g2_menu->_positionOffset = 0;
+            else if (u8g2_menu->positionOffset * u8g2_GetMaxCharWidth(u8g2_menu->u8g2) + u8g2_menu->currentItemWidth <= w)
+                u8g2_menu->_positionOffset = (float)(w - u8g2_menu->currentItemWidth) / u8g2_GetMaxCharWidth(u8g2_menu->u8g2);
+            else
+                u8g2_menu->_positionOffset = u8g2_menu->positionOffset;
+            
+            // 高宽都超过的处理办法
+        }
+        else
+        {
+            // 只有高度超过的处理办法
+        }
+        // 判断选中的项是否高度超过屏幕
+    }
 }
 
 /**
@@ -346,12 +346,12 @@ void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_DrawVSliderBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, float schedule, float proportion)
 {
-	if(!u8g2 || w < 2)
-		return;
-	schedule = limit(schedule, 0, 1);
-	proportion = limit(proportion, 0, 1);
-	u8g2_DrawVLine(u8g2, x + w / 2, y, h);
-	u8g2_DrawBox(u8g2, x, y + h * (1 - proportion) * schedule, w, h * proportion + 1);
+    if(!u8g2 || w < 2)
+        return;
+    schedule = limit(schedule, 0, 1);
+    proportion = limit(proportion, 0, 1);
+    u8g2_DrawVLine(u8g2, x + w / 2, y, h);
+    u8g2_DrawBox(u8g2, x, y + h * (1 - proportion) * schedule, w, h * proportion + 1);
 }
 
 /**
@@ -367,72 +367,85 @@ void u8g2_DrawVSliderBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t
  */
 void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h)
 {
-	if (!u8g2_menu || w < 6)
-		return;
-	// 设置当前绘制的菜单
-	currentMenu = u8g2_menu;
-	u8g2_menu->currentX = x;
-	u8g2_menu->currentY = y;
-	u8g2_menu->currentWidth = w - 6;
-	u8g2_menu->currentHeight = h;
-	// 绘制表项
-	u8g2_menu->currentDrawItem = 0;
-	u8g2_menu->totalLength = 0;
-	u8g2_menu->_u8g2_menuValueType = MENU_NC;
+    if (!u8g2_menu || w < 6)
+        return;
+    
+    // 设置当前绘制的菜单
+    currentMenu = u8g2_menu;
+    
+    // 设置菜单尺寸
+    u8g2_menu->currentX = x;
+    u8g2_menu->currentY = y;
+    u8g2_menu->currentWidth = w - 6;
+    u8g2_menu->currentHeight = h;
+    
+    // 
+    u8g2_menu->_bindChar = u8g2_menu->bindChar;
+    u8g2_menu->bindChar = 0;
+    // 绘制表项
+    u8g2_menu->currentDrawItem = 0;
+    u8g2_menu->totalLength = 0;
+    u8g2_menu->_u8g2_menuValueType = MENU_NC;
 
-	if (u8g2_menu->currentItemLog != u8g2_menu->currentItem)
-	{
-		u8g2_menuItemLeave(u8g2_menu, u8g2_menu->currentItemLog);
-		u8g2_menuItemEnter(u8g2_menu, u8g2_menu->currentItem);
-	}
+    u8g2_MenuEventProcess(u8g2_menu);
+    
+    if (u8g2_menu->currentItemLog != u8g2_menu->currentItem)
+    {
+        u8g2_menuItemLeave(u8g2_menu, u8g2_menu->currentItemLog);
+        u8g2_menuItemEnter(u8g2_menu, u8g2_menu->currentItem);
+    }
 
-	if (u8g2_menu->menuItem)
+
+    if (u8g2_menu->menuItem)
     {
         u8g2_MenuRecordClear(u8g2_menu);
         u8g2_MenuRecordAdd(u8g2_menu,"\r\n---------------");
-		u8g2_menu->menuItem();
+        u8g2_menu->menuItem();
     }
-	u8g2_menu->u8g2_menuValueType = u8g2_menu->_u8g2_menuValueType;
-	
+    u8g2_menu->u8g2_menuValueType = u8g2_menu->_u8g2_menuValueType;
+    if (u8g2_menu->u8g2_menuValueType == MENU_menu && u8g2_menu->currentSetValue != -1)
+    {
+        u8g2_MenuReplaceItem(u8g2_menu,u8g2_menu->u8g2_menuValue.menu.menuItem);
+    }
     u8g2_menuMessageBoxCall(u8g2_menu);
     
-	// todo : 待优化
-	if(!u8g2_menu->timer_effective) u8g2_menuEffect_run_call(u8g2_menu);
-	if(u8g2_menu->timer_effective && u8g2_menu->timer > U8G2_MENU_DELAY)
-	{
-		u8g2_menu->timer -= U8G2_MENU_DELAY;
-		u8g2_menuEffect_run_call(u8g2_menu);
-	}
+    // todo : 待优化
+    if(!u8g2_menu->timer_effective) u8g2_menuEffect_run_call(u8g2_menu);
+    if(u8g2_menu->timer_effective && u8g2_menu->timer > U8G2_MENU_DELAY)
+    {
+        u8g2_menu->timer -= U8G2_MENU_DELAY;
+        u8g2_menuEffect_run_call(u8g2_menu);
+    }
 
-	if (u8g2_menu->currentDrawItem == 0)
-	{
-		// 清除当前绘制的菜单
-		currentMenu = NULL;
-		return;
-	}
-	// 移动是否超出最后一项
-	if (u8g2_menu->currentDrawItem <= u8g2_menu->currentItem)
-	{
-		u8g2_menu->currentItem = u8g2_menu->currentDrawItem - 1;
-	}
-	// 移动是否超出第一项
-	if (u8g2_menu->currentItem < 0)
-	{
-		u8g2_menu->currentItem = 0;
-	}
-	// 解除限制绘制区域
-	u8g2_SetMaxClipWindow(u8g2_menu->u8g2);
-	// 绘制滑块条
-	if (u8g2_menu->totalLength > h)
-	{
-		u8g2_DrawVSliderBar(
-			u8g2_menu->u8g2,
-			x + w - 5, y, 5, h,
-			(float)(u8g2_MenuEffectGetPos(u8g2_menu) + y) / (u8g2_menu->totalLength - h),
-			limit((float)h / u8g2_menu->totalLength, 0.2, 1));
-	}
-	// 清除当前绘制的菜单
-	currentMenu = NULL;
+    if (u8g2_menu->currentDrawItem == 0)
+    {
+        // 清除当前绘制的菜单
+        currentMenu = NULL;
+        return;
+    }
+    // 移动是否超出最后一项
+    if (u8g2_menu->currentDrawItem <= u8g2_menu->currentItem)
+    {
+        u8g2_menu->currentItem = u8g2_menu->currentDrawItem - 1;
+    }
+    // 移动是否超出第一项
+    if (u8g2_menu->currentItem < 0)
+    {
+        u8g2_menu->currentItem = 0;
+    }
+    // 解除限制绘制区域
+    u8g2_SetMaxClipWindow(u8g2_menu->u8g2);
+    // 绘制滑块条
+    if (u8g2_menu->totalLength > h)
+    {
+        u8g2_DrawVSliderBar(
+        u8g2_menu->u8g2,
+        x + w - 5, y, 5, h,
+        (float)(u8g2_MenuEffectGetPos(u8g2_menu) + y) / (u8g2_menu->totalLength - h),
+        limit((float)h / u8g2_menu->totalLength, 0.2f, 1));
+    }
+    // 清除当前绘制的菜单
+    currentMenu = NULL;
 }
 
 /**
@@ -445,10 +458,10 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
  */
 void u8g2_MenuTime_ISR(u8g2_menu_t *u8g2_menu, uint16_t ms)
 {
-	if(!u8g2_menu || !ms)
-		return;
-	u8g2_menu->timer += ms;
-	u8g2_menu->timer_effective = 1;
+    if(!u8g2_menu || !ms)
+        return;
+    u8g2_menu->timer += ms;
+    u8g2_menu->timer_effective = 1;
     
     u8g2_MenuMessageBoxTime_ISR(u8g2_menu, ms);
 }
@@ -463,9 +476,9 @@ void u8g2_MenuTime_ISR(u8g2_menu_t *u8g2_menu, uint16_t ms)
  */
 void u8g2_MenuItemUpS(u8g2_menu_t *u8g2_menu, u8g2_uint_t i)
 {
-	if(!u8g2_menu)
-		return;
-	u8g2_menu->currentItem -= i;
+    if(!u8g2_menu)
+        return;
+    u8g2_menu->currentItem -= i;
 }
 
 /**
@@ -477,7 +490,7 @@ void u8g2_MenuItemUpS(u8g2_menu_t *u8g2_menu, u8g2_uint_t i)
  */
 void u8g2_MenuItemUp(u8g2_menu_t *u8g2_menu)
 {
-	u8g2_MenuItemUpS(u8g2_menu, 1);
+    u8g2_MenuItemUpS(u8g2_menu, 1);
 }
 
 /**
@@ -490,9 +503,9 @@ void u8g2_MenuItemUp(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_MenuItemDownS(u8g2_menu_t *u8g2_menu, u8g2_uint_t i)
 {
-	if(!u8g2_menu)
-		return;
-	u8g2_menu->currentItem += i;
+    if(!u8g2_menu)
+        return;
+    u8g2_menu->currentItem += i;
 }
 
 /**
@@ -504,7 +517,7 @@ void u8g2_MenuItemDownS(u8g2_menu_t *u8g2_menu, u8g2_uint_t i)
  */
 void u8g2_MenuItemDown(u8g2_menu_t *u8g2_menu)
 {
-	u8g2_MenuItemDownS(u8g2_menu, 1);
+    u8g2_MenuItemDownS(u8g2_menu, 1);
 }
 
 /**
@@ -516,11 +529,56 @@ void u8g2_MenuItemDown(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_MenuItemMove(u8g2_menu_t *u8g2_menu, u8g2_uint_t i)
 {
-	if(!u8g2_menu)
-		return;
-	u8g2_menu->currentItem = i;
+    if(!u8g2_menu)
+        return;
+    u8g2_menu->currentItem = i;
 }
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+void u8g2_MenuEvent_itemBindChar_itemMove(u8g2_menu_t *u8g2_menu, void* value)
+{
+    u8g2_MenuItemMove(u8g2_menu,(uint8_t)value);
+}
+void u8g2_MenuEvent_itemBindChar_itemSelect(u8g2_menu_t *u8g2_menu, void* value)
+{
+    if((uint8_t)value)
+    {
+        u8g2_MenuItemSelect(u8g2_menu);
+    }
+    else
+    {
+        u8g2_MenuItemDeSelect(u8g2_menu);
+    }
+}
+/**
+ * @brief 菜单项与字符绑定
+ * @note 绑定字符后在非选中状态收到指定字符将会跳转到该项
+ *
+ * @return void
+ */
+void u8g2_MenuItemBindChar(char c, uint8_t selected)
+{
+    if(!c) 
+        return;
+    u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
+    if (!menu)
+        return;
+    
+    if(c == menu->_bindChar)
+    {
+        u8g2_menu_event_item_t eventItem;
+        eventItem.nextLoopRequired = 0;
+        eventItem.menuEventHandle = u8g2_MenuEvent_itemBindChar_itemMove;
+        eventItem.value = (void*)(uint32_t)menu->currentDrawItem; // 不推荐操作 这里是为了简化值传递
+        u8g2_MenuEventRecord(menu, &eventItem);
+        
+        eventItem.nextLoopRequired = 1;
+        eventItem.menuEventHandle = u8g2_MenuEvent_itemBindChar_itemSelect;
+        eventItem.value = (void*)(uint32_t)selected;
+        u8g2_MenuEventRecord(menu, &eventItem);
+    }
+}
 
 /**
  * @brief 菜单项绘制开始
@@ -530,22 +588,22 @@ void u8g2_MenuItemMove(u8g2_menu_t *u8g2_menu, u8g2_uint_t i)
  */
 u8g2_menu_t *u8g2_MenuDrawItemStart(void)
 {
-	u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
-	if (!menu)
-		return NULL;
-	menu->totalLength = menu->totalLength - u8g2_MenuEffectGetPos(menu);
-	u8g2_MenuSelector_Record(menu);
-	return menu;
+    u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
+    if (!menu)
+        return NULL;
+    menu->totalLength = menu->totalLength - u8g2_MenuEffectGetPos(menu);
+    u8g2_MenuSelector_Record(menu);
+    return menu;
 }
 
 // 设置绘制尺寸
 void u8g2_MenuDrawItemSetSize(u8g2_menu_t *menu, u8g2_uint_t width, u8g2_uint_t height)
 {
-	if (!menu)
-		return;
-	menu->currentItemWidth = width;
-	menu->currentItemHeight = height;
-	menu->totalLength += menu->currentItemHeight;
+    if (!menu)
+        return;
+    menu->currentItemWidth = width;
+    menu->currentItemHeight = height;
+    menu->totalLength += menu->currentItemHeight;
 }
 
 /**
@@ -556,21 +614,21 @@ void u8g2_MenuDrawItemSetSize(u8g2_menu_t *menu, u8g2_uint_t width, u8g2_uint_t 
  */
 void u8g2_MenuDrawItemEnd(u8g2_menu_t *menu)
 {
-	if (!menu)
-		return;
-	menu->totalLength += menu->lineSpacingSelector;
+    if (!menu)
+        return;
+    menu->totalLength += menu->lineSpacingSelector;
 #if U8G2_MENU_DEBUG
-	u8g2_int_t x = u8g2_MenuGetX(menu);
-	u8g2_int_t y = u8g2_MenuGetY(menu);
-	u8g2_int_t w = u8g2_MenuGetW(menu);
-	u8g2_int_t h = u8g2_MenuGetH(menu);
-	u8g2_DrawFrame(menu->u8g2, x, y, w, h);
+    u8g2_int_t x = u8g2_MenuGetX(menu);
+    u8g2_int_t y = u8g2_MenuGetY(menu);
+    u8g2_int_t w = u8g2_MenuGetW(menu);
+    u8g2_int_t h = u8g2_MenuGetH(menu);
+    u8g2_DrawFrame(menu->u8g2, x, y, w, h);
 #endif
-	++menu->currentDrawItem;
-	menu->currentAttribute = MENU_Fix;
-	menu->totalLength = (menu->totalLength + u8g2_MenuEffectGetPos(menu)) * u8g2_MenuEffectGetRowHeight(menu);
-	u8g2_SetClipWindow(menu->u8g2, menu->currentX, menu->currentY, menu->currentX + menu->currentWidth, menu->currentY + menu->currentHeight);
-	return;
+    ++menu->currentDrawItem;
+    menu->currentAttribute = MENU_Fix;
+    menu->totalLength = (menu->totalLength + u8g2_MenuEffectGetPos(menu)) * u8g2_MenuEffectGetRowHeight(menu);
+    u8g2_SetClipWindow(menu->u8g2, menu->currentX, menu->currentY, menu->currentX + menu->currentWidth, menu->currentY + menu->currentHeight);
+    return;
 }
 
 /**
@@ -583,15 +641,15 @@ void u8g2_MenuDrawItemEnd(u8g2_menu_t *menu)
  */
 u8g2_menu_t *u8g2_getMenuItemValue(MENU_Attribute_t MENU_Attribute)
 {
-	u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
-	if (!menu)
-		return NULL;
-	if (menu->currentItem != menu->currentDrawItem)
-		return NULL;
-	menu->currentAttribute = MENU_Attribute;
-	if (menu->currentItem != menu->currentDrawItem)
-		return NULL;
-	return menu;
+    u8g2_menu_t *menu = u8g2_MenuGetCurrentMenu();
+    if (!menu)
+        return NULL;
+    if (menu->currentItem != menu->currentDrawItem)
+        return NULL;
+    menu->currentAttribute = MENU_Attribute;
+    if (menu->currentItem != menu->currentDrawItem)
+        return NULL;
+    return menu;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -605,9 +663,9 @@ u8g2_menu_t *u8g2_getMenuItemValue(MENU_Attribute_t MENU_Attribute)
  */
 u8g2_uint_t u8g2_MenuGetCurrentSelection(u8g2_menu_t *u8g2_menu)
 {
-	if (!u8g2_menu)
-		return 0;
-	return u8g2_menu->currentItem;
+    if (!u8g2_menu)
+        return 0;
+    return u8g2_menu->currentItem;
 }
 
 /**
@@ -617,7 +675,7 @@ u8g2_uint_t u8g2_MenuGetCurrentSelection(u8g2_menu_t *u8g2_menu)
  */
 u8g2_menu_t *u8g2_MenuGetCurrentMenu(void)
 {
-	return currentMenu;
+    return currentMenu;
 }
 
 /**
@@ -627,9 +685,9 @@ u8g2_menu_t *u8g2_MenuGetCurrentMenu(void)
  */
 u8g2_t *u8g2_MenuGetU8g2(u8g2_menu_t *u8g2_menu)
 {
-	if (!u8g2_menu)
-		return NULL;
-	return u8g2_menu->u8g2;
+    if (!u8g2_menu)
+        return NULL;
+    return u8g2_menu->u8g2;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -642,8 +700,8 @@ u8g2_t *u8g2_MenuGetU8g2(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_MenuRecordClear(u8g2_menu_t *u8g2_menu)
 {
-	if (!u8g2_menu)
-		return;
+    if (!u8g2_menu)
+        return;
 #if U8G2_MENU_RECORD
     u8g2_menu->u8g2_menuRecordLen = 0;
     u8g2_menu->u8g2_menuRecord[0] = 0;
@@ -659,8 +717,8 @@ void u8g2_MenuRecordClear(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_MenuRecordAdd(u8g2_menu_t *u8g2_menu, const char * text)
 {
-	if (!u8g2_menu)
-		return;
+    if (!u8g2_menu)
+        return;
 #if U8G2_MENU_RECORD
     while(*text != '\0' && u8g2_menu->u8g2_menuRecordLen < U8G2_MENU_RECORD_SIZE - 1)
     {
@@ -687,8 +745,8 @@ void u8g2_MenuRecordAdd(u8g2_menu_t *u8g2_menu, const char * text)
  */
 const char* u8g2_MenuRecord(u8g2_menu_t *u8g2_menu)
 {
-	if (!u8g2_menu)
-		return NULL;
+    if (!u8g2_menu)
+        return NULL;
 #if U8G2_MENU_RECORD
     return u8g2_menu->u8g2_menuRecord;
 #else

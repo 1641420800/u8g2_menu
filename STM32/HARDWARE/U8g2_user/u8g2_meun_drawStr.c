@@ -164,10 +164,10 @@ void u8g2_MenuDrawPasswordX2(char *str, char mask)
  */
 void u8g2_MenuPrintf(u8g2_MenuDraw_cb u8g2_MenuDraw, const char *fmt, ...)
 {
-    char buffer[64];
+    char buffer[256];
     va_list arg_ptr;
     va_start(arg_ptr, fmt);
-    vsnprintf(buffer, 64, fmt, arg_ptr);
+    vsnprintf(buffer, 256, fmt, arg_ptr);
     va_end(arg_ptr);
     u8g2_MenuDraw(buffer);
 }
@@ -183,10 +183,10 @@ void u8g2_MenuPrintf(u8g2_MenuDraw_cb u8g2_MenuDraw, const char *fmt, ...)
  */
 void u8g2_MenuUTF8Printf(const char *fmt, ...)
 {
-    char buffer[64];
+    char buffer[256];
     va_list arg_ptr;
     va_start(arg_ptr, fmt);
-    vsnprintf(buffer, 64, fmt, arg_ptr);
+    vsnprintf(buffer, 256, fmt, arg_ptr);
     va_end(arg_ptr);
     u8g2_MenuDrawUTF8(buffer);
 }

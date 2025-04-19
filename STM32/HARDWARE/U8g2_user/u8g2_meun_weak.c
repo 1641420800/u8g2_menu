@@ -14,7 +14,7 @@
  */
 WEAK void u8g2_menuItemEnter(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
 {
-	/* 空函数 */
+    /* 空函数 */
 }
 
 /**
@@ -30,7 +30,7 @@ WEAK void u8g2_menuItemEnter(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
  */
 WEAK void u8g2_menuItemLeave(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
 {
-	/* 空函数 */
+    /* 空函数 */
 }
 
 /**
@@ -42,7 +42,7 @@ WEAK void u8g2_menuItemLeave(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
  */
 WEAK void u8g2_menuValueAdd(void * p)
 {
-	/* 空函数 */
+    /* 空函数 */
 }
 
 /**
@@ -54,7 +54,7 @@ WEAK void u8g2_menuValueAdd(void * p)
  */
 WEAK void u8g2_menuValueSub(void * p)
 {
-	/* 空函数 */
+    /* 空函数 */
 }
 
 /**
@@ -66,7 +66,7 @@ WEAK void u8g2_menuValueSub(void * p)
  */
 WEAK void u8g2_menuValueChange(void * p)
 {
-	/* 空函数 */
+    /* 空函数 */
 }
 
 /**
@@ -79,5 +79,32 @@ WEAK void u8g2_menuValueChange(void * p)
  */
 WEAK void u8g2_menuKeyEvent(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue)
 {
-	/* 空函数 */
+    /* 空函数 */
+}
+
+/**
+ * @brief 字符输入事件。
+ *
+ * @param u8g2_menu 菜单对象
+ * @param c 输入的字符 - 可在此修改
+ *
+ * @return void
+ */
+WEAK void u8g2_menuCharEvent(u8g2_menu_t *u8g2_menu, char *c)
+{
+    /* 空函数 */
+}
+
+/**
+ * @brief 事件过滤器。
+ *
+ * @param u8g2_menu 菜单对象
+ * @param eventItem 需处理的事件
+ *
+ * @return uint8_t 返回 0 表示事件需进一步处理
+ */
+WEAK uint8_t menuEventUserHandle(u8g2_menu_t *u8g2_menu, u8g2_menu_event_item_t * eventItem)
+{
+    /* 空函数 */
+    return 0;
 }

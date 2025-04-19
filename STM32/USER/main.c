@@ -55,13 +55,19 @@ void menuItem_2()
 }
 void menuItem_1()
 {
+    u8g2_MenuItemBindChar('4',1);
     u8g2_MenuItem_button(u8g2_MenuButton,0);
 	u8g2_MenuUTF8Printf("str");
+    u8g2_MenuItemBindChar('5',1);
     u8g2_MenuItem_button(u8g2_MenuButton,1);
 	u8g2_MenuUTF8Printf("xbm");
+    u8g2_MenuItemBindChar('6',1);
     u8g2_MenuItem_button(u8g2_MenuButton,2);
 	u8g2_MenuUTF8Printf("close");
+    
+    u8g2_MenuItemBindChar('1',0);
 	u8g2_MenuUTF8Printf("112312342345245324523452345");
+    u8g2_MenuItemBindChar('2',0);
 	u8g2_MenuUTF8Printf("112312342345245324523452345");
     // 显示版本号
 	u8g2_MenuUTF8Printf(U8G2_MENU_VERSION);
@@ -70,6 +76,7 @@ void menuItem_1()
 	u8g2_MenuItemValue_uint32(&deBug,2,0,100);
 	u8g2_MenuUTF8Printf("%d", deBug);
     
+    u8g2_MenuItemBindChar('3',0);
     u8g2_MenuDrawItemXBM(523,60,bmp);
     
 

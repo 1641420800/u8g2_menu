@@ -70,6 +70,8 @@ extern "C" {
 #define U8G2_MENU_MESSAGEBOX 1                  // 启用消息框
 #define U8G2_MENU_INFINITE_TIMEOUT UINT32_MAX   // 不自动收回
 
+// 事件功能相关
+#define U8G2_MENU_EVENT_Capacity 30
 
 #ifndef ABS
 #define ABS(s) ((s) < 0 ? -(s) : (s))
@@ -106,7 +108,8 @@ typedef struct u8g2_menu_effect_struct u8g2_menu_effect_t;
 typedef struct u8g2_menu_struct u8g2_menu_t;
 typedef union u8g2_menu_value_uniom u8g2_menu_value_t;
 typedef struct u8g2_chart_struct u8g2_chart_t;
-
+typedef struct u8g2_menu_event_item_struct u8g2_menu_event_item_t;
+typedef struct u8g2_menu_event_struct u8g2_menu_event_t;
 typedef enum
 {
 	MENU_None = 0,		// 未选中
@@ -150,7 +153,7 @@ typedef void (*u8g2_MenuDraw_cb)(char *str);
 typedef void (*u8g2_MenuButton_cb)(u8g2_menu_t *u8g2_menu, uint8_t ID, u8g2_menuKeyValue_t key);
 typedef void (*u8g2_MenuDrawBoard_cb)(u8g2_t *u8g2);
 typedef void (*u8g2_MenuDrawMessageBox_cb)(u8g2_t *u8g2, u8g2_uint_t width, u8g2_uint_t height, void *message);
-
+typedef void (*menuEventHandle_cb)(u8g2_menu_t *u8g2_menu, void* value);
 struct u8g2_menu_uint8_struct
 {
 	uint8_t *value;
@@ -259,6 +262,21 @@ struct u8g2_menu_effect_struct
 	u8g2_int_t _position; // 当前实时位置
 	float _rowHeight;	  // 当前实时行高比例
 };
+struct u8g2_menu_event_item_struct
+{
+    uint8_t nextLoopRequired : 1; // 下次循环处理
+    // <todo : 待定>
+    void* value;  // 事件值
+    menuEventHandle_cb menuEventHandle;
+};
+struct u8g2_menu_event_struct
+{
+    uint8_t lock;
+    size_t quantity; 
+    size_t itemsWrite;
+    size_t itemsRead;
+    struct u8g2_menu_event_item_struct items[U8G2_MENU_EVENT_Capacity];
+};
 struct u8g2_menu_struct
 {
 	u8g2_t *u8g2;					   // u8g2实例
@@ -296,6 +314,9 @@ struct u8g2_menu_struct
 	uint16_t keyTim[MENU_Key_Num];     // 按键状态计时
 	uint16_t key_shakeFree[MENU_Key_Num];
 	uint16_t key_state[MENU_Key_Num];
+	char bindChar;
+	char _bindChar;
+    u8g2_menu_event_t event;
 #if U8G2_MENU_RECORD                   // 菜单记录
     uint16_t u8g2_menuRecordLen;
     char u8g2_menuRecord[U8G2_MENU_RECORD_SIZE];
@@ -337,6 +358,12 @@ void u8g2_menuValueChange(void * p);
 
 // 按键输入
 void u8g2_menuKeyEvent(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue);
+
+// 字符输入
+void u8g2_menuCharEvent(u8g2_menu_t *u8g2_menu, char *c);
+
+// 事件过滤器
+uint8_t menuEventUserHandle(u8g2_menu_t *u8g2_menu, u8g2_menu_event_item_t * eventItem);
 /* =============================== | u8g2_meun.c | =============================== */
 // 创建菜单 自定义选择展示器
 void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem, menuSelector_cb menuSelector);
@@ -394,6 +421,9 @@ void u8g2_MenuItemDown(u8g2_menu_t *u8g2_menu);
 // 移动到某项
 void u8g2_MenuItemMove(u8g2_menu_t *u8g2_menu, u8g2_uint_t i);
 
+// 绑定快捷跳转字符
+void u8g2_MenuItemBindChar(char c, uint8_t selected);
+
 // 清除记录
 void u8g2_MenuRecordClear(u8g2_menu_t *u8g2_menu);
 
@@ -440,6 +470,16 @@ u8g2_menu_t *u8g2_MenuGetCurrentMenu(void);
 
 // 获取菜单对应的 u8g2_t
 u8g2_t *u8g2_MenuGetU8g2(u8g2_menu_t *u8g2_menu);
+
+/* =============================== | u8g2_meun_event.c | =============================== */
+// 添加一个事件
+uint8_t u8g2_MenuEventRecord(u8g2_menu_t *u8g2_menu, u8g2_menu_event_item_t * eventItem);
+
+// 处理事件
+void u8g2_MenuEventProcess(u8g2_menu_t *u8g2_menu);
+
+// 获取当前事件暂存数
+size_t u8g2_MenuEvent_getQuantity(u8g2_menu_t *u8g2_menu);
 
 /* =============================== | u8g2_meun_keys.c | =============================== */
 // 菜单按键扫描(消抖)
