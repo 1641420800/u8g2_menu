@@ -103,6 +103,11 @@ extern "C" {
 #else
 #error not supported tool chain
 #endif
+#ifdef __GNUC__
+#define PRINTF_ATTR(fmt_idx, arg_idx) __attribute__((format(printf, fmt_idx, arg_idx)))
+#else
+#define PRINTF_ATTR(fmt_idx, arg_idx)
+#endif
 
 typedef struct u8g2_menu_effect_struct u8g2_menu_effect_t;
 typedef struct u8g2_menu_struct u8g2_menu_t;
@@ -536,10 +541,10 @@ void u8g2_MenuDrawPassword(char *str, char mask);
 void u8g2_MenuDrawPasswordX2(char *str, char mask);
 
 // 菜单格式化输出
-void u8g2_MenuPrintf(u8g2_MenuDraw_cb u8g2_MenuDraw, const char *fmt, ...);
+void u8g2_MenuPrintf(u8g2_MenuDraw_cb u8g2_MenuDraw, const char *fmt, ...) PRINTF_ATTR(2,3);
 
 // 菜单格式化输出 - 快捷函数 固定调用 u8g2_MenuDrawUTF8
-void u8g2_MenuUTF8Printf(const char *fmt, ...);
+void u8g2_MenuUTF8Printf(const char *fmt, ...) PRINTF_ATTR(1,2);
 
 /* =============================== | u8g2_meun_drawValueBar.c | =============================== */
 // 绘制滑块条
