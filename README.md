@@ -141,8 +141,6 @@ void key_scan(uint16_t time) {
 
 ## 版本信息
 
-当前版本：`1.2.5-beta`
-
 支持通过`U8G2_MENU_VERSION`宏获取版本号。
 
 

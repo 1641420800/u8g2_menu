@@ -10,7 +10,7 @@
 // 推理展开效果 - 初始化
 u8g2_int_t u8g2_Menu_init(u8g2_menu_t *u8g2_menu)
 {
-	u8g2_menu->menuEffect._rowHeight = ROW_HEIGHT_INCREMENT;
+    u8g2_menu->menuEffect._rowHeight = ROW_HEIGHT_INCREMENT;
     return 0;
 }
 

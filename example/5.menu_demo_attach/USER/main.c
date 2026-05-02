@@ -29,6 +29,7 @@
 u8g2_t u8g2;                  // U8g2图形库实例
 u8g2_menu_t u8g2_menu;        // U8g2菜单库实例
 char buff[64] = "";           // 字符串输入缓冲区（64字节，足够存储常规输入）
+uint16_t num = 0;
 
 /**
  * @brief  菜单按钮回调函数
@@ -42,12 +43,18 @@ char buff[64] = "";           // 字符串输入缓冲区（64字节，足够存
 void u8g2_MenuButton(u8g2_menu_t *u8g2_menu, uint8_t ID, u8g2_menuKeyValue_t key)
 {
     /* 菜单库支持的按键类型枚举（注释仅作参考）
-    MENU_Key_Up,	   // 上键（导航）
-    MENU_Key_Down,	   // 下键（导航）
-    MENU_Key_Enter,	   // 确认键（触发按钮回调核心逻辑）
+    MENU_Key_Up,       // 上键（导航）
+    MENU_Key_Down,     // 下键（导航）
+    MENU_Key_Enter,    // 确认键（触发按钮回调核心逻辑）
     MENU_Key_Return,   // 返回键（退出编辑/返回上一级）
-    MENU_Key_Add,	   // 加键（数值编辑）
-    MENU_Key_Sub,	   // 减键（数值编辑）
+    MENU_Key_Add,      // 加键（数值编辑）
+    MENU_Key_Sub,      // 减键（数值编辑）
+    MENU_Key_USER_1,   // 自定义按键1
+    MENU_Key_USER_2,   // 自定义按键2
+    MENU_Key_USER_3,   // 自定义按键3
+    MENU_Key_USER_4,   // 自定义按键4
+    MENU_Key_USER_5,   // 自定义按键5
+    MENU_Key_USER_6,   // 自定义按键6
     */
     // 仅响应确认键（Enter）的按钮触发事件
     if(key == MENU_Key_Enter)
@@ -101,9 +108,11 @@ void menuItem_1()
     */
     // 绑定字符串输入功能到该行
     // 参数：输入缓冲区指针 | 缓冲区大小（防止越界）
-    u8g2_MenuItem_str(&buff, sizeof(buff));
+    u8g2_MenuItem_str(buff, sizeof(buff));
     // 显示当前输入的字符串（输入过程中实时刷新）
     u8g2_MenuUTF8Printf("in:%s", buff);
+    
+    u8g2_MenuUTF8Printf("num:%d", num);
 }
 
 /**
@@ -119,6 +128,15 @@ void oled_display(u8g2_t * u8g2)
     u8g2_DrawMenu(&u8g2_menu, 0, 0, 128, 64);
 }
 
+void menuEventUserKey(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)
+{
+    if(u8g2_menuKeyValue == MENU_Key_USER_1)
+    {
+        // 可使用 menuEventUserKey 函数捕获自定义按键按下
+        num++;
+    }
+}
+
 /**
  * @brief  按键扫描函数（带消抖）
  * @note   处理菜单导航按键（Up/Down/Enter），保障菜单基础交互
@@ -128,11 +146,14 @@ void oled_display(u8g2_t * u8g2)
 void keyScann(uint16_t time)
 {
     // 上键扫描：MENU_Key_Up对应硬件KEY_1（!表示低电平有效，匹配硬件电路）
-    u8g2_MenuKeyScannDebounce(&u8g2_menu, MENU_Key_Up, !KEY_1, time);
+    u8g2_MenuKeyScannDebounce(&u8g2_menu, MENU_Key_Down, !KEY_1, time);
     // 下键扫描：MENU_Key_Down对应硬件KEY_2
-    u8g2_MenuKeyScannDebounce(&u8g2_menu, MENU_Key_Down, !KEY_2, time);
+    u8g2_MenuKeyScannDebounce(&u8g2_menu, MENU_Key_Enter, !KEY_2, time);
     // 确认键扫描：MENU_Key_Enter对应硬件KEY_3（触发按钮回调）
-    u8g2_MenuKeyScannDebounce(&u8g2_menu, MENU_Key_Enter, !KEY_3, time);
+    u8g2_MenuKeyScannDebounce(&u8g2_menu, MENU_Key_Up, !KEY_3, time);
+    
+    // 确认键扫描：MENU_Key_Enter对应硬件KEY_3（触发按钮回调）
+    u8g2_MenuKeyScannDebounce(&u8g2_menu, MENU_Key_USER_1, !KEY_3, time);
 }
 
 /**
@@ -148,7 +169,7 @@ void tim2_IRQ(void)
     // 获取当前矩阵按键的字符值（如数字/字母/*/#等）
     char keys = get_current_key_value(&matrixKey);
     // 将字符输入到菜单的字符串输入缓冲区（支持串口/其他数据源替换）
-    u8g2_MenuInChar(&u8g2_menu, keys);	
+    u8g2_MenuInChar(&u8g2_menu, keys);    
     // 调用按键扫描函数，处理菜单导航按键（Up/Down/Enter）
     keyScann(1);
 }
@@ -161,9 +182,9 @@ void tim2_IRQ(void)
  */
 int main(void)
 {
-    delay_init();				// 初始化延时函数（保障IIC/OLED通信时序稳定）
-	  gpio_init();        // 初始化GPIO（矩阵按键/外设引脚配置）
-	
+    delay_init();                // 初始化延时函数（保障IIC/OLED通信时序稳定）
+    gpio_init();                 // 初始化GPIO（矩阵按键/外设引脚配置）
+    
     // 初始化OLED硬件并绑定u8g2实例（底层IIC初始化、屏幕复位）
     oled_u8g2_init(&u8g2);
     

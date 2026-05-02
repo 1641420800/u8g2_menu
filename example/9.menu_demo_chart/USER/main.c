@@ -36,15 +36,21 @@
 u8g2_t u8g2;                          // U8g2图形库实例
 u8g2_menu_t u8g2_menu;                // U8g2菜单库实例
 
+float chart_buff_dis[500];          // 图表2显示缓冲（用于绘制）
 // 图表1（小数据量：10个点）
 float chart_1_buff[10];               // 图表1数据缓冲（实时存储原始数据）
-float chart_1_buff_dis[10];           // 图表1显示缓冲（用于绘制，避免数据突变）
 u8g2_chart_t chart_1;                 // 图表1实例（关联双缓冲、数据长度）
 
 // 图表2（大数据量：500个点，远超屏幕宽度，支持横向滚动）
 float chart_2_buff[500];              // 图表2数据缓冲（实时存储原始数据）
-float chart_2_buff_dis[500];          // 图表2显示缓冲（用于绘制）
 u8g2_chart_t chart_2;                 // 图表2实例
+
+// 组合图表
+u8g2_menu_drawChart_t drawChart[] = {
+    {u8g2_drawPointChart,&chart_1,0,0},  // 可以组合任意数量的已有图表
+    {u8g2_drawLineChart,&chart_2,0,0},
+};
+
 
 /**
  * @brief  菜单页面1 - 图表显示核心逻辑
@@ -73,13 +79,17 @@ void menuItem_1()
 
     // ==================== 图表1：小数据量演示 ====================
     // 绘制图表1折线图：高度60，自动计算max/min（适配数据实际范围）
-    u8g2_MenuDrawItemLineChart(&chart_1, 60, 0, 0);	
+    u8g2_MenuDrawItemLineChart(&chart_1, 60, 0, 0);    
     // 绘制图表1散点图：高度60，手动指定范围(-1~1)（固定显示尺度）
     u8g2_MenuDrawItemPointChart(&chart_1, 60, -1, 1);
 
     // ==================== 图表2：大数据量演示 ====================
     // 绘制图表2折线图：高度60，自动计算max/min，支持横向滚动显示500个点
     u8g2_MenuDrawItemLineChart(&chart_2, 60, 0, 0);
+
+    // ==================== 图表3：组合图标演示 ====================
+    // 组合显示已有的图表
+    u8g2_MenuDrawItemChart(drawChart, sizeof(drawChart) / sizeof(drawChart[0]), 60);
 }
 
 /**
@@ -104,11 +114,11 @@ void oled_display(u8g2_t * u8g2)
 void keyScann(uint16_t time)
 {
     // 上键扫描：KEY_1低电平有效（图表/菜单上滚）
-    u8g2_MenuKeyScannDebounce(&u8g2_menu, MENU_Key_Up, !KEY_1, time);
+    u8g2_MenuKeyScannDebounce(&u8g2_menu, MENU_Key_Down, !KEY_1, time);
     // 下键扫描：KEY_2低电平有效（图表/菜单下滚）
-    u8g2_MenuKeyScannDebounce(&u8g2_menu, MENU_Key_Down, !KEY_2, time);
+    u8g2_MenuKeyScannDebounce(&u8g2_menu, MENU_Key_Enter, !KEY_2, time);
     // 确认键扫描：KEY_3低电平有效
-    u8g2_MenuKeyScannDebounce(&u8g2_menu, MENU_Key_Enter, !KEY_3, time);
+    u8g2_MenuKeyScannDebounce(&u8g2_menu, MENU_Key_Up, !KEY_3, time);
 }
 
 /**
@@ -136,7 +146,7 @@ int main(void)
     // 1. 底层硬件初始化
     delay_init();       // 初始化延时函数（保障IIC/OLED时序）
     gpio_init();        // 初始化GPIO（按键/外设引脚）
-	
+    
     // 2. OLED及菜单初始化
     oled_u8g2_init(&u8g2);                    // 初始化OLED硬件
     u8g2_SetFont(&u8g2, u8g2_font_10x20_tf);  // 设置菜单字体（图表不依赖此字体）
@@ -144,8 +154,8 @@ int main(void)
     
     // 3. 图表初始化（关联双缓冲+数据长度）
     // 参数：图表实例 | 数据缓冲 | 显示缓冲 | 数据长度（缓冲数组大小）
-    u8g2_chart_init(&chart_1, chart_1_buff, chart_1_buff_dis, sizeof(chart_1_buff)/sizeof(chart_1_buff[0]));
-    u8g2_chart_init(&chart_2, chart_2_buff, chart_2_buff_dis, sizeof(chart_2_buff)/sizeof(chart_2_buff[0]));
+    u8g2_chart_init(&chart_1, chart_1_buff, chart_buff_dis, sizeof(chart_1_buff)/sizeof(chart_1_buff[0]));
+    u8g2_chart_init(&chart_2, chart_2_buff, chart_buff_dis, sizeof(chart_2_buff)/sizeof(chart_2_buff[0]));
     
     // 4. 定时器初始化（1ms中断）
     // 参数：自动重装值(1000-1)，预分频值(72-1) → 72MHz时钟 → 1ms中断

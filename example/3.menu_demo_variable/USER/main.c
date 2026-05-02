@@ -59,9 +59,9 @@ void menuItem_1()
     // 2: 每次加减的步长（按Up/Sub键时变量变化量）
     // 0: 变量最小值限制
     // 100: 变量最大值限制
-    u8g2_MenuItemValue_uint32(&variable_uint32, 2, 0, 100);	
+    u8g2_MenuItemValue_uint32(&variable_uint32, 2, 0, 100);    
     // 显示变量值（功能绑定的载体，必须调用；即使不显示数值，编辑功能仍生效）
-    u8g2_MenuUTF8Printf("v:%d", variable_uint32);	
+    u8g2_MenuUTF8Printf("v:%d", variable_uint32);    
 
     // ==================== 浮点型变量绑定示例 ====================
     // 参数说明：
@@ -69,17 +69,17 @@ void menuItem_1()
     // 0.1: 每次加减的步长（浮点型步长）
     // 0: 变量最小值限制
     // 100: 变量最大值限制
-    u8g2_MenuItemValue_float(&variable_float, 0.1f, 0.0f, 100.0f);	
+    u8g2_MenuItemValue_float(&variable_float, 0.1f, 0.0f, 100.0f);    
     // 显示浮点变量（保留1位小数，作为功能绑定载体）
-    u8g2_MenuUTF8Printf("f:%.1f", variable_float);	
+    u8g2_MenuUTF8Printf("f:%.1f", variable_float);    
 
     // ==================== 开关量变量绑定示例 ====================
     // 参数说明：
     // &variable_sw: 待编辑的开关变量指针
     // 1: 开关"打开"时的取值（按下Enter键切换0/1）
-    u8g2_MenuItemValue_switch(&variable_sw, 1);	
+    u8g2_MenuItemValue_switch(&variable_sw, 1);    
     // 显示开关状态（0=off，1=on），作为功能绑定载体
-    u8g2_MenuUTF8Printf("s:%s", variable_sw ? "on" : "off");	
+    u8g2_MenuUTF8Printf("s:%s", variable_sw ? "on" : "off");    
 }
 
 /**
@@ -133,9 +133,9 @@ void tim2_IRQ(void)
  */
 int main(void)
 {
-    delay_init();				// 初始化延时函数（保障IIC/OLED通信时序稳定）
-	  gpio_init();        // 初始化GPIO（矩阵按键/外设引脚配置）
-	
+    delay_init();       // 初始化延时函数（保障IIC/OLED通信时序稳定）
+    gpio_init();        // 初始化GPIO（矩阵按键/外设引脚配置）
+    
     // 初始化OLED硬件并绑定u8g2实例（底层IIC初始化、屏幕复位）
     oled_u8g2_init(&u8g2);
     

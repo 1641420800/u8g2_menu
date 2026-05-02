@@ -85,27 +85,9 @@ void u8g2_MenuKeyScann(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyV
 void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)
 {
     // 根据是否选中进行按键映射
-    if (u8g2_MenuGetItemSelect(u8g2_menu) != -1)
-    {
-        if (u8g2_menuKeyValue == MENU_Key_Up)
-        {
-            u8g2_MenuKeys(u8g2_menu, MENU_Key_Add);
-            return;
-        }
-        if (u8g2_menuKeyValue == MENU_Key_Down)
-        {
-            u8g2_MenuKeys(u8g2_menu, MENU_Key_Sub);
-            return;
-        }
-        if (u8g2_menuKeyValue == MENU_Key_Enter)
-        {
-            u8g2_MenuKeys(u8g2_menu, MENU_Key_Return);
-            return;
-        }
-    }
-    
+    menuEventKeyPre(u8g2_menu, &u8g2_menuKeyValue);
+    if(menuEventKey(u8g2_menu, u8g2_menuKeyValue)) return;
     u8g2_menuKeyEvent(u8g2_menu, &u8g2_menuKeyValue);
-    
     switch (u8g2_menuKeyValue)
     {
     case MENU_Key_None:
@@ -129,6 +111,7 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
         u8g2_MenuItemSub(u8g2_menu);
         break;
     default:
+        menuEventUserKey(u8g2_menu,u8g2_menuKeyValue);
         break;
     }
     if (u8g2_menu->u8g2_menuValueType == MENU_button)

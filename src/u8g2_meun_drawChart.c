@@ -12,11 +12,11 @@
  */
 void u8g2_chart_init(u8g2_chart_t *chart, float *data, float *data_dis, uint16_t data_len)
 {
-	chart->data = data;
-	chart->data_dis = data_dis;
-	chart->data_max = 0;
-	chart->data_min = 0;
-	chart->data_len = data_len;
+    chart->data = data;
+    chart->data_dis = data_dis;
+    chart->data_max = 0;
+    chart->data_min = 0;
+    chart->data_len = data_len;
 }
 
 /**
@@ -29,11 +29,11 @@ void u8g2_chart_init(u8g2_chart_t *chart, float *data, float *data_dis, uint16_t
  */
 void u8g2_chart_addData(u8g2_chart_t *chart, float d)
 {
-	for (int i = 0; i < chart->data_len - 1; i++)
-	{
-		chart->data[i] = chart->data[i + 1];
-	}
-	chart->data[chart->data_len - 1] = d;
+    for (int i = 0; i < chart->data_len - 1; i++)
+    {
+        chart->data[i] = chart->data[i + 1];
+    }
+    chart->data[chart->data_len - 1] = d;
 }
 
 /**
@@ -45,7 +45,7 @@ void u8g2_chart_addData(u8g2_chart_t *chart, float d)
  */
 void u8g2_chart_update(u8g2_chart_t *chart)
 {
-	memcpy(chart->data_dis, chart->data, sizeof(float) * chart->data_len);
+    memcpy(chart->data_dis, chart->data, sizeof(float) * chart->data_len);
 }
 
 /**
@@ -59,8 +59,8 @@ void u8g2_chart_update(u8g2_chart_t *chart)
  */
 void u8g2_chart_setRange(u8g2_chart_t *chart, float max, float min)
 {
-	chart->data_max = max;
-	chart->data_min = min;
+    chart->data_max = max;
+    chart->data_min = min;
 }
 
 /**
@@ -72,30 +72,30 @@ void u8g2_chart_setRange(u8g2_chart_t *chart, float max, float min)
  */
 void u8g2_chart_autoRange(u8g2_chart_t *chart)
 {
-	float median = 0;
-	float amplitude = 0;
-	chart->data_max = chart->data_dis[0];
-	chart->data_min = chart->data_dis[0];
+    float median = 0;
+    float amplitude = 0;
+    chart->data_max = chart->data_dis[0];
+    chart->data_min = chart->data_dis[0];
 
-	for (int i = 1; i < chart->data_len; i++)
-	{
-		if (chart->data_dis[i] > chart->data_max)
-		{
-			chart->data_max = chart->data_dis[i];
-		}
-		if (chart->data_dis[i] < chart->data_min)
-		{
-			chart->data_min = chart->data_dis[i];
-		}
-	}
-	median = (chart->data_max + chart->data_min) / 2;
-	amplitude = (chart->data_max - chart->data_min) * U8G2_MENU_CHART_SPACE_RATIO;
-	if (amplitude < U8G2_MENU_MIN_VALUE_DIFF)
-	{
-		amplitude = U8G2_MENU_MIN_VALUE_DIFF;
-	}
-	chart->data_max = median + amplitude / 2;
-	chart->data_min = median - amplitude / 2;
+    for (int i = 1; i < chart->data_len; i++)
+    {
+        if (chart->data_dis[i] > chart->data_max)
+        {
+            chart->data_max = chart->data_dis[i];
+        }
+        if (chart->data_dis[i] < chart->data_min)
+        {
+            chart->data_min = chart->data_dis[i];
+        }
+    }
+    median = (chart->data_max + chart->data_min) / 2;
+    amplitude = (chart->data_max - chart->data_min) * U8G2_MENU_CHART_SPACE_RATIO;
+    if (amplitude < U8G2_MENU_MIN_VALUE_DIFF)
+    {
+        amplitude = U8G2_MENU_MIN_VALUE_DIFF;
+    }
+    chart->data_max = median + amplitude / 2;
+    chart->data_min = median - amplitude / 2;
 }
 
 /**
@@ -112,28 +112,37 @@ void u8g2_chart_autoRange(u8g2_chart_t *chart)
  */
 void u8g2_drawLineChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h)
 {
-	int x1, y1, x2, y2;
+    int x1, y1, x2, y2;
 
-	u8g2_DrawFrame(u8g2, x, y, w, h);
+    u8g2_DrawFrame(u8g2, x, y, w, h);
+    if (w < 3 || chart->data_len == 0)
+        return;
+    x = x + 1;
+    w = w - 2;
+    if (chart->data_len == 1) {
+        y1 = y + h - map(chart->data_dis[0], chart->data_min, chart->data_max, 0, h - 1);
+        y1 = limit(y1, y, y + h - 1);
+        int left  = limit(x, x, x + w - 1);
+        int right = limit(x + w - 1, x, x + w - 1);
+        u8g2_DrawLine(u8g2, left, y1, right, y1);
+        return;
+    }
+    x1 = x;
+    y1 = y + h - map(chart->data_dis[0], chart->data_min, chart->data_max, 0, h - 1);
+    y1 = limit(y1, y, y + h - 1);
+    for (int i = 1; i < chart->data_len; i++)
+    {
+        x2 = x + i * w / chart->data_len;
+        y2 = y + h - map(chart->data_dis[i], chart->data_min, chart->data_max, 0, h - 1);
+        y2 = limit(y2, y, y + h - 1);
 
-	x = x + 1;
-	w = w - 2;
-	x1 = x;
-	y1 = y + h - map(chart->data_dis[0], chart->data_min, chart->data_max, 0, h - 1);
-	y1 = limit(y1, y, y + h - 1);
-	for (int i = 1; i < chart->data_len; i++)
-	{
-		x2 = x + i * w / chart->data_len;
-		y2 = y + h - map(chart->data_dis[i], chart->data_min, chart->data_max, 0, h - 1);
-		y2 = limit(y2, y, y + h - 1);
-
-		if (x1 >= 0 && y1 >= 0 && x2 >= 0 && y2 >= 0)
-		{
-			u8g2_DrawLine(u8g2, x1, y1, x2, y2);
-		}
-		x1 = x2;
-		y1 = y2;
-	}
+        if (x1 >= 0 && y1 >= 0 && x2 >= 0 && y2 >= 0)
+        {
+            u8g2_DrawLine(u8g2, x1, y1, x2, y2);
+        }
+        x1 = x2;
+        y1 = y2;
+    }
 }
 
 /**
@@ -150,62 +159,131 @@ void u8g2_drawLineChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_in
  */
 void u8g2_drawPointChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h)
 {
-	int X, Y;
+    int X, Y;
 
-	u8g2_DrawFrame(u8g2, x, y, w, h);
+    u8g2_DrawFrame(u8g2, x, y, w, h);
 
-	x = x + 1;
-	w = w - 2;
-	for (int i = 0; i < chart->data_len; i++)
-	{
-		X = x + i * w / chart->data_len;
-		Y = y + h - map(chart->data_dis[i], chart->data_min, chart->data_max, 0, h - 1);
-		Y = limit(Y, y, y + h - 1);
-		u8g2_DrawPixel(u8g2, X, Y);
-	}
+    x = x + 1;
+    w = w - 2;
+    for (int i = 0; i < chart->data_len; i++)
+    {
+        X = x + i * w / chart->data_len;
+        Y = y + h - map(chart->data_dis[i], chart->data_min, chart->data_max, 0, h - 1);
+        Y = limit(Y, y, y + h - 1);
+        u8g2_DrawPixel(u8g2, X, Y);
+    }
+}
+
+/**
+ * @brief 绘制柱状图
+ *
+ * @param u8g2 图形对象
+ * @param chart 图表数据
+ * @param x x坐标
+ * @param y y坐标
+ * @param w 宽度
+ * @param h 高度
+ *
+ * @return void
+ */
+void u8g2_drawBarChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h)
+{
+    int X, Y, bar_height;
+    int bar_width, bar_spacing, draw_count;
+    int total_width, offset_x;
+
+    u8g2_DrawFrame(u8g2, x, y, w, h);
+    if (chart->data_len == 0) return;
+    
+    x += 1; y += 1; w -= 2; h -= 2;
+
+    int N = chart->data_len;
+    int W = w;
+
+    int k = W / (3 * N - 1);
+
+    if (k >= 1) {
+        bar_width   = 2 * k;
+        bar_spacing = k;
+        draw_count  = N;
+    } else {
+        if (N <= W) {
+            bar_width   = 1;
+            bar_spacing = 0;
+            draw_count  = N;
+        } else {
+            bar_width   = 1;
+            bar_spacing = 0;
+            draw_count  = W;
+        }
+    }
+
+    total_width = bar_width * draw_count + bar_spacing * (draw_count - 1);
+    if (total_width < W) {
+        offset_x = (W - total_width) / 2;
+    } else {
+        offset_x = 0;
+    }
+
+    for (int i = 0; i < draw_count; i++) {
+        X = x + offset_x + bar_width * i + bar_spacing * i;
+
+        Y = y + h - map(chart->data_dis[i], chart->data_min, chart->data_max, 0, h);
+        Y = limit(Y, y, y + h);
+        bar_height = (y + h) - Y;
+
+        u8g2_DrawBox(u8g2, X, Y, bar_width, bar_height);
+    }
 }
 
 /**
  * @brief 菜单项绘制图表
  *
- * @param chart 图表数据
- * @param drawChart 绘制图表函数
- * @param h 高度
- * @param max 最大值
- * @param min 最小值
+ * @param chart     图表数据数组指针
+ * @param chartSize 图表数据数组长度（元素个数）
+ * @param h         图表绘制高度
  *
  * @return void
  */
-void u8g2_MenuDrawItemChart(u8g2_chart_t *chart, void (*drawChart)(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h), u8g2_uint_t h, float max, float min)
+void u8g2_MenuDrawItemChart(u8g2_menu_drawChart_t * chart, const size_t chartSize, u8g2_uint_t h)
 {
-	if (!drawChart || !chart || !chart->data_len)
-		return;
-	u8g2_menu_t *menu = u8g2_MenuDrawItemStart();
-	u8g2_t *u8g2 = u8g2_MenuGetU8g2(menu);
-	if (!menu)
-		return;
-	u8g2_MenuDrawItemSetSize(menu, u8g2_MenuGetW(menu), h);
-	u8g2_MenuSelectorCall(menu);
+    if (!chart || !chartSize || ! h)
+        return;
+    u8g2_menu_t *menu = u8g2_MenuDrawItemStart();
+    u8g2_t *u8g2 = u8g2_MenuGetU8g2(menu);
+    if (!menu)
+        return;
+    u8g2_MenuDrawItemSetSize(menu, u8g2_MenuGetW(menu), h);
+    u8g2_MenuSelectorCall(menu);
 
-	u8g2_int_t X = u8g2_MenuGetX(menu);
-	u8g2_int_t Y = u8g2_MenuGetY(menu);
-	u8g2_int_t W = u8g2_MenuGetW(menu);
-	u8g2_int_t H = u8g2_MenuGetH(menu);
+    u8g2_int_t X = u8g2_MenuGetX(menu);
+    u8g2_int_t Y = u8g2_MenuGetY(menu);
+    u8g2_int_t W = u8g2_MenuGetW(menu);
+    u8g2_int_t H = u8g2_MenuGetH(menu);
 
-	u8g2_chart_update(chart);
-	if (min == 0 && max == 0)
-	{
-		u8g2_chart_autoRange(chart);
-	}
-	else
-	{
-		u8g2_chart_setRange(chart, max, min);
-	}
-	u8g2_SetClipWindow(u8g2, nonNegative(X), nonNegative(Y), nonNegative(X + W), nonNegative(Y + H));
-	drawChart(u8g2, chart, X, Y, W, H);
-
-	u8g2_MenuDrawItemEnd(menu);
-    u8g2_MenuRecordAdd(menu, "Chart");
+    u8g2_SetClipWindow(u8g2, nonNegative(X), nonNegative(Y), nonNegative(X + W), nonNegative(Y + H));
+    size_t drawQuantity = 0;
+    for(size_t i = 0; i < chartSize; ++i)
+    {
+        if (!chart[i].chart || !chart[i].drawChart || !chart[i].chart->data_len)
+            continue;
+        u8g2_chart_update(chart[i].chart);
+        if (chart[i].min == 0 && chart[i].max == 0)
+        {
+            u8g2_chart_autoRange(chart[i].chart);
+        }
+        else
+        {
+            u8g2_chart_setRange(chart[i].chart, chart[i].max, chart[i].min);
+        }
+        chart[i].drawChart(u8g2, chart[i].chart, X, Y, W, H);
+        drawQuantity++;
+    }
+    if(drawQuantity)
+    {
+        u8g2_MenuDrawItemEnd(menu);
+        u8g2_MenuRecordAdd(menu, "Chart");
+    }
 }
 
 /**
@@ -220,7 +298,8 @@ void u8g2_MenuDrawItemChart(u8g2_chart_t *chart, void (*drawChart)(u8g2_t *u8g2,
  */
 void u8g2_MenuDrawItemLineChart(u8g2_chart_t *chart, u8g2_uint_t h, float max, float min)
 {
-	u8g2_MenuDrawItemChart(chart, u8g2_drawLineChart, h, max, min);
+    u8g2_menu_drawChart_t drawChart = {u8g2_drawLineChart,chart,max,min};
+    u8g2_MenuDrawItemChart(&drawChart, 1, h);
 }
 
 /**
@@ -235,5 +314,22 @@ void u8g2_MenuDrawItemLineChart(u8g2_chart_t *chart, u8g2_uint_t h, float max, f
  */
 void u8g2_MenuDrawItemPointChart(u8g2_chart_t *chart, u8g2_uint_t h, float max, float min)
 {
-	u8g2_MenuDrawItemChart(chart, u8g2_drawPointChart, h, max, min);
+    u8g2_menu_drawChart_t drawChart = {u8g2_drawPointChart,chart,max,min};
+    u8g2_MenuDrawItemChart(&drawChart, 1, h);
+}
+
+/**
+ * @brief 菜单项绘制柱状图
+ *
+ * @param chart 图表数据
+ * @param h 高度
+ * @param max 最大值
+ * @param min 最小值
+ *
+ * @return void
+ */
+void u8g2_MenuDrawItemBarChart(u8g2_chart_t *chart, u8g2_uint_t h, float max, float min)
+{
+    u8g2_menu_drawChart_t drawChart = {u8g2_drawBarChart,chart,max,min};
+    u8g2_MenuDrawItemChart(&drawChart, 1, h);
 }
