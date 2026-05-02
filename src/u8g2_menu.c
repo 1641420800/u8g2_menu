@@ -2,6 +2,8 @@
 
 // 当前正在绘制的菜单
 u8g2_menu_t *currentMenu = NULL;
+// 菜单效果全局实例
+extern u8g2_menu_effect_t u8g2_MenuEffect;
 
 /**
  * @brief 创建一个菜单
@@ -391,8 +393,8 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
     
     if (u8g2_menu->currentItemLog != u8g2_menu->currentItem)
     {
-        u8g2_menuItemLeave(u8g2_menu, u8g2_menu->currentItemLog);
-        u8g2_menuItemEnter(u8g2_menu, u8g2_menu->currentItem);
+        u8g2_menuItemLeave_weak(u8g2_menu, u8g2_menu->currentItemLog);
+        u8g2_menuItemEnter_weak(u8g2_menu, u8g2_menu->currentItem);
     }
 
 
@@ -401,12 +403,27 @@ void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_ui
         u8g2_MenuRecordClear(u8g2_menu);
         u8g2_MenuRecordAdd(u8g2_menu,"\r\n---------------");
         u8g2_menu->menuItem();
+        u8g2_MenuRecordAdd(u8g2_menu,"\r\n");
     }
     u8g2_menu->u8g2_menuValueType = u8g2_menu->_u8g2_menuValueType;
-    if (u8g2_menu->u8g2_menuValueType == MENU_menu && u8g2_menu->currentSetValue != -1)
+    if (u8g2_menu->currentSetValue != -1)
     {
-        u8g2_MenuReplaceItem(u8g2_menu,u8g2_menu->u8g2_menuValue.menu.menuItem);
+        switch(u8g2_menu->u8g2_menuValueType)
+        {
+            case MENU_menu:
+                u8g2_MenuReplaceItem(u8g2_menu,u8g2_menu->u8g2_menuValue.menu.menuItem);
+                break;
+            case MENU_menu_enter:
+                u8g2_MenuItemEnter(u8g2_menu,u8g2_menu->u8g2_menuValue.menu.menuItem);
+                break;
+            case MENU_menu_back:
+                u8g2_MenuItemBack(u8g2_menu);
+                break;
+            default:
+                break;
+        }
     }
+    
     u8g2_menuMessageBoxCall(u8g2_menu);
     
     // todo : 待优化
@@ -532,6 +549,56 @@ void u8g2_MenuItemMove(u8g2_menu_t *u8g2_menu, u8g2_uint_t i)
     if(!u8g2_menu)
         return;
     u8g2_menu->currentItem = i;
+}
+
+/**
+ * @brief 进入子菜单
+ *
+ * @param u8g2_menu 菜单对象
+ * @param menuItem 子菜单绘制回调函数
+ *
+ * @return void
+ */
+void u8g2_MenuItemEnter(u8g2_menu_t *u8g2_menu, menuItem_cb menuItem)
+{
+    if(!u8g2_menu || !menuItem || !u8g2_menu->menuItem) return;
+    for(size_t i = 0; i < U8G2_MENU_TRACE_MAX_DEPTH; ++i)
+    {
+        if(u8g2_menu->menuItemTrace[i] == menuItem)
+        {
+            u8g2_menu->menuItemTrace[i] = NULL;
+            u8g2_MenuReplaceItem(u8g2_menu,menuItem);
+            break;
+        }
+        if(u8g2_menu->menuItemTrace[i])
+            continue;
+        u8g2_menu->menuItemTrace[i] = u8g2_menu->menuItem;
+        if(i + 1 < U8G2_MENU_TRACE_MAX_DEPTH)
+            u8g2_menu->menuItemTrace[i + 1] = NULL;
+        u8g2_MenuReplaceItem(u8g2_menu,menuItem);
+        break;
+    }
+}
+
+/**
+ * @brief 返回父菜单
+ *
+ * @param u8g2_menu 菜单对象
+ *
+ * @return void
+ */
+void u8g2_MenuItemBack(u8g2_menu_t *u8g2_menu)
+{
+    size_t i;
+    if(!u8g2_menu) return;
+    for(i = 0; i < U8G2_MENU_TRACE_MAX_DEPTH; ++i)
+    {
+        if(u8g2_menu->menuItemTrace[i] == NULL) break;
+    }
+    if(i <= 0) return;
+    i -= 1;
+    u8g2_MenuReplaceItem(u8g2_menu,u8g2_menu->menuItemTrace[i]);
+    u8g2_menu->menuItemTrace[i] = NULL;
 }
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 

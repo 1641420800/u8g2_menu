@@ -44,6 +44,12 @@ void menuItem_3(void);
  */
 void menuItem_1()
 {
+    // ==================== 返回上一级 ====================
+    // 返回上一级页面，按Enter键跳转
+    u8g2_MenuItem_menu_back();
+    // 显示菜单项文字
+    u8g2_MenuUTF8Printf("return");
+    
     // ==================== 跳转到菜单2的入口 ====================
     // u8g2_MenuItem_menu: 绑定子菜单跳转功能
     // 参数：目标菜单页面的回调函数名（menuItem_2）
@@ -51,11 +57,23 @@ void menuItem_1()
     u8g2_MenuItem_menu(menuItem_2);
     // 显示菜单项文字（跳转功能的载体，必须调用）
     u8g2_MenuUTF8Printf("menu 2");
-	
+    
     // ==================== 跳转到菜单3的入口 ====================
     // 绑定到menuItem_3页面，按Enter键跳转
     u8g2_MenuItem_menu(menuItem_3);
     // 显示菜单项文字
+    u8g2_MenuUTF8Printf("menu 3");
+    
+    // ==================== 跳转到子菜单2的入口 ====================
+    // 作用：选中该行后按Enter键，菜单将切换到menuItem_2页面
+    u8g2_MenuItem_menu_enter(menuItem_2);
+    // 显示菜单项文字（跳转功能的载体，必须调用）
+    u8g2_MenuUTF8Printf("menu 2");
+    
+    // ==================== 跳转到子菜单3的入口 ====================
+    // 作用：选中该行后按Enter键，菜单将切换到menuItem_3页面
+    u8g2_MenuItem_menu_enter(menuItem_3);
+    // 显示菜单项文字（跳转功能的载体，必须调用）
     u8g2_MenuUTF8Printf("menu 3");
 }
 
@@ -67,12 +85,26 @@ void menuItem_1()
  */
 void menuItem_2()
 {
+    // ==================== 返回上一级 ====================
+    // 返回上一级页面，按Enter键跳转
+    u8g2_MenuItem_menu_back();
+    // 显示菜单项文字
+    u8g2_MenuUTF8Printf("return");
+    
     // 绑定到menuItem_1页面（返回主菜单）
     u8g2_MenuItem_menu(menuItem_1);
     u8g2_MenuUTF8Printf("menu 1");
-	
+    
     // 绑定到menuItem_3页面
     u8g2_MenuItem_menu(menuItem_3);
+    u8g2_MenuUTF8Printf("menu 3");
+    
+    // 绑定到menuItem_1页面（返回主菜单）
+    u8g2_MenuItem_menu_enter(menuItem_1);
+    u8g2_MenuUTF8Printf("menu 1");
+    
+    // 绑定到menuItem_3页面
+    u8g2_MenuItem_menu_enter(menuItem_3);
     u8g2_MenuUTF8Printf("menu 3");
 }
 
@@ -84,12 +116,26 @@ void menuItem_2()
  */
 void menuItem_3()
 {
+    // ==================== 返回上一级 ====================
+    // 返回上一级页面，按Enter键跳转
+    u8g2_MenuItem_menu_back();
+    // 显示菜单项文字
+    u8g2_MenuUTF8Printf("return");
+    
     // 绑定到menuItem_1页面（返回主菜单）
     u8g2_MenuItem_menu(menuItem_1);
     u8g2_MenuUTF8Printf("menu 1");
-	
+    
     // 绑定到menuItem_2页面
     u8g2_MenuItem_menu(menuItem_2);
+    u8g2_MenuUTF8Printf("menu 2");
+    
+    // 绑定到menuItem_1页面（返回主菜单）
+    u8g2_MenuItem_menu_enter(menuItem_1);
+    u8g2_MenuUTF8Printf("menu 1");
+    
+    // 绑定到menuItem_2页面
+    u8g2_MenuItem_menu_enter(menuItem_2);
     u8g2_MenuUTF8Printf("menu 2");
 }
 
@@ -144,9 +190,9 @@ void tim2_IRQ(void)
  */
 int main(void)
 {
-    delay_init();				// 初始化延时函数（保障IIC/OLED通信时序稳定）
-	  gpio_init();        // 初始化GPIO（矩阵按键/外设引脚配置）
-	
+    delay_init();       // 初始化延时函数（保障IIC/OLED通信时序稳定）
+    gpio_init();        // 初始化GPIO（矩阵按键/外设引脚配置）
+    
     // 初始化OLED硬件并绑定u8g2实例（底层IIC初始化、屏幕复位）
     oled_u8g2_init(&u8g2);
     

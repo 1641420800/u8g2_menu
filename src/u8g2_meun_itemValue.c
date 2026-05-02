@@ -95,12 +95,14 @@ void u8g2_MenuItemAddS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
         break;
     case MENU_button:
     case MENU_menu:
+    case MENU_menu_enter:
+    case MENU_menu_back:
     case MENU_NC:
     default:
         return;
     }
-    u8g2_menuValueAdd(u8g2_menu->u8g2_menuValue.v_uint8.value);
-    u8g2_menuValueChange(u8g2_menu->u8g2_menuValue.v_uint8.value);
+    u8g2_menuValueAdd_weak(u8g2_menu->u8g2_menuValue.v_uint8.value);
+    u8g2_menuValueChange_weak(u8g2_menu->u8g2_menuValue.v_uint8.value);
 #undef MenuADDK
 }
 
@@ -167,12 +169,14 @@ void u8g2_MenuItemSubS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
         break;
     case MENU_button:
     case MENU_menu:
+    case MENU_menu_enter:
+    case MENU_menu_back:
     case MENU_NC:
     default:
         return;
     }
-    u8g2_menuValueSub(u8g2_menu->u8g2_menuValue.v_uint8.value);
-    u8g2_menuValueChange(u8g2_menu->u8g2_menuValue.v_uint8.value);
+    u8g2_menuValueSub_weak(u8g2_menu->u8g2_menuValue.v_uint8.value);
+    u8g2_menuValueChange_weak(u8g2_menu->u8g2_menuValue.v_uint8.value);
 #undef MenuSUBK
 }
 
@@ -322,6 +326,21 @@ void u8g2_MenuItem_menu(menuItem_cb menuItem)
         return;
     menu->_u8g2_menuValueType = MENU_menu;
     menu->u8g2_menuValue.menu.menuItem = menuItem;
+}
+void u8g2_MenuItem_menu_enter(menuItem_cb menuItem)
+{
+    u8g2_menu_t *menu = u8g2_getMenuItemValue(MENU_Writable);
+    if (!menu)
+        return;
+    menu->_u8g2_menuValueType = MENU_menu_enter;
+    menu->u8g2_menuValue.menu.menuItem = menuItem;
+}
+void u8g2_MenuItem_menu_back(void)
+{
+    u8g2_menu_t *menu = u8g2_getMenuItemValue(MENU_Writable);
+    if (!menu)
+        return;
+    menu->_u8g2_menuValueType = MENU_menu_back;
 }
 void u8g2_MenuItem_str(char *str, uint16_t len)
 {

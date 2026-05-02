@@ -85,9 +85,9 @@ void u8g2_MenuKeyScann(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyV
 void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)
 {
     // 根据是否选中进行按键映射
-    menuEventKeyPre(u8g2_menu, &u8g2_menuKeyValue);
-    if(menuEventKey(u8g2_menu, u8g2_menuKeyValue)) return;
-    u8g2_menuKeyEvent(u8g2_menu, &u8g2_menuKeyValue);
+    menuEventKeyPre_weak(u8g2_menu, &u8g2_menuKeyValue);
+    if(menuEventKey_weak(u8g2_menu, u8g2_menuKeyValue)) return;
+    u8g2_menuKeyEvent_weak(u8g2_menu, &u8g2_menuKeyValue);
     switch (u8g2_menuKeyValue)
     {
     case MENU_Key_None:
@@ -111,7 +111,7 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
         u8g2_MenuItemSub(u8g2_menu);
         break;
     default:
-        menuEventUserKey(u8g2_menu,u8g2_menuKeyValue);
+        menuEventUserKey_weak(u8g2_menu,u8g2_menuKeyValue);
         break;
     }
     if (u8g2_menu->u8g2_menuValueType == MENU_button)
@@ -131,7 +131,7 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
 void u8g2_MenuInChar(u8g2_menu_t *u8g2_menu, char c)
 {
     uint16_t len;
-    u8g2_menuCharEvent(u8g2_menu,&c);
+    u8g2_menuCharEvent_weak(u8g2_menu,&c);
     if (u8g2_menu->u8g2_menuValueType == MENU_str && u8g2_MenuGetItemSelect(u8g2_menu) != -1)
     {
         len = strlen(u8g2_menu->u8g2_menuValue.str.s);

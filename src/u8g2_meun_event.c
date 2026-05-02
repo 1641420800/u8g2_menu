@@ -48,7 +48,7 @@ void u8g2_MenuEventProcess(u8g2_menu_t *u8g2_menu)
         
         u8g2_menu->event.itemsRead = (u8g2_menu->event.itemsRead + 1) % U8G2_MENU_EVENT_Capacity;
 
-        if(menuEventUserHandle(u8g2_menu, item) == 0)
+        if(menuEventUserHandle_weak(u8g2_menu, item) == 0)
         {
             if(item->menuEventHandle) item->menuEventHandle(u8g2_menu, item->value);
         }

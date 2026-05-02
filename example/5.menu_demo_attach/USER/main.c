@@ -128,7 +128,7 @@ void oled_display(u8g2_t * u8g2)
     u8g2_DrawMenu(&u8g2_menu, 0, 0, 128, 64);
 }
 
-void menuEventUserKey(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)
+void menuEventUserKey_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)
 {
     if(u8g2_menuKeyValue == MENU_Key_USER_1)
     {

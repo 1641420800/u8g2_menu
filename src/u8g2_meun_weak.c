@@ -12,7 +12,7 @@
  *
  * @return void
  */
-WEAK void u8g2_menuItemEnter(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
+WEAK void u8g2_menuItemEnter_weak(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
 {
     /* 空函数 */
 }
@@ -28,7 +28,7 @@ WEAK void u8g2_menuItemEnter(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
  *
  * @return void
  */
-WEAK void u8g2_menuItemLeave(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
+WEAK void u8g2_menuItemLeave_weak(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
 {
     /* 空函数 */
 }
@@ -40,7 +40,7 @@ WEAK void u8g2_menuItemLeave(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
  *
  * @return void
  */
-WEAK void u8g2_menuValueAdd(void * p)
+WEAK void u8g2_menuValueAdd_weak(void * p)
 {
     /* 空函数 */
 }
@@ -52,7 +52,7 @@ WEAK void u8g2_menuValueAdd(void * p)
  *
  * @return void
  */
-WEAK void u8g2_menuValueSub(void * p)
+WEAK void u8g2_menuValueSub_weak(void * p)
 {
     /* 空函数 */
 }
@@ -64,7 +64,7 @@ WEAK void u8g2_menuValueSub(void * p)
  *
  * @return void
  */
-WEAK void u8g2_menuValueChange(void * p)
+WEAK void u8g2_menuValueChange_weak(void * p)
 {
     /* 空函数 */
 }
@@ -77,7 +77,7 @@ WEAK void u8g2_menuValueChange(void * p)
  *
  * @return void
  */
-WEAK void u8g2_menuKeyEvent(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue)
+WEAK void u8g2_menuKeyEvent_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue)
 {
     /* 空函数 */
 }
@@ -90,7 +90,7 @@ WEAK void u8g2_menuKeyEvent(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_me
  *
  * @return void
  */
-WEAK void u8g2_menuCharEvent(u8g2_menu_t *u8g2_menu, char *c)
+WEAK void u8g2_menuCharEvent_weak(u8g2_menu_t *u8g2_menu, char *c)
 {
     /* 空函数 */
 }
@@ -103,7 +103,7 @@ WEAK void u8g2_menuCharEvent(u8g2_menu_t *u8g2_menu, char *c)
  *
  * @return uint8_t 返回 0 表示事件需进一步处理
  */
-WEAK uint8_t menuEventUserHandle(u8g2_menu_t *u8g2_menu, u8g2_menu_event_item_t * eventItem)
+WEAK uint8_t menuEventUserHandle_weak(u8g2_menu_t *u8g2_menu, u8g2_menu_event_item_t * eventItem)
 {
     /* 空函数 */
     return 0;
@@ -117,7 +117,7 @@ WEAK uint8_t menuEventUserHandle(u8g2_menu_t *u8g2_menu, u8g2_menu_event_item_t 
  *
  * @return void
  */
-WEAK void menuEventUserKey(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)
+WEAK void menuEventUserKey_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)
 {
     /* 空函数 */
 }
@@ -130,7 +130,7 @@ WEAK void menuEventUserKey(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menu
  *
  * @return uint8_t 事件是否已经处理 返回1将不进行继续处理 返回0将进行继续处理
  */
-WEAK uint8_t menuEventKey(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)
+WEAK uint8_t menuEventKey_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)
 {
     return 0;
 }
@@ -144,7 +144,7 @@ WEAK uint8_t menuEventKey(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuK
  *
  * @return void 无返回值，直接通过指针修改按键值
  */
-WEAK void menuEventKeyPre(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue)
+WEAK void menuEventKeyPre_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue)
 {
     if (!u8g2_menu || !u8g2_menuKeyValue) return;
     if (u8g2_MenuGetItemSelect(u8g2_menu) != -1)

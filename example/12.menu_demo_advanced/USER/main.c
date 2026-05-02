@@ -220,7 +220,7 @@ int main(void)
  * @param  item: 选中的菜单项索引（从0开始计数）
  * @return void
  */
-void u8g2_menuItemEnter(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
+void u8g2_menuItemEnter_weak(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
 {
     // 示例逻辑：根据选中项索引执行不同操作
     switch(item)
@@ -248,7 +248,7 @@ void u8g2_menuItemEnter(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
  * @param  item: 离开的菜单项索引
  * @return void
  */
-void u8g2_menuItemLeave(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
+void u8g2_menuItemLeave_weak(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
 {
     // 示例：离开"xbm"项（索引2）时关闭图片弹窗
     if(item == 2)
@@ -264,7 +264,7 @@ void u8g2_menuItemLeave(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)
  * @param  p: 变化值的地址（需强制类型转换为对应类型，如uint16_t*）
  * @return void
  */
-void u8g2_menuValueAdd(void * p)
+void u8g2_menuValueAdd_weak(void * p)
 {
     // 示例：打印增加后的数值（假设p是uint16_t类型）
     // printf("Value add: %d\n", *(uint16_t*)p);
@@ -276,7 +276,7 @@ void u8g2_menuValueAdd(void * p)
  * @param  p: 变化值的地址
  * @return void
  */
-void u8g2_menuValueSub(void * p)
+void u8g2_menuValueSub_weak(void * p)
 {
     // 示例：打印减少后的数值
     // printf("Value sub: %d\n", *(uint16_t*)p);
@@ -288,7 +288,7 @@ void u8g2_menuValueSub(void * p)
  * @param  p: 变化值的地址
  * @return void
  */
-void u8g2_menuValueChange(void * p)
+void u8g2_menuValueChange_weak(void * p)
 {
     // 示例：数值变化后更新硬件（如PWM占空比）
     // set_pwm_duty(*(uint16_t*)p);
@@ -301,7 +301,7 @@ void u8g2_menuValueChange(void * p)
  * @param  u8g2_menuKeyValue: 按键事件（可修改此值改变默认按键行为）
  * @return void
  */
-void u8g2_menuKeyEvent(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue)
+void u8g2_menuKeyEvent_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue)
 {
     // 示例：将KEY_Enter映射为快捷字符'1'的触发
     // if(*u8g2_menuKeyValue == MENU_Key_Enter)
@@ -318,7 +318,7 @@ void u8g2_menuKeyEvent(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKey
  * @param  c: 输入的字符（可修改此值过滤/替换字符）
  * @return void
  */
-void u8g2_menuCharEvent(u8g2_menu_t *u8g2_menu, char *c)
+void u8g2_menuCharEvent_weak(u8g2_menu_t *u8g2_menu, char *c)
 {
     // 示例：过滤非数字字符（仅允许'1'/'2'/'3'触发跳转）
     if(*c < '1' || *c > '3')
@@ -334,7 +334,7 @@ void u8g2_menuCharEvent(u8g2_menu_t *u8g2_menu, char *c)
  * @param  eventItem: 待处理的事件结构体（包含事件类型、参数）
  * @return uint8_t: 0=事件需继续处理，1=事件已处理（拦截）
  */
-uint8_t menuEventUserHandle(u8g2_menu_t *u8g2_menu, u8g2_menu_event_item_t * eventItem)
+uint8_t menuEventUserHandle_weak(u8g2_menu_t *u8g2_menu, u8g2_menu_event_item_t * eventItem)
 {
     // 示例：拦截"close"项的选中事件（索引3）
     // if(eventItem->type == MENU_EVENT_ENTER && eventItem->item == 3)

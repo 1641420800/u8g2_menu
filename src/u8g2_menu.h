@@ -35,43 +35,37 @@ extern "C" {
  * - 记录功能可用于以文本形式展示菜单内容。
  */
 
-// 版本信息
-#define U8G2_MENU_VERSION "1.3.0-beta"
-#define U8G2_MENU_DEBUG 0                       // 设置为1启用调试模式
 
+#define U8G2_MENU_VERSION               "2.0.0"     // 版本信息
+#define U8G2_MENU_DEBUG                 0           // 设置为1启用调试模式
 // 功能按键相关
-#define U8G2_MENUKeyValue_Back '*'              // 删除一个字符
-#define U8G2_MENUKeyValue_Clear '#'             // 清除整个输入
-
+#define U8G2_MENUKeyValue_Back          '*'         // 删除一个字符
+#define U8G2_MENUKeyValue_Clear         '#'         // 清除整个输入
 // 菜单刷新间隔
-#define U8G2_MENU_DELAY 100                     // 推理动画之间的延迟，以毫秒为单位
-
+#define U8G2_MENU_DELAY                 100         // 推理动画之间的延迟，以毫秒为单位
 // 图表功能相关
-#define U8G2_MENU_MIN_VALUE_DIFF 0.0f           // 图表幅值的最小值
-#define U8G2_MENU_CHART_SPACE_RATIO 1.1f        // 图表上下留空的比例
-
+#define U8G2_MENU_MIN_VALUE_DIFF        0.0f        // 图表幅值的最小值
+#define U8G2_MENU_CHART_SPACE_RATIO     1.1f        // 图表上下留空的比例
 // 菜单按键相关
-#define MenuKey_holdTime 800                    // 菜单按键的长按触发时间
-#define MenuKey_repeatTime 200                  // 菜单按键的长按重复触发时间
-#define MenuKey_debouncePeriod 20                         // 按键消抖稳定检测周期(单位:ms)
-#define MenuKey_triggerHigh 18                  // 按键触发高电平阈值
-#define MenuKey_triggerLow 2                    // 按键释放低电平阈值
-
+#define MenuKey_holdTime                800         // 菜单按键的长按触发时间
+#define MenuKey_repeatTime              200         // 菜单按键的长按重复触发时间
+#define MenuKey_debouncePeriod          20          // 按键消抖稳定检测周期(单位:ms)
+#define MenuKey_triggerHigh             18          // 按键触发高电平阈值
+#define MenuKey_triggerLow              2           // 按键释放低电平阈值
 // 动画相关相关
-#define ROW_HEIGHT_INCREMENT 0.2f               // 定义行高度增加量
-#define MAX_ROW_HEIGHT 1.0f                     // 定义最大行高度
-#define SPE_ADJUSTMENT 2.0f                     // 定义SPE调整量
-
+#define ROW_HEIGHT_INCREMENT            0.2f        // 定义行高度增加量
+#define MAX_ROW_HEIGHT                  1.0f        // 定义最大行高度
+#define SPE_ADJUSTMENT                  2.0f        // 定义SPE调整量
+// 菜单父子项调用链 / 追溯功能
+#define U8G2_MENU_TRACE_MAX_DEPTH       16          // 菜单父子项最大追溯长度
 // 记录功能相关
-#define U8G2_MENU_RECORD 1                      // 启用记录功能
-#define U8G2_MENU_RECORD_SIZE 256               // 记录缓冲区大小
-
+#define U8G2_MENU_RECORD                1           // 启用记录功能
+#define U8G2_MENU_RECORD_SIZE           256         // 记录缓冲区大小
 // 消息功能相关
-#define U8G2_MENU_MESSAGEBOX 1                  // 启用消息框
-#define U8G2_MENU_INFINITE_TIMEOUT UINT32_MAX   // 不自动收回
-
+#define U8G2_MENU_MESSAGEBOX            1           // 启用消息框
+#define U8G2_MENU_INFINITE_TIMEOUT      UINT32_MAX  // 不自动收回
 // 事件功能相关
-#define U8G2_MENU_EVENT_Capacity 30
+#define U8G2_MENU_EVENT_Capacity        30          // 菜单事件最大容量
 
 #ifndef ABS
 #define ABS(s) ((s) < 0 ? -(s) : (s))
@@ -88,25 +82,27 @@ extern "C" {
 #ifndef nonNegative
 #define nonNegative(d) ((d) < 0 ? 0 : (d))
 #endif
-#ifdef __CC_ARM /* ARM Compiler */
-#define WEAK __weak
-#elif defined(__IAR_SYSTEMS_ICC__) /* for IAR Compiler */
-#define WEAK __weak
-#elif defined(__GNUC__) /* GNU GCC Compiler */
-#define WEAK __attribute__((weak))
-#elif defined(__ADSPBLACKFIN__) /* for VisualDSP++ Compiler */
-#define WEAK __attribute__((weak))
-#elif defined(_MSC_VER)
+
+#ifdef __CC_ARM               /* ARM Compiler */
+#define WEAK                __weak
+#define PRINTF_ATTR(fmt_idx, arg_idx) __attribute__((__format__(__printf__, fmt_idx, arg_idx)))
+#elif defined(__IAR_SYSTEMS_ICC__) /* IAR Compiler */
+#define WEAK                __weak
+#define PRINTF_ATTR(fmt_idx, arg_idx)
+#elif defined(__GNUC__)      /* GNU GCC Compiler */
+#define WEAK                __attribute__((weak))
+#define PRINTF_ATTR(fmt_idx, arg_idx) __attribute__((format(printf, fmt_idx, arg_idx)))
+#elif defined(__ADSPBLACKFIN__) /* VisualDSP++ Compiler */
+#define WEAK                __attribute__((weak))
+#define PRINTF_ATTR(fmt_idx, arg_idx)
+#elif defined(_MSC_VER)      /* MSVC */
 #define WEAK
-#elif defined(__TI_COMPILER_VERSION__)
+#define PRINTF_ATTR(fmt_idx, arg_idx)
+#elif defined(__TI_COMPILER_VERSION__) /* TI */
 #define WEAK
+#define PRINTF_ATTR(fmt_idx, arg_idx)
 #else
 #error not supported tool chain
-#endif
-#ifdef __GNUC__
-#define PRINTF_ATTR(fmt_idx, arg_idx) __attribute__((format(printf, fmt_idx, arg_idx)))
-#else
-#define PRINTF_ATTR(fmt_idx, arg_idx)
 #endif
 
 typedef struct u8g2_menu_struct             u8g2_menu_t;
@@ -138,6 +134,8 @@ typedef enum
     MENU_V_switch,
     MENU_button,
     MENU_menu,
+    MENU_menu_enter,
+    MENU_menu_back,
     MENU_str,
     MENU_NC
 } MENU_V_type_t;
@@ -301,49 +299,50 @@ struct u8g2_menu_event_struct
 };
 struct u8g2_menu_struct
 {
-    u8g2_t *u8g2;                       // u8g2实例
-    menuItem_cb menuItem;               // 绘制表项的实际函数
-    menuSelector_cb menuSelector;       // 绘制选择展示器的实际函数
-    u8g2_menu_effect_t menuEffect;      // 绘制效果
-    MENU_V_type_t u8g2_menuValueType;   // 菜单附加值类型
-    MENU_V_type_t _u8g2_menuValueType;  // 菜单附加值类型
-    u8g2_menu_value_t u8g2_menuValue;   // 菜单附加值
-    u8g2_int_t currentSetValue;         // 当前选中状态 -1 表示未选中
-    u8g2_int_t currentItem;             // 当前选中的项
-    u8g2_uint_t currentDrawItem;        // 当前绘制的项
-    u8g2_int_t currentItemLog;          // 记录的当前选中的项
-    float positionOffset;               // 目标位置偏移
-    float _positionOffset;              // 实际位置偏移
-    float positionOffset_spe;           // 目标位置偏移速度
-    float positionOffset_strHeaderLen;  // 字符串偏移的头宽度(字符)
-    u8g2_int_t currentX;                // 当前绘制的X
-    u8g2_int_t currentY;                // 当前绘制的Y
-    u8g2_int_t currentWidth;            // 当前菜单的宽度
-    u8g2_int_t currentHeight;           // 当前菜单的高度
-    u8g2_int_t currentItemWidth;        // 当前项的宽度
-    u8g2_int_t currentItemHeight;       // 当前项的高度
-    u8g2_int_t currentContentWidth;     // 当前菜单内容宽度
-    MENU_Attribute_t currentAttribute;  // 当前可调属性
-    u8g2_int_t pickItemY;               // 选中项的位置
-    u8g2_int_t pickItemHeight;          // 选中项的高度
-    u8g2_int_t leftMarginSelector;      // 菜单左边距
-    u8g2_int_t topMarginSelector;       // 菜单顶边距
-    u8g2_int_t lineSpacingSelector;     // 菜单行间距
-    u8g2_int_t totalLength;             // 菜单总长度
-    uint16_t timer;                     // 菜单计时器
-    uint8_t timer_effective;            // 菜单计时器是否有效
-    uint8_t keyLog[MENU_Key_Num];       // 按键状态记录
-    uint16_t keyTim[MENU_Key_Num];      // 按键状态计时
+    u8g2_t *u8g2;                                           // u8g2实例
+    menuItem_cb menuItem;                                   // 绘制表项的实际函数
+    menuItem_cb menuItemTrace[U8G2_MENU_TRACE_MAX_DEPTH];   // 绘制表项调用链追溯
+    menuSelector_cb menuSelector;                           // 绘制选择展示器的实际函数
+    u8g2_menu_effect_t menuEffect;                          // 绘制效果
+    MENU_V_type_t u8g2_menuValueType;                       // 菜单附加值类型
+    MENU_V_type_t _u8g2_menuValueType;                      // 菜单附加值类型
+    u8g2_menu_value_t u8g2_menuValue;                       // 菜单附加值
+    u8g2_int_t currentSetValue;                             // 当前选中状态 -1 表示未选中
+    u8g2_int_t currentItem;                                 // 当前选中的项
+    u8g2_uint_t currentDrawItem;                            // 当前绘制的项
+    u8g2_int_t currentItemLog;                              // 记录的当前选中的项
+    float positionOffset;                                   // 目标位置偏移
+    float _positionOffset;                                  // 实际位置偏移
+    float positionOffset_spe;                               // 目标位置偏移速度
+    float positionOffset_strHeaderLen;                      // 字符串偏移的头宽度(字符)
+    u8g2_int_t currentX;                                    // 当前绘制的X
+    u8g2_int_t currentY;                                    // 当前绘制的Y
+    u8g2_int_t currentWidth;                                // 当前菜单的宽度
+    u8g2_int_t currentHeight;                               // 当前菜单的高度
+    u8g2_int_t currentItemWidth;                            // 当前项的宽度
+    u8g2_int_t currentItemHeight;                           // 当前项的高度
+    u8g2_int_t currentContentWidth;                         // 当前菜单内容宽度
+    MENU_Attribute_t currentAttribute;                      // 当前可调属性
+    u8g2_int_t pickItemY;                                   // 选中项的位置
+    u8g2_int_t pickItemHeight;                              // 选中项的高度
+    u8g2_int_t leftMarginSelector;                          // 菜单左边距
+    u8g2_int_t topMarginSelector;                           // 菜单顶边距
+    u8g2_int_t lineSpacingSelector;                         // 菜单行间距
+    u8g2_int_t totalLength;                                 // 菜单总长度
+    uint16_t timer;                                         // 菜单计时器
+    uint8_t timer_effective;                                // 菜单计时器是否有效
+    uint8_t keyLog[MENU_Key_Num];                           // 按键状态记录
+    uint16_t keyTim[MENU_Key_Num];                          // 按键状态计时
     uint16_t key_shakeFree[MENU_Key_Num];
     uint16_t key_state[MENU_Key_Num];
     char bindChar;
     char _bindChar;
     u8g2_menu_event_t event;
-#if U8G2_MENU_RECORD                    // 菜单记录
+#if U8G2_MENU_RECORD                                        // 菜单记录
     uint16_t u8g2_menuRecordLen;
     char u8g2_menuRecord[U8G2_MENU_RECORD_SIZE];
 #endif
-#if U8G2_MENU_MESSAGEBOX                // 消息框
+#if U8G2_MENU_MESSAGEBOX                                    // 消息框
     u8g2_MenuDrawMessageBox_cb drawMessageBox;
     void *message;
     uint32_t drawMessageBoxTimer;
@@ -364,37 +363,37 @@ struct u8g2_chart_struct
 
 /* =============================== | u8g2_meun_weak.c | =============================== */
 // 选中某项
-void u8g2_menuItemEnter(u8g2_menu_t *u8g2_menu, u8g2_uint_t item);
+void u8g2_menuItemEnter_weak(u8g2_menu_t *u8g2_menu, u8g2_uint_t item);
 
 // 离开某项
-void u8g2_menuItemLeave(u8g2_menu_t *u8g2_menu, u8g2_uint_t item);
+void u8g2_menuItemLeave_weak(u8g2_menu_t *u8g2_menu, u8g2_uint_t item);
 
 // 某值增加
-void u8g2_menuValueAdd(void * p);
+void u8g2_menuValueAdd_weak(void * p);
 
 // 某值减小
-void u8g2_menuValueSub(void * p);
+void u8g2_menuValueSub_weak(void * p);
 
 // 某值变化
-void u8g2_menuValueChange(void * p);
+void u8g2_menuValueChange_weak(void * p);
 
 // 按键输入
-void u8g2_menuKeyEvent(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue);
+void u8g2_menuKeyEvent_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue);
 
 // 字符输入
-void u8g2_menuCharEvent(u8g2_menu_t *u8g2_menu, char *c);
+void u8g2_menuCharEvent_weak(u8g2_menu_t *u8g2_menu, char *c);
 
 // 事件过滤器
-uint8_t menuEventUserHandle(u8g2_menu_t *u8g2_menu, u8g2_menu_event_item_t * eventItem);
+uint8_t menuEventUserHandle_weak(u8g2_menu_t *u8g2_menu, u8g2_menu_event_item_t * eventItem);
 
 // 用户按键按下
-void menuEventUserKey(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue);
+void menuEventUserKey_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue);
 
 // 任意按键按下
-uint8_t menuEventKey(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue);
+uint8_t menuEventKey_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue);
 
 // 按键预处理
-void menuEventKeyPre(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue);
+void menuEventKeyPre_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue);
 /* =============================== | u8g2_meun.c | =============================== */
 // 创建菜单 自定义选择展示器
 void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem, menuSelector_cb menuSelector);
@@ -451,6 +450,12 @@ void u8g2_MenuItemDown(u8g2_menu_t *u8g2_menu);
 
 // 移动到某项
 void u8g2_MenuItemMove(u8g2_menu_t *u8g2_menu, u8g2_uint_t i);
+
+// 进入子菜单
+void u8g2_MenuItemEnter(u8g2_menu_t *u8g2_menu, menuItem_cb menuItem);
+
+// 返回父菜单
+void u8g2_MenuItemBack(u8g2_menu_t *u8g2_menu);
 
 // 绑定快捷跳转字符
 void u8g2_MenuItemBindChar(char c, uint8_t selected);
@@ -666,15 +671,23 @@ void u8g2_MenuItemValue_switch(uint8_t *value, uint8_t openValue);
 
 void u8g2_MenuItem_button(u8g2_MenuButton_cb but, uint8_t ID);
 void u8g2_MenuItem_menu(menuItem_cb menuItem);
+void u8g2_MenuItem_menu_enter(menuItem_cb menuItem);
+void u8g2_MenuItem_menu_back(void);
 void u8g2_MenuItem_str(char *str, uint16_t len);
 /* =============================== | u8g2_meun_effect.c | =============================== */
-extern u8g2_menu_effect_t u8g2_MenuEffect;
-
+// 绑定菜单效果实例
 void u8g2_MenuEffectBind(u8g2_menu_t *u8g2_menu, u8g2_menu_effect_t *u8g2_menu_effect);
+
+// 获取菜单效果当前位置
 u8g2_int_t u8g2_MenuEffectGetPos(u8g2_menu_t *u8g2_menu);
+
+// 获取菜单效果行高
 float u8g2_MenuEffectGetRowHeight(u8g2_menu_t *u8g2_menu);
 
+// 菜单效果初始化回调
 u8g2_int_t u8g2_menuEffect_init_call(u8g2_menu_t *u8g2_menu);
+
+// 菜单效果运行回调
 u8g2_int_t u8g2_menuEffect_run_call(u8g2_menu_t *u8g2_menu);
 /* =============================== | u8g2_meun_selector.c | =============================== */
 // 选择器记录
@@ -689,8 +702,13 @@ void u8g2_MenuSelectorRotundity(u8g2_menu_t *u8g2_menu);
 // 选择展示器 方形
 void u8g2_MenuSelectorSquare(u8g2_menu_t *u8g2_menu);
 /* =============================== | u8g2_meun_layer.c | =============================== */
+// 获取图层缓存缓冲区
 uint8_t *u8g2_MenuGetLayerBuff(void);
+
+// 开始菜单图层绘制
 u8g2_t *u8g2_MenuStartLayer(u8g2_t *u8g2);
+
+// 结束菜单图层绘制并显示
 void u8g2_MenuEndLayer(Layer_t layer);
 
 #ifdef __cplusplus
