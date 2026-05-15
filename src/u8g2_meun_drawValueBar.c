@@ -37,6 +37,9 @@ void u8g2_DrawHProgressBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint
 {
     schedule = limit(schedule, 0, 1);
     u8g2_DrawFrame(u8g2, x, y, w, h);
+    u8g2->draw_color = !u8g2->draw_color;
+    u8g2_DrawBox(u8g2, x+1, y+1, w-2, h-2);
+    u8g2->draw_color = !u8g2->draw_color;
     u8g2_DrawBox(u8g2, x + 2, y + 2, (w - 4) * schedule, h - 4);
 }
 

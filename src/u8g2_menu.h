@@ -36,7 +36,7 @@ extern "C" {
  */
 
 
-#define U8G2_MENU_VERSION               "2.0.0"     // 版本信息
+#define U8G2_MENU_VERSION               "2.1.0"     // 版本信息
 #define U8G2_MENU_DEBUG                 0           // 设置为1启用调试模式
 // 功能按键相关
 #define U8G2_MENUKeyValue_Back          '*'         // 删除一个字符
@@ -66,6 +66,12 @@ extern "C" {
 #define U8G2_MENU_INFINITE_TIMEOUT      UINT32_MAX  // 不自动收回
 // 事件功能相关
 #define U8G2_MENU_EVENT_Capacity        30          // 菜单事件最大容量
+// 多行文本相关
+#define U8G2_TEXTAREA_MAX_LINE_BYTES    64          // 单行最大字节数
+#define U8G2_TEXTAREA_LINE_SPACE        0           // 默认行间距
+#define U8G2_TEXTAREA_BORDER_SIZE       2           // 边框大小
+#define U8G2_TEXTAREA_PROGRESS_HEIGHT   5           // 进度条高度
+#define U8G2_TEXTAREA_TRACK_SPEED       0.2f        // 跟踪速度
 
 #ifndef ABS
 #define ABS(s) ((s) < 0 ? -(s) : (s))
@@ -110,6 +116,7 @@ typedef struct u8g2_chart_struct            u8g2_chart_t;
 typedef union  u8g2_menu_value_uniom        u8g2_menu_value_t;
 typedef struct u8g2_menu_event_struct       u8g2_menu_event_t;
 typedef struct u8g2_menu_effect_struct      u8g2_menu_effect_t;
+typedef struct u8g2_menu_textArea_struct    u8g2_menu_textArea_t;
 typedef struct u8g2_menu_drawChart_struct   u8g2_menu_drawChart_t;
 typedef struct u8g2_menu_event_item_struct  u8g2_menu_event_item_t;
 
@@ -167,6 +174,15 @@ typedef void (*u8g2_MenuButton_cb)(u8g2_menu_t *u8g2_menu, uint8_t ID, u8g2_menu
 typedef void (*u8g2_MenuDrawMessageBox_cb)(u8g2_t *u8g2, u8g2_uint_t width, u8g2_uint_t height, void *message);
 typedef void (*u8g2_drawChart_t)(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h);
 
+struct u8g2_menu_textArea_struct
+{
+    int16_t  targetLocation;
+    float    currentLocation;
+    uint16_t totalNumberOfLines;
+    uint16_t lineSpacing;
+    
+    const char *text;
+};
 struct u8g2_menu_drawChart_struct
 {
     u8g2_drawChart_t drawChart;
@@ -547,6 +563,36 @@ void u8g2_MenuDrawMessageBox_xbm(u8g2_menu_t *u8g2_menu, u8g2_uint_t w, u8g2_uin
 // 菜单显示画板
 void u8g2_MenuDrawItemBoard(u8g2_MenuDrawBoard_cb u8g2_MenuDrawBoard, u8g2_uint_t width, u8g2_uint_t height);
 /* =============================== | u8g2_meun_drawStr.c | =============================== */
+// 初始化文本区域
+void u8g2_textArea_init(u8g2_menu_textArea_t *text, const char * textData);
+
+// 设置目标滚动位置
+void u8g2_textArea_setTargetLocation(u8g2_menu_textArea_t *text, const int16_t targetLocation);
+
+// 获取目标滚动位置
+int16_t u8g2_textArea_getTargetLocation(u8g2_menu_textArea_t *text);
+
+// 获取当前平滑滚动位置
+float u8g2_textArea_getCurrentLocation(u8g2_menu_textArea_t *text);
+
+// 获取文本总行数
+uint16_t u8g2_textArea_getTotalNumberOfLines(u8g2_menu_textArea_t *text);
+
+// 设置行间距
+void u8g2_textArea_setLineSpacing(u8g2_menu_textArea_t *text, const uint16_t lineSpacing);
+
+// 获取行间距
+uint16_t u8g2_textArea_getLineSpacing(u8g2_menu_textArea_t *text);
+
+// 设置文本内容
+void u8g2_textArea_setText(u8g2_menu_textArea_t *text, const char * textData);
+
+// 获取文本内容
+char * u8g2_textArea_getText(u8g2_menu_textArea_t *text);
+
+// 文本区域绘制(自动换行/平滑滚动/底部进度条/UTF-8支持)
+void u8g2_DrawTextArea(u8g2_t *u8g2, u8g2_menu_textArea_t *text, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h);
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 // 菜单显示字符串
 void u8g2_MenuDrawStr(char *str);
 
@@ -570,6 +616,12 @@ void u8g2_MenuPrintf(u8g2_MenuDraw_cb u8g2_MenuDraw, const char *fmt, ...) PRINT
 
 // 菜单格式化输出 - 快捷函数 固定调用 u8g2_MenuDrawUTF8
 void u8g2_MenuUTF8Printf(const char *fmt, ...) PRINTF_ATTR(1,2);
+
+// 菜单显示文本区域
+void u8g2_MenuDrawTextArea(u8g2_menu_textArea_t *text, u8g2_uint_t h);
+
+// 菜单显示文本区域 - 绑定按键功能
+void u8g2_MenuDrawTextArea_bind(u8g2_menu_textArea_t *text, u8g2_uint_t h);
 /* =============================== | u8g2_meun_drawValueBar.c | =============================== */
 // 绘制滑块条
 void u8g2_DrawHSliderBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, float schedule, float proportion);

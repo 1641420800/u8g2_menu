@@ -57,7 +57,7 @@ void u8g2_MenuItemAddS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
 #define MenuADDK(s, k)\
     do {\
         *(u8g2_menu->u8g2_menuValue.s.value) += (u8g2_menu->u8g2_menuValue.s.adjValue) * (k);\
-        if (*(u8g2_menu->u8g2_menuValue.s.value) < (u8g2_menu->u8g2_menuValue.s.minValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.maxValue);\
+        if (*(u8g2_menu->u8g2_menuValue.s.value) < (u8g2_menu->u8g2_menuValue.s.minValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.minValue);\
         if (*(u8g2_menu->u8g2_menuValue.s.value) > (u8g2_menu->u8g2_menuValue.s.maxValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.maxValue);\
     } while (0)
 
@@ -132,7 +132,7 @@ void u8g2_MenuItemSubS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k)
     do {\
         *(u8g2_menu->u8g2_menuValue.s.value) -= (u8g2_menu->u8g2_menuValue.s.adjValue) * (k);\
         if (*(u8g2_menu->u8g2_menuValue.s.value) < (u8g2_menu->u8g2_menuValue.s.minValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.minValue);\
-        if (*(u8g2_menu->u8g2_menuValue.s.value) > (u8g2_menu->u8g2_menuValue.s.maxValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.minValue);\
+        if (*(u8g2_menu->u8g2_menuValue.s.value) > (u8g2_menu->u8g2_menuValue.s.maxValue)) *(u8g2_menu->u8g2_menuValue.s.value) = (u8g2_menu->u8g2_menuValue.s.maxValue);\
     } while (0)
 
     switch (u8g2_menu->u8g2_menuValueType)
