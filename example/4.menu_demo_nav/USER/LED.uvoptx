@@ -1070,8 +1070,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\src\u8g2_meun_drawBoard.c</PathWithFileName>
-      <FilenameWithoutPath>u8g2_meun_drawBoard.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\src\u8g2_menu_drawBoard.c</PathWithFileName>
+      <FilenameWithoutPath>u8g2_menu_drawBoard.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1082,8 +1082,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\src\u8g2_meun_drawChart.c</PathWithFileName>
-      <FilenameWithoutPath>u8g2_meun_drawChart.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\src\u8g2_menu_drawChart.c</PathWithFileName>
+      <FilenameWithoutPath>u8g2_menu_drawChart.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1094,8 +1094,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\src\u8g2_meun_drawPic.c</PathWithFileName>
-      <FilenameWithoutPath>u8g2_meun_drawPic.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\src\u8g2_menu_drawPic.c</PathWithFileName>
+      <FilenameWithoutPath>u8g2_menu_drawPic.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1106,8 +1106,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\src\u8g2_meun_drawStr.c</PathWithFileName>
-      <FilenameWithoutPath>u8g2_meun_drawStr.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\src\u8g2_menu_drawStr.c</PathWithFileName>
+      <FilenameWithoutPath>u8g2_menu_drawStr.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1118,8 +1118,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\src\u8g2_meun_drawValueBar.c</PathWithFileName>
-      <FilenameWithoutPath>u8g2_meun_drawValueBar.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\src\u8g2_menu_drawValueBar.c</PathWithFileName>
+      <FilenameWithoutPath>u8g2_menu_drawValueBar.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1130,8 +1130,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\src\u8g2_meun_effect.c</PathWithFileName>
-      <FilenameWithoutPath>u8g2_meun_effect.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\src\u8g2_menu_effect.c</PathWithFileName>
+      <FilenameWithoutPath>u8g2_menu_effect.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1142,8 +1142,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\src\u8g2_meun_event.c</PathWithFileName>
-      <FilenameWithoutPath>u8g2_meun_event.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\src\u8g2_menu_event.c</PathWithFileName>
+      <FilenameWithoutPath>u8g2_menu_event.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1154,8 +1154,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\src\u8g2_meun_itemValue.c</PathWithFileName>
-      <FilenameWithoutPath>u8g2_meun_itemValue.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\src\u8g2_menu_itemValue.c</PathWithFileName>
+      <FilenameWithoutPath>u8g2_menu_itemValue.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1166,8 +1166,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\src\u8g2_meun_keys.c</PathWithFileName>
-      <FilenameWithoutPath>u8g2_meun_keys.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\src\u8g2_menu_keys.c</PathWithFileName>
+      <FilenameWithoutPath>u8g2_menu_keys.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1178,8 +1178,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\src\u8g2_meun_layer.c</PathWithFileName>
-      <FilenameWithoutPath>u8g2_meun_layer.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\src\u8g2_menu_layer.c</PathWithFileName>
+      <FilenameWithoutPath>u8g2_menu_layer.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1190,8 +1190,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\src\u8g2_meun_message.c</PathWithFileName>
-      <FilenameWithoutPath>u8g2_meun_message.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\src\u8g2_menu_message.c</PathWithFileName>
+      <FilenameWithoutPath>u8g2_menu_message.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1202,8 +1202,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\src\u8g2_meun_selector.c</PathWithFileName>
-      <FilenameWithoutPath>u8g2_meun_selector.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\src\u8g2_menu_selector.c</PathWithFileName>
+      <FilenameWithoutPath>u8g2_menu_selector.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1214,8 +1214,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\src\u8g2_meun_weak.c</PathWithFileName>
-      <FilenameWithoutPath>u8g2_meun_weak.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\src\u8g2_menu_weak.c</PathWithFileName>
+      <FilenameWithoutPath>u8g2_menu_weak.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

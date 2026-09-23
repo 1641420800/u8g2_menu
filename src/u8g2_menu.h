@@ -42,7 +42,7 @@ extern "C" {
 #define U8G2_MENUKeyValue_Back          '*'         // 删除一个字符
 #define U8G2_MENUKeyValue_Clear         '#'         // 清除整个输入
 // 菜单刷新间隔
-#define U8G2_MENU_DELAY                 100         // 推理动画之间的延迟，以毫秒为单位
+#define U8G2_MENU_DELAY                 100         // 推进动画之间的延迟，以毫秒为单位
 // 图表功能相关
 #define U8G2_MENU_MIN_VALUE_DIFF        0.0f        // 图表幅值的最小值
 #define U8G2_MENU_CHART_SPACE_RATIO     1.1f        // 图表上下留空的比例
@@ -113,7 +113,7 @@ extern "C" {
 
 typedef struct u8g2_menu_struct             u8g2_menu_t;
 typedef struct u8g2_chart_struct            u8g2_chart_t;
-typedef union  u8g2_menu_value_uniom        u8g2_menu_value_t;
+typedef union  u8g2_menu_value_union        u8g2_menu_value_t;
 typedef struct u8g2_menu_event_struct       u8g2_menu_event_t;
 typedef struct u8g2_menu_effect_struct      u8g2_menu_effect_t;
 typedef struct u8g2_menu_textArea_struct    u8g2_menu_textArea_t;
@@ -273,7 +273,7 @@ struct u8g2_menu_str_struct
     uint16_t s_len;
 };
 
-union u8g2_menu_value_uniom
+union u8g2_menu_value_union
 {
     struct u8g2_menu_uint8_struct v_uint8;
     struct u8g2_menu_uint16_struct v_uint16;
@@ -377,7 +377,7 @@ struct u8g2_chart_struct
     uint16_t data_len;
 };
 
-/* =============================== | u8g2_meun_weak.c | =============================== */
+/* =============================== | u8g2_menu_weak.c | =============================== */
 // 选中某项
 void u8g2_menuItemEnter_weak(u8g2_menu_t *u8g2_menu, u8g2_uint_t item);
 
@@ -410,7 +410,7 @@ uint8_t menuEventKey_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuK
 
 // 按键预处理
 void menuEventKeyPre_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue);
-/* =============================== | u8g2_meun.c | =============================== */
+/* =============================== | u8g2_menu.c | =============================== */
 // 创建菜单 自定义选择展示器
 void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem, menuSelector_cb menuSelector);
 
@@ -520,7 +520,7 @@ u8g2_menu_t *u8g2_MenuGetCurrentMenu(void);
 
 // 获取菜单对应的 u8g2_t
 u8g2_t *u8g2_MenuGetU8g2(u8g2_menu_t *u8g2_menu);
-/* =============================== | u8g2_meun_event.c | =============================== */
+/* =============================== | u8g2_menu_event.c | =============================== */
 // 添加一个事件
 uint8_t u8g2_MenuEventRecord(u8g2_menu_t *u8g2_menu, u8g2_menu_event_item_t * eventItem);
 
@@ -529,7 +529,7 @@ void u8g2_MenuEventProcess(u8g2_menu_t *u8g2_menu);
 
 // 获取当前事件暂存数
 size_t u8g2_MenuEvent_getQuantity(u8g2_menu_t *u8g2_menu);
-/* =============================== | u8g2_meun_keys.c | =============================== */
+/* =============================== | u8g2_menu_keys.c | =============================== */
 // 菜单按键扫描(消抖)
 void u8g2_MenuKeyScannDebounce(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue, uint8_t key, uint16_t time);
 
@@ -541,7 +541,7 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
 
 // 菜单输入字符
 void u8g2_MenuInChar(u8g2_menu_t *u8g2_menu, char c);
-/* =============================== | u8g2_meun_message.c | =============================== */
+/* =============================== | u8g2_menu_message.c | =============================== */
 // 菜单消息框时间接口
 void u8g2_MenuMessageBoxTime_ISR(u8g2_menu_t *u8g2_menu, uint16_t ms);
 
@@ -559,10 +559,10 @@ void u8g2_MenuDrawMessageBox_str(u8g2_menu_t *u8g2_menu, const char * str, uint3
 
 // 显示图片消息
 void u8g2_MenuDrawMessageBox_xbm(u8g2_menu_t *u8g2_menu, u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap, uint32_t drawMessageBoxTimer);
-/* =============================== | u8g2_meun_drawBoard.c | =============================== */
+/* =============================== | u8g2_menu_drawBoard.c | =============================== */
 // 菜单显示画板
 void u8g2_MenuDrawItemBoard(u8g2_MenuDrawBoard_cb u8g2_MenuDrawBoard, u8g2_uint_t width, u8g2_uint_t height);
-/* =============================== | u8g2_meun_drawStr.c | =============================== */
+/* =============================== | u8g2_menu_drawStr.c | =============================== */
 // 初始化文本区域
 void u8g2_textArea_init(u8g2_menu_textArea_t *text, const char * textData);
 
@@ -622,7 +622,7 @@ void u8g2_MenuDrawTextArea(u8g2_menu_textArea_t *text, u8g2_uint_t h);
 
 // 菜单显示文本区域 - 绑定按键功能
 void u8g2_MenuDrawTextArea_bind(u8g2_menu_textArea_t *text, u8g2_uint_t h);
-/* =============================== | u8g2_meun_drawValueBar.c | =============================== */
+/* =============================== | u8g2_menu_drawValueBar.c | =============================== */
 // 绘制滑块条
 void u8g2_DrawHSliderBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, float schedule, float proportion);
 
@@ -643,7 +643,7 @@ void u8g2_MenuDrawItemProgressBar(float position);
 
 // 菜单显示进度条 绑定附加值
 void u8g2_MenuDrawItemProgressBar_bind(int *value, int adjValue, int minValue, int maxValue);
-/* =============================== | u8g2_meun_drawChart.c | =============================== */
+/* =============================== | u8g2_menu_drawChart.c | =============================== */
 // 图表数据初始化
 void u8g2_chart_init(u8g2_chart_t *chart, float *data, float *data_dis, uint16_t data_len);
 
@@ -679,13 +679,13 @@ void u8g2_MenuDrawItemPointChart(u8g2_chart_t *chart, u8g2_uint_t h, float max, 
 
 // 绘制柱状图项
 void u8g2_MenuDrawItemBarChart(u8g2_chart_t *chart, u8g2_uint_t h, float max, float min);
-/* =============================== | u8g2_meun_drawPic.c | =============================== */
+/* =============================== | u8g2_menu_drawPic.c | =============================== */
 // 绘制XBM
 void u8g2_MenuDrawItemXBM(u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap);
 
 // 绘制XBMP
 void u8g2_MenuDrawItemXBMP(u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap);
-/* =============================== | u8g2_meun_itemValue.c | =============================== */
+/* =============================== | u8g2_menu_itemValue.c | =============================== */
 // 选中
 void u8g2_MenuItemSelect(u8g2_menu_t *u8g2_menu);
 
@@ -726,7 +726,7 @@ void u8g2_MenuItem_menu(menuItem_cb menuItem);
 void u8g2_MenuItem_menu_enter(menuItem_cb menuItem);
 void u8g2_MenuItem_menu_back(void);
 void u8g2_MenuItem_str(char *str, uint16_t len);
-/* =============================== | u8g2_meun_effect.c | =============================== */
+/* =============================== | u8g2_menu_effect.c | =============================== */
 // 绑定菜单效果实例
 void u8g2_MenuEffectBind(u8g2_menu_t *u8g2_menu, u8g2_menu_effect_t *u8g2_menu_effect);
 
@@ -741,7 +741,7 @@ u8g2_int_t u8g2_menuEffect_init_call(u8g2_menu_t *u8g2_menu);
 
 // 菜单效果运行回调
 u8g2_int_t u8g2_menuEffect_run_call(u8g2_menu_t *u8g2_menu);
-/* =============================== | u8g2_meun_selector.c | =============================== */
+/* =============================== | u8g2_menu_selector.c | =============================== */
 // 选择器记录
 void u8g2_MenuSelector_Record(u8g2_menu_t *u8g2_menu);
 
@@ -753,7 +753,7 @@ void u8g2_MenuSelectorRotundity(u8g2_menu_t *u8g2_menu);
 
 // 选择展示器 方形
 void u8g2_MenuSelectorSquare(u8g2_menu_t *u8g2_menu);
-/* =============================== | u8g2_meun_layer.c | =============================== */
+/* =============================== | u8g2_menu_layer.c | =============================== */
 // 获取图层缓存缓冲区
 uint8_t *u8g2_MenuGetLayerBuff(void);
 

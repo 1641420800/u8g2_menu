@@ -76,19 +76,19 @@
 |--------|---------|
 | `u8g2_menu.h` | 主头文件，所有API声明与配置宏 |
 | `u8g2_menu.c` | 核心菜单逻辑 |
-| `u8g2_meun_effect.c` | 动画效果 |
-| `u8g2_meun_event.c` | 事件系统 |
-| `u8g2_meun_itemValue.c` | 变量绑定/附加值 |
-| `u8g2_meun_keys.c` | 按键扫描 |
-| `u8g2_meun_layer.c` | 图层系统 |
-| `u8g2_meun_message.c` | 消息框 |
-| `u8g2_meun_selector.c` | 选择器 |
-| `u8g2_meun_drawBoard.c` | 自定义画板 |
-| `u8g2_meun_drawChart.c` | 图表绘制 |
-| `u8g2_meun_drawPic.c` | 图片绘制 |
-| `u8g2_meun_drawStr.c` | 字符串绘制 |
-| `u8g2_meun_drawValueBar.c` | 滑块/进度条 |
-| `u8g2_meun_weak.c` | 弱定义回调（可重写） |
+| `u8g2_menu_effect.c` | 动画效果 |
+| `u8g2_menu_event.c` | 事件系统 |
+| `u8g2_menu_itemValue.c` | 变量绑定/附加值 |
+| `u8g2_menu_keys.c` | 按键扫描 |
+| `u8g2_menu_layer.c` | 图层系统 |
+| `u8g2_menu_message.c` | 消息框 |
+| `u8g2_menu_selector.c` | 选择器 |
+| `u8g2_menu_drawBoard.c` | 自定义画板 |
+| `u8g2_menu_drawChart.c` | 图表绘制 |
+| `u8g2_menu_drawPic.c` | 图片绘制 |
+| `u8g2_menu_drawStr.c` | 字符串绘制 |
+| `u8g2_menu_drawValueBar.c` | 滑块/进度条 |
+| `u8g2_menu_weak.c` | 弱定义回调（可重写） |
 
 ---
 
@@ -1015,7 +1015,7 @@ void u8g2_MenuEndLayer(Layer_t layer);
 
 ## 18. 弱定义回调函数 (可重写)
 
-以下函数以 `__weak` 修饰定义在 `u8g2_meun_weak.c` 中，用户在应用程序中定义同名函数即可覆盖。
+以下函数以 `__weak` 修饰定义在 `u8g2_menu_weak.c` 中，用户在应用程序中定义同名函数即可覆盖。
 
 ### 18.1 菜单项事件
 

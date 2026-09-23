@@ -740,69 +740,69 @@
               <FilePath>..\..\..\src\u8g2_menu.c</FilePath>
             </File>
             <File>
-              <FileName>u8g2_meun_drawBoard.c</FileName>
+              <FileName>u8g2_menu_drawBoard.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\src\u8g2_meun_drawBoard.c</FilePath>
+              <FilePath>..\..\..\src\u8g2_menu_drawBoard.c</FilePath>
             </File>
             <File>
-              <FileName>u8g2_meun_drawChart.c</FileName>
+              <FileName>u8g2_menu_drawChart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\src\u8g2_meun_drawChart.c</FilePath>
+              <FilePath>..\..\..\src\u8g2_menu_drawChart.c</FilePath>
             </File>
             <File>
-              <FileName>u8g2_meun_drawPic.c</FileName>
+              <FileName>u8g2_menu_drawPic.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\src\u8g2_meun_drawPic.c</FilePath>
+              <FilePath>..\..\..\src\u8g2_menu_drawPic.c</FilePath>
             </File>
             <File>
-              <FileName>u8g2_meun_drawStr.c</FileName>
+              <FileName>u8g2_menu_drawStr.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\src\u8g2_meun_drawStr.c</FilePath>
+              <FilePath>..\..\..\src\u8g2_menu_drawStr.c</FilePath>
             </File>
             <File>
-              <FileName>u8g2_meun_drawValueBar.c</FileName>
+              <FileName>u8g2_menu_drawValueBar.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\src\u8g2_meun_drawValueBar.c</FilePath>
+              <FilePath>..\..\..\src\u8g2_menu_drawValueBar.c</FilePath>
             </File>
             <File>
-              <FileName>u8g2_meun_effect.c</FileName>
+              <FileName>u8g2_menu_effect.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\src\u8g2_meun_effect.c</FilePath>
+              <FilePath>..\..\..\src\u8g2_menu_effect.c</FilePath>
             </File>
             <File>
-              <FileName>u8g2_meun_event.c</FileName>
+              <FileName>u8g2_menu_event.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\src\u8g2_meun_event.c</FilePath>
+              <FilePath>..\..\..\src\u8g2_menu_event.c</FilePath>
             </File>
             <File>
-              <FileName>u8g2_meun_itemValue.c</FileName>
+              <FileName>u8g2_menu_itemValue.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\src\u8g2_meun_itemValue.c</FilePath>
+              <FilePath>..\..\..\src\u8g2_menu_itemValue.c</FilePath>
             </File>
             <File>
-              <FileName>u8g2_meun_keys.c</FileName>
+              <FileName>u8g2_menu_keys.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\src\u8g2_meun_keys.c</FilePath>
+              <FilePath>..\..\..\src\u8g2_menu_keys.c</FilePath>
             </File>
             <File>
-              <FileName>u8g2_meun_layer.c</FileName>
+              <FileName>u8g2_menu_layer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\src\u8g2_meun_layer.c</FilePath>
+              <FilePath>..\..\..\src\u8g2_menu_layer.c</FilePath>
             </File>
             <File>
-              <FileName>u8g2_meun_message.c</FileName>
+              <FileName>u8g2_menu_message.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\src\u8g2_meun_message.c</FilePath>
+              <FilePath>..\..\..\src\u8g2_menu_message.c</FilePath>
             </File>
             <File>
-              <FileName>u8g2_meun_selector.c</FileName>
+              <FileName>u8g2_menu_selector.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\src\u8g2_meun_selector.c</FilePath>
+              <FilePath>..\..\..\src\u8g2_menu_selector.c</FilePath>
             </File>
             <File>
-              <FileName>u8g2_meun_weak.c</FileName>
+              <FileName>u8g2_menu_weak.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\src\u8g2_meun_weak.c</FilePath>
+              <FilePath>..\..\..\src\u8g2_menu_weak.c</FilePath>
             </File>
           </Files>
         </Group>

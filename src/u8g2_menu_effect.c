@@ -5,16 +5,16 @@
 // 效果类型 效果器自定义
 // 设置效果类型 公共函数
 // 初始化效果器
-// 推理效果 尽量放到定时器里 需要包含表项的移动和选择器的移动
+// 推进效果 尽量放到定时器里 需要包含表项的移动和选择器的移动
 
-// 推理展开效果 - 初始化
+// 推进展开效果 - 初始化
 u8g2_int_t u8g2_Menu_init(u8g2_menu_t *u8g2_menu)
 {
     u8g2_menu->menuEffect._rowHeight = ROW_HEIGHT_INCREMENT;
     return 0;
 }
 
-// 推理表项移动效果
+// 推进表项移动效果
 u8g2_int_t u8g2_Menu_run(u8g2_menu_t *u8g2_menu)
 {
     if (u8g2_menu == NULL) {
