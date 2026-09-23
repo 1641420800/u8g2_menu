@@ -380,7 +380,7 @@ void u8g2_MenuDrawItemStr(u8g2_uint_t (*u8g2_Draw)(u8g2_t *u8g2, u8g2_uint_t x, 
         return;
     u8g2_menu_t *menu = u8g2_MenuDrawItemStart();
     u8g2_t *u8g2 = u8g2_MenuGetU8g2(menu);
-    if (!menu)
+    if (!menu || !u8g2)
         return;
     u8g2_MenuDrawItemSetSize(menu,u8g2_GetUTF8Width(u8g2, str) * multiple, u8g2_GetMaxCharHeight(u8g2) * multiple);
     u8g2_MenuSelectorCall(menu);

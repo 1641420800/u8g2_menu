@@ -47,6 +47,8 @@ u8g2_menu_effect_t u8g2_MenuEffect = {u8g2_Menu_init, u8g2_Menu_run};
 // 绑定效果
 void u8g2_MenuEffectBind(u8g2_menu_t *u8g2_menu, u8g2_menu_effect_t *u8g2_menu_effect)
 {
+    if(!u8g2_menu || !u8g2_menu_effect)
+        return;
     u8g2_menu->menuEffect = *u8g2_menu_effect;
     u8g2_menu->menuEffect.u8g2_menuEffect_init(u8g2_menu);
 }
@@ -54,11 +56,15 @@ void u8g2_MenuEffectBind(u8g2_menu_t *u8g2_menu, u8g2_menu_effect_t *u8g2_menu_e
 // 获取当前位置
 u8g2_int_t u8g2_MenuEffectGetPos(u8g2_menu_t *u8g2_menu)
 {
+    if(!u8g2_menu)
+        return 0;
     return u8g2_menu->menuEffect._position;
 }
 // 获取当前行行高比
 float u8g2_MenuEffectGetRowHeight(u8g2_menu_t *u8g2_menu)
 {
+    if(!u8g2_menu)
+        return 0.0f;
     return u8g2_menu->menuEffect._rowHeight;
 }
 

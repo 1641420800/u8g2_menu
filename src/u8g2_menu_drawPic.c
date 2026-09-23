@@ -17,7 +17,7 @@ void u8g2_MenuDrawItemPic(void (*drawXBM)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint
         return;
     u8g2_menu_t *menu = u8g2_MenuDrawItemStart();
     u8g2_t *u8g2 = u8g2_MenuGetU8g2(menu);
-    if (!menu)
+    if (!menu || !u8g2)
         return;
     u8g2_MenuDrawItemSetSize(menu, w, h);
     u8g2_MenuSelectorCall(menu);

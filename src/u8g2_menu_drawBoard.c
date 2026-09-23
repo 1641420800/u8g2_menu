@@ -16,17 +16,11 @@ void u8g2_MenuDrawItemBoard(u8g2_MenuDrawBoard_cb u8g2_MenuDrawBoard, u8g2_uint_
         return;
     u8g2_menu_t *menu = u8g2_MenuDrawItemStart();
     u8g2_t *u8g2 = u8g2_MenuGetU8g2(menu);
-    if (!menu)
+    if (!menu || !u8g2)
         return;
-    
-    
+
     uint8_t *_layerBuff = u8g2_MenuGetLayerBuff();
-    if (!_layerBuff)
-    {
-        // todo: error
-        return;
-    }
-    
+
     u8g2_MenuDrawItemSetSize(menu, width, height);
     u8g2_MenuSelectorCall(menu);
     

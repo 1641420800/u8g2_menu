@@ -55,7 +55,7 @@ void u8g2_MenuDrawItemSliderProportion(float position, float proportion)
 {
     u8g2_menu_t *menu = u8g2_MenuDrawItemStart();
     u8g2_t *u8g2 = u8g2_MenuGetU8g2(menu);
-    if (!menu)
+    if (!menu || !u8g2)
         return;
     u8g2_MenuDrawItemSetSize(menu, u8g2_MenuGetW(menu), u8g2_GetMaxCharHeight(u8g2));
     u8g2_MenuSelectorCall(menu);
@@ -109,7 +109,7 @@ void u8g2_MenuDrawItemProgressBar(float position)
 {
     u8g2_menu_t *menu = u8g2_MenuDrawItemStart();
     u8g2_t *u8g2 = u8g2_MenuGetU8g2(menu);
-    if (!menu)
+    if (!menu || !u8g2)
         return;
     u8g2_MenuDrawItemSetSize(menu, u8g2_MenuGetW(menu), u8g2_GetMaxCharHeight(u8g2));
     u8g2_MenuSelectorCall(menu);

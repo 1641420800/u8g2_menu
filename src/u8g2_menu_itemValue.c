@@ -9,6 +9,8 @@
  */
 void u8g2_MenuItemSelect(u8g2_menu_t *u8g2_menu)
 {
+    if(!u8g2_menu)
+        return;
     u8g2_menu->currentSetValue = u8g2_menu->currentItem;
     if (u8g2_menu->u8g2_menuValueType == MENU_button)
     {
@@ -25,6 +27,8 @@ void u8g2_MenuItemSelect(u8g2_menu_t *u8g2_menu)
  */
 void u8g2_MenuItemDeSelect(u8g2_menu_t *u8g2_menu)
 {
+    if(!u8g2_menu)
+        return;
     u8g2_menu->currentSetValue = -1;
     if (u8g2_menu->u8g2_menuValueType == MENU_button)
     {
@@ -41,6 +45,8 @@ void u8g2_MenuItemDeSelect(u8g2_menu_t *u8g2_menu)
  */
 u8g2_int_t u8g2_MenuGetItemSelect(u8g2_menu_t *u8g2_menu)
 {
+    if(!u8g2_menu)
+        return -1;
     return u8g2_menu->currentSetValue;
 }
 

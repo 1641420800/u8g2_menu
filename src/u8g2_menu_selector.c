@@ -4,6 +4,8 @@
 
 void u8g2_MenuSelector_Record(u8g2_menu_t *u8g2_menu)
 {
+    if(!u8g2_menu)
+        return;
     switch (u8g2_MenuGetAttribute(u8g2_menu))
     {
     case MENU_None: // 未选中
@@ -30,6 +32,8 @@ void u8g2_MenuSelector(u8g2_menu_t *u8g2_menu)
 // 选择展示器 圆形
 void u8g2_MenuSelectorRotundity(u8g2_menu_t *u8g2_menu)
 {
+    if(!u8g2_menu)
+        return;
     u8g2_t *u8g2 = u8g2_MenuGetU8g2(u8g2_menu); // 获取当前菜单的u8g2对象
     u8g2_int_t x,y,h;
 
@@ -61,6 +65,8 @@ void u8g2_MenuSelectorRotundity(u8g2_menu_t *u8g2_menu)
 // 选择展示器 方形
 void u8g2_MenuSelectorSquare(u8g2_menu_t *u8g2_menu)
 {
+    if(!u8g2_menu)
+        return;
     u8g2_t *u8g2 = u8g2_MenuGetU8g2(u8g2_menu); // 获取当前菜单的u8g2对象
     u8g2_int_t x,y,h;
 

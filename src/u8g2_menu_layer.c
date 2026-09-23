@@ -1,8 +1,8 @@
 #include "u8g2_menu.h"
 #include <stdlib.h>
 
-uint8_t *layerBuff = NULL;
-u8g2_t *layerU8g2 = NULL;
+static uint8_t *layerBuff = NULL;
+static u8g2_t *layerU8g2 = NULL;
 
 
 uint8_t *u8g2_MenuGetLayerBuff(void)

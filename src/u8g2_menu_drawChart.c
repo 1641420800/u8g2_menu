@@ -251,7 +251,7 @@ void u8g2_MenuDrawItemChart(u8g2_menu_drawChart_t * chart, const size_t chartSiz
         return;
     u8g2_menu_t *menu = u8g2_MenuDrawItemStart();
     u8g2_t *u8g2 = u8g2_MenuGetU8g2(menu);
-    if (!menu)
+    if (!menu || !u8g2)
         return;
     u8g2_MenuDrawItemSetSize(menu, u8g2_MenuGetW(menu), h);
     u8g2_MenuSelectorCall(menu);

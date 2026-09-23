@@ -554,6 +554,12 @@ void u8g2_MenuDrawMessageBox(u8g2_menu_t *u8g2_menu, u8g2_MenuDrawMessageBox_cb 
 // 清除弹窗信息
 void u8g2_MenuDrawMessageBoxClose(u8g2_menu_t *u8g2_menu);
 
+// 获取当前总显示时间
+uint32_t u8g2_MenuGetMessageBoxTimer(u8g2_menu_t *u8g2_menu);
+
+// 获取剩余显示时间
+uint32_t u8g2_MenuGetMessageBoxTimerLeft(u8g2_menu_t *u8g2_menu);
+
 // 显示字符串消息
 void u8g2_MenuDrawMessageBox_str(u8g2_menu_t *u8g2_menu, const char * str, uint32_t drawMessageBoxTimer);
 

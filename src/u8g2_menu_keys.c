@@ -12,6 +12,8 @@
  */
 void u8g2_MenuKeyScannDebounce(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue, uint8_t key, uint16_t time)
 {
+    if(!u8g2_menu)
+        return;
     if(u8g2_menu->key_shakeFree[u8g2_menuKeyValue] < MenuKey_debouncePeriod && key)
     {
         u8g2_menu->key_shakeFree[u8g2_menuKeyValue] += time;
@@ -46,7 +48,7 @@ void u8g2_MenuKeyScannDebounce(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_
  */
 void u8g2_MenuKeyScann(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue, uint8_t key, uint16_t time)
 {
-    if(u8g2_menuKeyValue >= MENU_Key_Num) return;
+    if(!u8g2_menu || u8g2_menuKeyValue >= MENU_Key_Num) return;
 
     u8g2_menu->keyTim[u8g2_menuKeyValue] += time;
     if(u8g2_menu->keyTim[u8g2_menuKeyValue] > MenuKey_holdTime && u8g2_menu->keyTim[u8g2_menuKeyValue] < MenuKey_holdTime + MenuKey_repeatTime && key != 0)
@@ -84,6 +86,8 @@ void u8g2_MenuKeyScann(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyV
  */
 void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)
 {
+    if(!u8g2_menu)
+        return;
     // 根据是否选中进行按键映射
     menuEventKeyPre_weak(u8g2_menu, &u8g2_menuKeyValue);
     if(menuEventKey_weak(u8g2_menu, u8g2_menuKeyValue)) return;
@@ -130,6 +134,8 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
  */
 void u8g2_MenuInChar(u8g2_menu_t *u8g2_menu, char c)
 {
+    if(!u8g2_menu)
+        return;
     uint16_t len;
     u8g2_menuCharEvent_weak(u8g2_menu,&c);
     if (u8g2_menu->u8g2_menuValueType == MENU_str && u8g2_MenuGetItemSelect(u8g2_menu) != -1)

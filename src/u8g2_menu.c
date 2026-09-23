@@ -1,7 +1,7 @@
 #include "u8g2_menu.h"
 
 // 当前正在绘制的菜单
-u8g2_menu_t *currentMenu = NULL;
+static u8g2_menu_t *currentMenu = NULL;
 // 菜单效果全局实例
 extern u8g2_menu_effect_t u8g2_MenuEffect;
 
