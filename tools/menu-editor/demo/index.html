@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>u8g2-menu-editor 集成演示</title>
+  <style>
+    body { margin: 0; padding: 24px; background: #e9edf3; font-family: "Segoe UI", "Microsoft YaHei", sans-serif; }
+    h1 { font-size: 18px; color: #1c2430; }
+    p.tip { color: #67707e; font-size: 13px; }
+    #editor { height: 640px; max-width: 1100px; }
+  </style>
+</head>
+<body>
+  <h1>u8g2-menu-editor — Chart.js 式嵌入演示</h1>
+  <p class="tip">
+    本页面仅用两个 <code>&lt;script&gt;</code> 标签集成编辑器（无需框架 / 打包器）：
+    <code>u8g2-menu-editor.iife.js</code> + 预览引擎 <code>u8g2-menu-preview.js/.wasm</code>。
+    左侧编辑结构，中间操作真库预览（↑↓ 确认 返回 ＋/－），右侧改样式与属性，点「生成 C 代码」导出。
+  </p>
+  <div id="editor"></div>
+
+  <script src="../dist/u8g2-menu-editor.iife.js"></script>
+  <script>
+    const editor = new U8G2MenuEditor.MenuEditor(document.getElementById('editor'), {
+      wasmUrl: '../prebuilt/u8g2-menu-preview.js',
+      persistKey: 'demo',
+      onChange: (data) => { window.__umeData = data; },
+      onExport: (r) => { window.__umeCode = r; },
+    });
+    // 集成方 API 挂到全局便于控制台调试
+    window.editor = editor;
+  </script>
+</body>
+</html>

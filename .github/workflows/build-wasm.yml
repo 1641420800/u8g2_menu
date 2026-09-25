@@ -1,0 +1,34 @@
+name: build-wasm
+
+# 当菜单库源码或预览 shim 变化时，用 Emscripten 重建预览引擎并提交产物
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'src/u8g2_menu*.c'
+      - 'src/u8g2_menu*.h'
+      - 'tools/menu-editor/wasm/**'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build preview WASM
+        run: bash tools/menu-editor/wasm/build.sh
+
+      - name: Commit artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/menu-editor/prebuilt/
+          if git diff --cached --quiet; then
+            echo "产物无变化"
+          else
+            git commit -m "chore(menu-editor): 重建预览 WASM 产物"
+            git push
+          fi

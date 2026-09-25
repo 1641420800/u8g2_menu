@@ -1,0 +1,50 @@
+{
+  "name": "u8g2-menu-editor",
+  "version": "1.0.0",
+  "description": "Visual menu editor for u8g2_menu: edit menu structure & style, live-preview via real-library WASM, generate C code. Framework-agnostic, Chart.js-style embeddable.",
+  "type": "module",
+  "keywords": [
+    "u8g2",
+    "menu",
+    "embedded",
+    "oled",
+    "editor",
+    "code-generator"
+  ],
+  "license": "MIT",
+  "main": "./dist/u8g2-menu-editor.cjs",
+  "module": "./dist/u8g2-menu-editor.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/u8g2-menu-editor.js",
+      "require": "./dist/u8g2-menu-editor.cjs"
+    },
+    "./dist/u8g2-menu-editor.iife.js": "./dist/u8g2-menu-editor.iife.js",
+    "./prebuilt/*": "./prebuilt/*"
+  },
+  "files": [
+    "dist",
+    "prebuilt",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && npm run build:iife",
+    "build:iife": "esbuild src/index.ts --bundle --minify --format=iife --global-name=U8G2MenuEditor --outfile=dist/u8g2-menu-editor.iife.js",
+    "dts": "tsc -p tsconfig.dts.json",
+    "test": "vitest run",
+    "demo": "node scripts/serve-demo.mjs"
+  },
+  "dependencies": {
+    "lit-html": "^3.2.0",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.3",
+    "vitest": "^2.1.8"
+  }
+}

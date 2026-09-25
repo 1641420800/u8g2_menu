@@ -55,3 +55,8 @@ dkms.conf
 *.axf
 *.htm
 *.lnp
+
+# Node / menu-editor tooling
+node_modules/
+tools/menu-editor/wasm/genfonts.c
+tools/menu-editor/demo-dist/

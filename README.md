@@ -33,6 +33,24 @@
 
 ---
 
+## 0. 可视化菜单编辑器 (u8g2-menu-editor)
+
+不想手写页面函数？仓库自带一个**纯前端可视化编辑器**（`tools/menu-editor/`）：
+
+- 拖拽式编辑菜单结构与样式，**WASM 实时预览**（把本库源码编译进浏览器，像素级还原真机效果）
+- 一键生成 `menu_pages.c/.h`，`USER CODE` 保留区保护手写代码
+- Chart.js 式零框架依赖，两个 `<script>` 标签即可嵌入任意项目
+
+```bash
+# 快速体验（需 Node.js）
+cd tools/menu-editor && npm install && npm run demo
+# 浏览器打开 http://localhost:5183
+```
+
+详见 [tools/menu-editor/README.md](tools/menu-editor/README.md)。
+
+---
+
 ## 1. 概述
 
 **u8g2_menu** 是一个基于 [U8g2](https://github.com/olikraus/u8g2) 构建的嵌入式菜单库，提供以下核心能力：
