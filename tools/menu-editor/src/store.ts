@@ -1,6 +1,6 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
-import type { Item, ItemKind, Page, Project } from './types';
-import { createProject, cloneProject, genId, createItem } from './model';
+import type { Item, ItemKind, Page, Project, Variable } from './types';
+import { createProject, cloneProject, genId, createItem, createVariable, uniqueVarName } from './model';
 
 export interface Selection {
   pageId: string | null;
@@ -33,6 +33,12 @@ export interface EditorStore extends EditorState {
   moveItem: (pageId: string, itemId: string, dir: -1 | 1) => void;
   duplicateItem: (pageId: string, itemId: string) => void;
   updateItem: (pageId: string, itemId: string, patch: Partial<Item>, coalesceKey?: string) => void;
+
+  /** 新建变量（自动唯一命名），返回新变量 */
+  addVariable: (partial?: Partial<Variable>) => Variable;
+  /** 删除变量；被条目引用时返回引用数且不删除 */
+  removeVariable: (varId: string) => number;
+  updateVariable: (varId: string, patch: Partial<Variable>, coalesceKey?: string) => void;
 }
 
 const COALESCE_MS = 800;
@@ -184,6 +190,38 @@ export function createEditorStore() {
       const pg = p.pages.find((x) => x.id === pageId);
       const it = pg?.items.find((x) => x.id === itemId);
       if (it) Object.assign(it, patch);
+    }, coalesceKey);
+  },
+
+  addVariable: (partial) => {
+    let created: Variable | null = null;
+    get().update((p) => {
+      p.variables = p.variables ?? [];
+      const name = uniqueVarName(p.variables, partial?.name ?? 'var_new');
+      created = createVariable({ ...partial, name });
+      p.variables.push(created);
+    });
+    return created!;
+  },
+
+  removeVariable: (varId) => {
+    let refs = 0;
+    for (const pg of get().project.pages) {
+      for (const it of pg.items) {
+        if ('varId' in it && it.varId === varId) refs++;
+      }
+    }
+    if (refs > 0) return refs;
+    get().update((p) => {
+      p.variables = (p.variables ?? []).filter((v) => v.id !== varId);
+    });
+    return 0;
+  },
+
+  updateVariable: (varId, patch, coalesceKey) => {
+    get().update((p) => {
+      const v = (p.variables ?? []).find((x) => x.id === varId);
+      if (v) Object.assign(v, patch);
     }, coalesceKey);
   },
   }));

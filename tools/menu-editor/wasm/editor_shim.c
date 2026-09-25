@@ -61,6 +61,7 @@ typedef struct {
     uint16_t area_h;       /* textarea/chart 高度 */
     uint16_t chart_len;
     uint16_t lineSpacing;
+    int16_t  poolSlot;     /* 值池槽位（绑定变量共享；-1 = 按条目独立） */
     char     text[96];
     char     onText[12];
     char     offText[12];
@@ -186,7 +187,9 @@ static void em_dispatch(uint8_t page)
 
     for (uint16_t i = 0; i < n; i++) {
         em_item_t *it = &items[i];
-        uint32_t slot = (uint32_t)page * EM_MAX_ITEMS + i;
+        uint32_t slot = (it->poolSlot >= 0)
+            ? (uint32_t)it->poolSlot
+            : (uint32_t)page * EM_MAX_ITEMS + i;
 
         switch (it->kind) {
         case EM_Text:
@@ -194,19 +197,30 @@ static void em_dispatch(uint8_t page)
             break;
 
         case EM_Number:
+            /* bindScroll 槽位复用为 noBind：1 = 只显示不绑定附加值 */
+            if (!it->bindScroll) {
+                switch (it->varType) {
+                case MENU_V_float:
+                    u8g2_MenuItemValue_float(&em_fpool[slot], (float)it->i_step,
+                                             (float)it->i_min, (float)it->i_max);
+                    break;
+                case MENU_V_double:
+                    u8g2_MenuItemValue_double(&em_dpool[slot], (double)it->i_step,
+                                              (double)it->i_min, (double)it->i_max);
+                    break;
+                default: /* 整数族统一用 int32 路径，视觉行为一致 */
+                    u8g2_MenuItemValue_int32(&em_ipool[slot], it->i_step, it->i_min, it->i_max);
+                    break;
+                }
+            }
             switch (it->varType) {
             case MENU_V_float:
-                u8g2_MenuItemValue_float(&em_fpool[slot], (float)it->i_step,
-                                         (float)it->i_min, (float)it->i_max);
                 snprintf(buf, sizeof(buf), it->text, (double)em_fpool[slot]);
                 break;
             case MENU_V_double:
-                u8g2_MenuItemValue_double(&em_dpool[slot], (double)it->i_step,
-                                          (double)it->i_min, (double)it->i_max);
                 snprintf(buf, sizeof(buf), it->text, em_dpool[slot]);
                 break;
-            default: /* 整数族统一用 int32 路径，视觉行为一致 */
-                u8g2_MenuItemValue_int32(&em_ipool[slot], it->i_step, it->i_min, it->i_max);
+            default:
                 snprintf(buf, sizeof(buf), it->text, (int)em_ipool[slot]);
                 break;
             }
@@ -361,11 +375,12 @@ void em_page_begin(int page)
     em_page_len[page] = 0;
 }
 
-/* 数值字段一次性设置 */
+/* 数值字段一次性设置（poolSlot >= 0 时值池按变量共享，-1 则按条目独立） */
 void em_page_item(int page, int idx, int kind, int varType, int scale,
                   int chartKind, int bindScroll, int swOpen, int buttonId, int chartFixed,
                   int i_value, int i_step, int i_min, int i_max,
-                  int target, int xbm_w, int xbm_h, int area_h, int chart_len, int lineSpacing)
+                  int target, int xbm_w, int xbm_h, int area_h, int chart_len, int lineSpacing,
+                  int poolSlot)
 {
     if (page < 0 || page >= EM_MAX_PAGES || idx < 0 || idx >= EM_MAX_ITEMS) return;
     em_item_t *it = &em_pages[page][idx];
@@ -389,7 +404,10 @@ void em_page_item(int page, int idx, int kind, int varType, int scale,
     it->chart_len = (uint16_t)chart_len;
     it->lineSpacing = (uint16_t)lineSpacing;
 
-    uint32_t slot = (uint32_t)page * EM_MAX_ITEMS + idx;
+    uint32_t slot = (poolSlot >= 0 && poolSlot < EM_SLOTS)
+        ? (uint32_t)poolSlot
+        : (uint32_t)page * EM_MAX_ITEMS + idx;
+    it->poolSlot = (int16_t)slot;
 
     switch (kind) {
     case EM_Number:

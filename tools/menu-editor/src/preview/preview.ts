@@ -1,5 +1,11 @@
-import type { Project } from '../types';
+import type { Project, Variable } from '../types';
 import { FONTS } from '../types';
+
+/** varId -> Variable（找不到返回 null，条目按未绑定处理） */
+function n_varById(map: Map<string, Variable>, varId: string | null): Variable | null {
+  if (!varId) return null;
+  return map.get(varId) ?? null;
+}
 
 /** u8g2_menu 按键枚举值（与 u8g2_menu.h 对应） */
 export enum MenuKey {
@@ -130,6 +136,10 @@ export class WasmPreview {
     }
 
     const intT = (v: number) => Math.trunc(Number.isFinite(v) ? v : 0);
+    // 绑定变量的条目共享同一值池槽位（按变量在池中的下标）；未绑定按条目独立
+    const varSlot = (vid: string | null): number =>
+      vid ? (project.variables ?? []).findIndex((v) => v.id === vid) : -1;
+    const varById = new Map((project.variables ?? []).map((v) => [v.id, v]));
     project.pages.forEach((pg, pi) => {
       mod.ccall('em_page_begin', null, ['number'], [pi]);
       pg.items.forEach((it, ii) => {
@@ -140,37 +150,42 @@ export class WasmPreview {
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number'],
-              [pi, ii, 0, 0, it.scale, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0]);
+              [pi, ii, 0, 0, it.scale, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1]);
             mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.text]);
             break;
           case 'number': {
-            const vt = { uint8: 0, uint16: 1, uint32: 2, int8: 3, int16: 4, int32: 5, int: 6, float: 7, double: 8 }[it.varType];
-            const sample = it.varType === 'float' || it.varType === 'double'
-              ? Math.round(it.initialValue) : intT(it.initialValue);
+            const v = n_varById(varById, it.varId);
+            // bindScroll 槽位复用为 noBind：1 = 只显示不绑定附加值
             mod.ccall('em_page_item', null, [...slotBase,
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number'],
-              [pi, ii, 1, vt, it.scale, 0, 0, 0, 0, 0, sample, intT(it.step), intT(it.min), intT(it.max), -1, 0, 0, 0, 0, 0]);
+              [pi, ii, 1, v ? { uint8: 0, uint16: 1, uint32: 2, int8: 3, int16: 4, int32: 5, int: 6, float: 7, double: 8 }[v.type] : 0,
+                it.scale, 0, 0, 0, 0, 0, v ? intT(v.initialValue) : 0,
+                v ? intT(v.step) : 0, v ? intT(v.min) : 0, v ? intT(v.max) : 0,
+                -1, 0, 0, 0, 0, it.editable === false ? 1 : 0, varSlot(it.varId)]);
             mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.text]);
             break;
           }
-          case 'switch':
+          case 'switch': {
+            const v = n_varById(varById, it.varId);
             mod.ccall('em_page_item', null, [...slotBase,
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number'],
-              [pi, ii, 2, 0, it.scale, 0, 0, intT(it.openValue), 0, 0, intT(it.initialValue), 0, 0, 0, -1, 0, 0, 0, 0, 0]);
+              [pi, ii, 2, 0, it.scale, 0, 0, intT(it.openValue), 0, 0,
+                v ? intT(v.initialValue) : 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, varSlot(it.varId)]);
             mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.text]);
             mod.ccall('em_item_swtext', null, ['number', 'number', 'string', 'string'],
               [pi, ii, it.onText, it.offText]);
             break;
+          }
           case 'button':
             mod.ccall('em_page_item', null, [...slotBase,
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number'],
-              [pi, ii, 3, 0, it.scale, 0, 0, 0, intT(it.buttonId), 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0]);
+              [pi, ii, 3, 0, it.scale, 0, 0, 0, intT(it.buttonId), 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1]);
             mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.text]);
             break;
           case 'submenu': {
@@ -179,7 +194,7 @@ export class WasmPreview {
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number'],
-              [pi, ii, 4, 0, it.scale, 0, 0, 0, 0, 0, 0, 0, 0, 0, target, 0, 0, 0, 0, 0]);
+              [pi, ii, 4, 0, it.scale, 0, 0, 0, 0, 0, 0, 0, 0, 0, target, 0, 0, 0, 0, 0, -1]);
             mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.text]);
             break;
           }
@@ -188,23 +203,22 @@ export class WasmPreview {
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number'],
-              [pi, ii, 5, 0, it.scale, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0]);
+              [pi, ii, 5, 0, it.scale, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1]);
             mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.text]);
             break;
           case 'slider':
+          case 'progress': {
+            const v = n_varById(varById, it.varId);
+            const kind = it.kind === 'slider' ? 5 : 6;
             mod.ccall('em_page_item', null, [...slotBase,
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number'],
-              [pi, ii, 6, 0, 1, 0, 0, 0, 0, 0, intT(it.initialValue), intT(it.step), intT(it.min), intT(it.max), -1, 0, 0, 0, 0, 0]);
+              [pi, ii, kind, 0, 1, 0, 0, 0, 0, 0,
+                v ? intT(v.initialValue) : 0, v ? intT(v.step) : 0,
+                v ? intT(v.min) : 0, v ? intT(v.max) : 0, -1, 0, 0, 0, 0, 0, varSlot(it.varId)]);
             break;
-          case 'progress':
-            mod.ccall('em_page_item', null, [...slotBase,
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number'],
-              [pi, ii, 7, 0, 1, 0, 0, 0, 0, 0, intT(it.initialValue), intT(it.step), intT(it.min), intT(it.max), -1, 0, 0, 0, 0, 0]);
-            break;
+          }
           case 'chart': {
             const sample = { sine: 0, ramp: 1, noise: 2 }[it.sample];
             const fixed = it.min !== undefined && it.max !== undefined ? 1 : 0;
@@ -222,7 +236,7 @@ export class WasmPreview {
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number'],
-              [pi, ii, 9, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, intT(it.w), intT(it.h), 0, 0, 0]);
+              [pi, ii, 9, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, intT(it.w), intT(it.h), 0, 0, 0, -1]);
             // 写位图数据到 scratch 再拷贝
             const ptr = mod._em_scratch(it.bits.length);
             if (ptr) {
@@ -236,7 +250,7 @@ export class WasmPreview {
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number'],
-              [pi, ii, 10, 0, 1, 0, it.bindScroll ? 1 : 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, intT(it.height), 0, intT(it.lineSpacing)]);
+              [pi, ii, 10, 0, 1, 0, it.bindScroll ? 1 : 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, intT(it.height), 0, intT(it.lineSpacing), -1]);
             mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.content]);
             break;
           case 'board':
@@ -244,7 +258,7 @@ export class WasmPreview {
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number'],
-              [pi, ii, 11, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, intT(it.w), intT(it.h), 0, 0, 0]);
+              [pi, ii, 11, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, intT(it.w), intT(it.h), 0, 0, 0, -1]);
             break;
         }
       });
@@ -314,13 +328,13 @@ export class WasmPreview {
     this.mod?.ccall('em_key', null, ['number'], [k]);
   }
 
-  /** 读取预览中某槽位的实时值（数值/滑条/进度条条目） */
-  getInt(page: number, idx: number): number {
-    return this.mod?._em_get_ipool(page * 64 + idx) ?? 0;
+  /** 读取值池槽位的实时值（绑定变量的条目：槽位 = 变量在池中的下标） */
+  getInt(slot: number): number {
+    return this.mod?._em_get_ipool(slot) ?? 0;
   }
 
-  getSwitch(page: number, idx: number): number {
-    return this.mod?._em_get_upool(page * 64 + idx) ?? 0;
+  getSwitch(slot: number): number {
+    return this.mod?._em_get_upool(slot) ?? 0;
   }
 
   destroy(): void {

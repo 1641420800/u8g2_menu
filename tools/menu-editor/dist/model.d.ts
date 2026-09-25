@@ -1,5 +1,8 @@
-import type { Item, ItemKind, Page, Project, XbmItem } from './types';
+import type { Item, ItemKind, Page, Project, XbmItem, Variable } from './types';
 export declare function genId(prefix: string): string;
+export declare function createVariable(partial?: Partial<Variable>): Variable;
+/** 唯一变量名：base, base_2, base_3... */
+export declare function uniqueVarName(existing: Variable[], base: string): string;
 export declare function createItem(kind: ItemKind): Item;
 export declare function createXbm(w: number, h: number): XbmItem & {
     label: string;

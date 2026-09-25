@@ -291,11 +291,17 @@ export class MenuEditor {
       const page = st.project.pages[pageIdx];
       const idx = page.items.findIndex((i) => i.id === st.selection.itemId);
       const item = page.items[idx];
-      if (item && ('varName' in item)) {
+      if (item && ('varId' in item)) {
+        // 值池槽位与 preview.sync 一致：绑定变量按变量下标，未绑定按条目
+        const varSlot = item.varId
+          ? (st.project.variables ?? []).findIndex((v) => v.id === item.varId)
+          : -1;
+        const slot = varSlot >= 0 ? varSlot : pageIdx * 64 + idx;
         const v = item.kind === 'switch'
-          ? this.preview.getSwitch(pageIdx, idx)
-          : this.preview.getInt(pageIdx, idx);
-        valEl.textContent = `${item.varName} = ${v}`;
+          ? this.preview.getSwitch(slot)
+          : this.preview.getInt(slot);
+        const name = (st.project.variables ?? []).find((x) => x.id === item.varId)?.name;
+        valEl.textContent = `${name ?? item.kind} = ${v}`;
       } else {
         valEl.textContent = '';
       }

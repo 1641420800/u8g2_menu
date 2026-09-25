@@ -33,6 +33,8 @@ createServer(async (req, res) => {
     res.writeHead(200, {
       'content-type': MIME[extname(file).toLowerCase()] ?? 'application/octet-stream',
       'cross-origin-opener-policy': 'same-origin',
+      // 开发/演示服务器：禁止缓存，避免 wasm/js 更新后浏览器用旧产物
+      'cache-control': 'no-store',
     });
     res.end(data);
   } catch {

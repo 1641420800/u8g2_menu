@@ -2,23 +2,55 @@ import { html, render, nothing, type TemplateResult } from 'lit-html';
 import type { EditorStoreApi } from '../store';
 import type {
   Item, NumberItem, SwitchItem, ButtonItem, SubmenuItem, ChartItem,
-  XbmItem, TextAreaItem, BoardItem, NumVarType,
+  XbmItem, TextAreaItem, BoardItem, Variable,
 } from '../types';
 import { KIND_LABELS } from '../types';
 import { numField, textField, selectField, checkField, areaField } from './common';
 
-const INT_TYPES: { value: NumVarType; label: string }[] = [
-  { value: 'uint8', label: 'uint8' }, { value: 'uint16', label: 'uint16' },
-  { value: 'uint32', label: 'uint32' }, { value: 'int8', label: 'int8' },
-  { value: 'int16', label: 'int16' }, { value: 'int32', label: 'int32' },
-  { value: 'int', label: 'int' },
-];
-const NUM_TYPES: { value: NumVarType; label: string }[] = [
-  ...INT_TYPES, { value: 'float', label: 'float' }, { value: 'double', label: 'double' },
-];
-
 export interface XbmEditorHost {
   openXbmEditor(pageId: string, itemId: string): void;
+}
+
+const INT_SET = new Set(['uint8', 'uint16', 'uint32', 'int8', 'int16', 'int32', 'int']);
+const TYPE_LABEL: Record<string, string> = {
+  uint8: 'uint8', uint16: 'uint16', uint32: 'uint32', int8: 'int8', int16: 'int16',
+  int32: 'int32', int: 'int', float: 'float', double: 'double',
+};
+
+/** 变量绑定下拉：list 为候选（已按类型过滤），bind 为空时显示占位 */
+function varSelect(
+  label: string, current: string | null,
+  list: Variable[], onBind: (varId: string | null) => void,
+): TemplateResult {
+  const options = [
+    { value: '', label: '（未绑定）' },
+    ...list.map((v) => ({ value: v.id, label: `${v.name} : ${TYPE_LABEL[v.type] ?? v.type}` })),
+  ];
+  const found = current ? list.some((v) => v.id === current) : false;
+  return html`
+    ${selectField(label, current ?? '', options, (v) => onBind(v || null))}
+    ${current && !found ? html`<div class="ume-warn">绑定的变量已被删除，请重新选择</div>` : nothing}
+    ${list.length === 0 ? html`<div class="ume-hint">还没有变量——点下方"新建变量"创建一个</div>` : nothing}
+  `;
+}
+
+/** 新建变量快捷按钮：创建 int32 默认变量并立即绑定到条目 */
+function quickCreateVar(store: EditorStoreApi, pageId: string, itemId: string): TemplateResult {
+  return html`<div class="ume-field"><label></label>
+    <button class="ume-btn sm" @click=${() => {
+      const v = store.getState().addVariable();
+      store.getState().updateItem(pageId, itemId, { varId: v.id } as Partial<Item>);
+    }}>＋ 新建变量并绑定</button>
+  </div>`;
+}
+
+/** 绑定变量的参数摘要（提示在范围/步长于右侧「变量」区修改） */
+function varInfo(v: Variable | undefined): TemplateResult {
+  if (!v) return html`${nothing}`;
+  return html`<div class="ume-hint">
+    ${v.name} : ${TYPE_LABEL[v.type] ?? v.type}，范围 ${v.min}~${v.max}，步长 ${v.step}，初值 ${v.initialValue}
+    （在右侧「变量」区修改）
+  </div>`;
 }
 
 export function renderProperty(
@@ -56,32 +88,37 @@ export function renderProperty(
         break;
       case 'number': {
         const n = item as NumberItem;
-        const isFloat = n.varType === 'float' || n.varType === 'double';
+        const vars = project.variables ?? [];
+        const v = vars.find((x) => x.id === n.varId);
+        const fmtHint = v && (v.type === 'float' || v.type === 'double')
+          ? 'float/double 推荐格式 %.1f / %.2f'
+          : '整数推荐格式 %d（无符号用 %u）';
         body = html`
-          ${selectField('变量类型', n.varType, NUM_TYPES, (v) => upItem({ varType: v }))}
-          ${textField('变量名', n.varName, (v) => upItem({ varName: v }))}
-          ${textField('显示文本', n.text, (v) => upItem({ text: v }, `text-${item.id}`))}
-          ${numField('步长', n.step, (v) => upItem({ step: v }), 'any')}
-          ${numField('最小值', n.min, (v) => upItem({ min: v }), 'any')}
-          ${numField('最大值', n.max, (v) => upItem({ max: v }), 'any')}
-          ${numField('初始值', n.initialValue, (v) => upItem({ initialValue: v }), 'any')}
-          ${isFloat ? numField('小数位', n.decimals, (v) => upItem({ decimals: Math.max(0, Math.trunc(v)) })) : nothing}
+          ${varSelect('绑定变量', n.varId, vars, (vid) => upItem({ varId: vid } as Partial<Item>))}
+          ${!v ? quickCreateVar(store, page.id, n.id) : nothing}
+          ${checkField('可编辑（绑定附加值，取消则仅显示）', n.editable !== false, (c) => upItem({ editable: c } as Partial<Item>))}
+          ${varInfo(v)}
+          ${textField('显示文本', n.text, (v2) => upItem({ text: v2 }, `text-${item.id}`))}
           ${selectField('大小', String(n.scale) as '1' | '2', [
             { value: '1', label: '正常' }, { value: '2', label: '二倍大' },
-          ], (v) => upItem({ scale: Number(v) as 1 | 2 }))}
-          <div class="ume-hint">int 建议 %d/%u，float 建议 %.Nf</div>
+          ], (v2) => upItem({ scale: Number(v2) as 1 | 2 }))}
+          <div class="ume-hint">${fmtHint}；文本支持 \n 多行</div>
         `;
         break;
       }
       case 'switch': {
         const s = item as SwitchItem;
+        const vars = (project.variables ?? []).filter((x) => x.type === 'uint8');
+        const v = vars.find((x) => x.id === s.varId) ?? (project.variables ?? []).find((x) => x.id === s.varId);
         body = html`
-          ${textField('变量名', s.varName, (v) => upItem({ varName: v }))}
-          ${textField('显示文本', s.text, (v) => upItem({ text: v }, `text-${item.id}`))}
-          ${numField('openValue', s.openValue, (v) => upItem({ openValue: Math.max(0, Math.trunc(v)) }))}
-          ${textField('"开"文本', s.onText, (v) => upItem({ onText: v }))}
-          ${textField('"关"文本', s.offText, (v) => upItem({ offText: v }))}
-          ${numField('初始值', s.initialValue, (v) => upItem({ initialValue: Math.trunc(v) }))}
+          ${varSelect('绑定变量', s.varId, vars, (vid) => upItem({ varId: vid } as Partial<Item>))}
+          ${!v ? quickCreateVar(store, page.id, s.id) : nothing}
+          ${varInfo(v)}
+          ${textField('显示文本', s.text, (v2) => upItem({ text: v2 }, `text-${item.id}`))}
+          ${numField('openValue', s.openValue, (v2) => upItem({ openValue: Math.max(0, Math.trunc(v2)) }))}
+          ${textField('"开"文本', s.onText, (v2) => upItem({ onText: v2 }))}
+          ${textField('"关"文本', s.offText, (v2) => upItem({ offText: v2 }))}
+          <div class="ume-hint">开关需要 uint8 类型变量；文本含 %s 用于显示开/关</div>
         `;
         break;
       }
@@ -116,14 +153,13 @@ export function renderProperty(
       }
       case 'slider':
       case 'progress': {
-        const p = item;
+        const vars = (project.variables ?? []).filter((x) => INT_SET.has(x.type));
+        const v = vars.find((x) => x.id === item.varId) ?? (project.variables ?? []).find((x) => x.id === item.varId);
         body = html`
-          ${textField('变量名 (int)', p.varName, (v) => upItem({ varName: v }))}
-          ${numField('步长', p.step, (v) => upItem({ step: Math.trunc(v) }))}
-          ${numField('最小值', p.min, (v) => upItem({ min: Math.trunc(v) }))}
-          ${numField('最大值', p.max, (v) => upItem({ max: Math.trunc(v) }))}
-          ${numField('初始值', p.initialValue, (v) => upItem({ initialValue: Math.trunc(v) }))}
-          <div class="ume-hint">绑定 u8g2_MenuDrawItem${p.kind === 'slider' ? 'Slider' : 'ProgressBar'}_bind</div>
+          ${varSelect('绑定变量', item.varId, vars, (vid) => upItem({ varId: vid } as Partial<Item>))}
+          ${!v ? quickCreateVar(store, page.id, item.id) : nothing}
+          ${varInfo(v)}
+          <div class="ume-hint">滑块/进度条需要整型变量；绑定后由库的 Slider/ProgressBar_bind 绘制与编辑</div>
         `;
         break;
       }

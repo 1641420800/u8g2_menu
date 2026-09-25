@@ -1,5 +1,5 @@
 import { type StoreApi } from 'zustand/vanilla';
-import type { Item, ItemKind, Page, Project } from './types';
+import type { Item, ItemKind, Page, Project, Variable } from './types';
 export interface Selection {
     pageId: string | null;
     itemId: string | null;
@@ -27,6 +27,11 @@ export interface EditorStore extends EditorState {
     moveItem: (pageId: string, itemId: string, dir: -1 | 1) => void;
     duplicateItem: (pageId: string, itemId: string) => void;
     updateItem: (pageId: string, itemId: string, patch: Partial<Item>, coalesceKey?: string) => void;
+    /** 新建变量（自动唯一命名），返回新变量 */
+    addVariable: (partial?: Partial<Variable>) => Variable;
+    /** 删除变量；被条目引用时返回引用数且不删除 */
+    removeVariable: (varId: string) => number;
+    updateVariable: (varId: string, patch: Partial<Variable>, coalesceKey?: string) => void;
 }
 export declare function createEditorStore(): StoreApi<EditorStore>;
 /** 默认单例（多数集成场景只有一个编辑器实例） */

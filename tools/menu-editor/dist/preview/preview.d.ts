@@ -44,9 +44,9 @@ export declare class WasmPreview {
     stop(): void;
     private renderFrame;
     key(k: MenuKey): void;
-    /** 读取预览中某槽位的实时值（数值/滑条/进度条条目） */
-    getInt(page: number, idx: number): number;
-    getSwitch(page: number, idx: number): number;
+    /** 读取值池槽位的实时值（绑定变量的条目：槽位 = 变量在池中的下标） */
+    getInt(slot: number): number;
+    getSwitch(slot: number): number;
     destroy(): void;
 }
 export { FONTS };

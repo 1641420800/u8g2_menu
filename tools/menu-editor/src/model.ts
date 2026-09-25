@@ -1,11 +1,33 @@
 import type {
-  Item, ItemKind, Page, Project, XbmItem, NumberItem, ChartItem, BoardItem,
+  Item, ItemKind, Page, Project, XbmItem, NumberItem, ChartItem, BoardItem, Variable,
 } from './types';
 
 let idSeq = 0;
 export function genId(prefix: string): string {
   idSeq = (idSeq + 1) % 1e9;
   return `${prefix}_${Date.now().toString(36)}_${idSeq.toString(36)}`;
+}
+
+export function createVariable(partial?: Partial<Variable>): Variable {
+  return {
+    id: genId('vb'),
+    name: 'var_new',
+    type: 'int32',
+    initialValue: 0,
+    min: 0,
+    max: 100,
+    step: 1,
+    ...partial,
+  };
+}
+
+/** 唯一变量名：base, base_2, base_3... */
+export function uniqueVarName(existing: Variable[], base: string): string {
+  const used = new Set(existing.map((v) => v.name));
+  if (!used.has(base)) return base;
+  let i = 2;
+  while (used.has(`${base}_${i}`)) i++;
+  return `${base}_${i}`;
 }
 
 export function createItem(kind: ItemKind): Item {
@@ -15,14 +37,12 @@ export function createItem(kind: ItemKind): Item {
       return { ...base, kind, text: '菜单项', scale: 1 };
     case 'number':
       return {
-        ...base, kind, text: 'v:%d', scale: 1,
-        varType: 'int32', varName: 'var_value', step: 1, min: 0, max: 100,
-        decimals: 1, initialValue: 50,
+        ...base, kind, text: 'v:%d', scale: 1, varId: null, editable: true,
       } satisfies NumberItem;
     case 'switch':
       return {
         ...base, kind, text: 's:%s', scale: 1,
-        varName: 'var_switch', openValue: 1, onText: 'on', offText: 'off', initialValue: 0,
+        varId: null, openValue: 1, onText: 'on', offText: 'off',
       };
     case 'button':
       return { ...base, kind, text: '执行操作', scale: 1, cbName: 'btn_action_cb', buttonId: 1 };
@@ -31,9 +51,9 @@ export function createItem(kind: ItemKind): Item {
     case 'back':
       return { ...base, kind, text: '返回', scale: 1 };
     case 'slider':
-      return { ...base, kind, varName: 'var_slider', step: 2, min: 0, max: 100, initialValue: 50 };
+      return { ...base, kind, varId: null };
     case 'progress':
-      return { ...base, kind, varName: 'var_prog', step: 2, min: 0, max: 100, initialValue: 70 };
+      return { ...base, kind, varId: null };
     case 'chart':
       return {
         ...base, kind, chartKind: 'line', dataLen: 24, height: 32, sample: 'sine',
@@ -68,6 +88,11 @@ function withFields<T extends Item>(it: Item, patch: Partial<T>): T {
 }
 
 export function createProject(): Project {
+  const variables: Variable[] = [
+    createVariable({ name: 'var_value', type: 'int32', initialValue: 50, min: 0, max: 100, step: 1 }),
+    createVariable({ name: 'var_switch', type: 'uint8', initialValue: 0, min: 0, max: 1, step: 1 }),
+    createVariable({ name: 'var_slider', type: 'int32', initialValue: 50, min: 0, max: 100, step: 2 }),
+  ];
   const main = createPage('主页');
   main.items = [
     withFields(createItem('text'), { text: 'u8g2_menu' }),
@@ -76,9 +101,9 @@ export function createProject(): Project {
   ];
   const settings = createPage('设置');
   settings.items = [
-    withFields(createItem('number'), { text: '音量:%d' }),
-    withFields(createItem('switch'), { text: '开关:%s' }),
-    createItem('slider'),
+    withFields(createItem('number'), { text: '音量:%d', varId: variables[0].id }),
+    withFields(createItem('switch'), { text: '开关:%s', varId: variables[1].id }),
+    withFields(createItem('slider'), { varId: variables[2].id }),
     createItem('back'),
   ];
   const proj: Project = {
@@ -94,6 +119,7 @@ export function createProject(): Project {
     marqueeSpeed: 0.2,
     marqueeHeaderLen: 5,
     weakHooks: [],
+    variables,
     pages: [main, settings],
   };
   // 子页面指向

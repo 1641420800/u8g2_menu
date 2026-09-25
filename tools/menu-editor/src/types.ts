@@ -44,25 +44,21 @@ export interface NumberItem extends ItemBase {
   kind: 'number';
   text: string;            // 例："v:%d"，含一个占位符
   scale: 1 | 2;
-  varType: NumVarType;
-  varName: string;
-  step: number;            // adjValue
-  min: number;
-  max: number;
-  /** float/double 显示小数位（生成 %.Nf 用） */
-  decimals: number;
-  initialValue: number;
+  /** 绑定的变量 id（Project.variables）；null = 纯显示（不绑定附加值） */
+  varId: string | null;
+  /** true = 绑定附加值可编辑；false = 只用 printf 显示变量值 */
+  editable: boolean;
 }
 
 export interface SwitchItem extends ItemBase {
   kind: 'switch';
   text: string;            // 例："s:%s"
   scale: 1 | 2;
-  varName: string;
+  /** 绑定的变量 id（须为 uint8 类型） */
+  varId: string | null;
   openValue: number;
   onText: string;          // 例："on"
   offText: string;         // 例："off"
-  initialValue: number;
 }
 
 export interface ButtonItem extends ItemBase {
@@ -88,20 +84,14 @@ export interface BackItem extends ItemBase {
 
 export interface SliderItem extends ItemBase {
   kind: 'slider';
-  varName: string;
-  step: number;
-  min: number;
-  max: number;
-  initialValue: number;
+  /** 绑定的变量 id（须为整型） */
+  varId: string | null;
 }
 
 export interface ProgressItem extends ItemBase {
   kind: 'progress';
-  varName: string;
-  step: number;
-  min: number;
-  max: number;
-  initialValue: number;
+  /** 绑定的变量 id（须为整型） */
+  varId: string | null;
 }
 
 export interface ChartItem extends ItemBase {
@@ -158,6 +148,20 @@ export interface Page {
   userCodePre: string;
 }
 
+/** 可绑定附加值的全局变量（菜单加减数值时读写的目标） */
+export interface Variable {
+  id: string;
+  /** C 变量名 */
+  name: string;
+  /** 库可绑定的类型：uint8/16/32、int8/16/32、int、float、double */
+  type: NumVarType;
+  initialValue: number;
+  min: number;
+  max: number;
+  /** 默认步长（附加值 adjValue） */
+  step: number;
+}
+
 export interface Project {
   version: number;
   name: string;
@@ -175,6 +179,8 @@ export interface Project {
   marqueeHeaderLen: number;
   /** 勾选重写的弱定义函数名（见 WEAK_HOOKS）；未勾选的沿用库默认实现 */
   weakHooks: string[];
+  /** 全局变量池：条目按 id 引用绑定 */
+  variables: Variable[];
   pages: Page[];
 }
 

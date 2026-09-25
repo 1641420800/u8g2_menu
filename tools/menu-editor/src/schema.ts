@@ -1,7 +1,10 @@
-import type { Project, Page, Item } from './types';
+import type { Project, Page, Item, Variable, NumVarType } from './types';
 import { SCHEMA_VERSION, WEAK_HOOKS } from './types';
+import { genId } from './model';
 
 export class SchemaError extends Error {}
+
+const VAR_TYPES: ReadonlySet<string> = new Set(['uint8', 'uint16', 'uint32', 'int8', 'int16', 'int32', 'int', 'float', 'double']);
 
 function isObj(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -55,6 +58,99 @@ function parsePage(raw: unknown): Page {
   };
 }
 
+function parseVariable(raw: unknown): Variable | null {
+  if (!isObj(raw)) return null;
+  const type = str(raw.type, 'int32');
+  return {
+    id: str(raw.id, '') || genId('vb'),
+    name: str(raw.name, ''),
+    type: (VAR_TYPES.has(type) ? type : 'int32') as NumVarType,
+    initialValue: num(raw.initialValue, 0),
+    min: num(raw.min, 0),
+    max: num(raw.max, 100),
+    step: num(raw.step, 1),
+  };
+}
+
+/**
+ * 旧版工程迁移：条目自带 varName/varType/step/min/max/initialValue，
+ * 统一收敛为变量池 + varId 引用，并删除条目上的旧字段。
+ */
+function migrateLegacyItems(pages: Page[]): Variable[] {
+  const byName = new Map<string, Variable>();
+  const list: Variable[] = [];
+  const ensure = (name: string, make: () => Variable): Variable => {
+    let v = byName.get(name);
+    if (!v) {
+      v = make();
+      byName.set(name, v);
+      list.push(v);
+    }
+    return v;
+  };
+  for (const pg of pages) {
+    for (const it of pg.items) {
+      const raw = it as unknown as Record<string, unknown>;
+      switch (it.kind) {
+        case 'number':
+          if (raw.varId === undefined || raw.varId === null) {
+            const name = typeof raw.varName === 'string' && raw.varName ? raw.varName : 'var_unnamed';
+            const v = ensure(name, () => ({
+              id: genId('vb'),
+              name,
+              type: (VAR_TYPES.has(String(raw.varType)) ? String(raw.varType) : 'int32') as NumVarType,
+              initialValue: num(raw.initialValue, 0),
+              min: num(raw.min, 0),
+              max: num(raw.max, 100),
+              step: num(raw.step, 1),
+            }));
+            (it as { varId?: string | null }).varId = v.id;
+          }
+          if (raw.editable === undefined) (it as { editable?: boolean }).editable = true;
+          delete raw.varName; delete raw.varType; delete raw.step;
+          delete raw.min; delete raw.max; delete raw.initialValue; delete raw.decimals;
+          break;
+        case 'slider':
+        case 'progress':
+          if (raw.varId === undefined || raw.varId === null) {
+            const name = typeof raw.varName === 'string' && raw.varName ? raw.varName : 'var_unnamed';
+            const v = ensure(name, () => ({
+              id: genId('vb'),
+              name,
+              type: 'int' as NumVarType,
+              initialValue: num(raw.initialValue, 0),
+              min: num(raw.min, 0),
+              max: num(raw.max, 100),
+              step: num(raw.step, 1),
+            }));
+            (it as { varId?: string | null }).varId = v.id;
+          }
+          delete raw.varName; delete raw.step; delete raw.min; delete raw.max; delete raw.initialValue;
+          break;
+        case 'switch':
+          if (raw.varId === undefined || raw.varId === null) {
+            const name = typeof raw.varName === 'string' && raw.varName ? raw.varName : 'var_unnamed';
+            const v = ensure(name, () => ({
+              id: genId('vb'),
+              name,
+              type: 'uint8' as NumVarType,
+              initialValue: num(raw.initialValue, 0),
+              min: 0,
+              max: 1,
+              step: 1,
+            }));
+            (it as { varId?: string | null }).varId = v.id;
+          }
+          delete raw.varName; delete raw.initialValue;
+          break;
+        default:
+          break;
+      }
+    }
+  }
+  return list;
+}
+
 /** 解析并校验工程 JSON（宽容：缺失字段给默认值，多余字段丢弃） */
 export function parseProject(json: string | unknown): Project {
   let raw: unknown;
@@ -83,6 +179,14 @@ export function parseProject(json: string | unknown): Project {
     ? [...new Set(r.weakHooks.filter((n): n is string => typeof n === 'string' && known.has(n)))]
     : [];
 
+  // 变量池：显式 variables 字段优先；旧工程从条目字段自动迁移
+  let variables: Variable[];
+  if (Array.isArray(r.variables)) {
+    variables = r.variables.map(parseVariable).filter((v): v is Variable => !!v);
+  } else {
+    variables = migrateLegacyItems(pages);
+  }
+
   return {
     version: SCHEMA_VERSION,
     name: str(r.name, '未命名工程'),
@@ -96,6 +200,7 @@ export function parseProject(json: string | unknown): Project {
     marqueeSpeed: num(r.marqueeSpeed, 0.2),
     marqueeHeaderLen: num(r.marqueeHeaderLen, 5),
     weakHooks,
+    variables,
     pages,
   };
 }

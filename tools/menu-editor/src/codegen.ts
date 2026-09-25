@@ -51,12 +51,18 @@ function userBlock(name: string, preserved: Map<string, string>, indent: string)
 
 interface VarDef {
   name: string;
+  /** 编辑器类型（生成绑定调用用） */
+  srcType: NumVarType;
+  /** C 类型名 */
   type: string;
   init: string;
   isFloat: boolean;
-  /** 来源条目 id（冲突提示用） */
-  owner: Item;
+  step: number;
+  min: number;
+  max: number;
 }
+
+const INT_TYPES: ReadonlySet<string> = new Set(['uint8', 'uint16', 'uint32', 'int8', 'int16', 'int32', 'int']);
 
 export function generateCode(
   project: Project,
@@ -71,18 +77,30 @@ export function generateCode(
     return `page_${i}`;
   });
 
-  // ---------- 变量收集 ----------
-  const vars = new Map<string, VarDef>();
-  const needVar = (name: string, type: string, init: string, isFloat: boolean, owner: Item) => {
-    const existing = vars.get(name);
-    if (existing) {
-      if (existing.type !== type) {
-        warnings.push(`变量 "${name}" 被多个不同类型的条目引用（${existing.type} / ${type}），以首个定义为准`);
-      }
-      return;
+  // ---------- 变量池（条目按 varId 引用） ----------
+  const vars = new Map<string, VarDef>();       // name -> def（定义去重）
+  const varById = new Map<string, VarDef>();    // id -> def（条目解析）
+  for (const v of project.variables ?? []) {
+    if (!v.name) { warnings.push('存在未命名变量，已跳过'); continue; }
+    if (vars.has(v.name)) { warnings.push(`变量名 "${v.name}" 重复，以第一个为准`); continue; }
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(v.name)) {
+      warnings.push(`变量名 "${v.name}" 不是合法的 C 标识符，已清洗为 "${toCIdent(v.name)}"`);
     }
-    vars.set(name, { name, type, init, isFloat, owner });
-  };
+    const name = toCIdent(v.name, 'var');
+    const isFloat = v.type === 'float' || v.type === 'double';
+    const def: VarDef = {
+      name,
+      srcType: v.type,
+      type: C_TYPE[v.type],
+      init: isFloat ? floatLit(v.initialValue) : String(Math.trunc(v.initialValue)),
+      isFloat,
+      step: v.step,
+      min: v.min,
+      max: v.max,
+    };
+    vars.set(name, def);
+    varById.set(v.id, def);
+  }
 
   // ---------- 回调收集（去重） ----------
   const buttonCbs = new Map<string, number>();   // cbName -> buttonId(首个)
@@ -103,33 +121,6 @@ export function generateCode(
   for (const pg of project.pages) {
     for (const it of pg.items) {
       switch (it.kind) {
-        case 'number': {
-          const n = it as NumberItem;
-          if (!n.varName) { warnings.push(`存在未命名变量条目（页面 ${pg.name}），已跳过绑定`); break; }
-          const init = n.varType === 'float' || n.varType === 'double'
-            ? floatLit(n.initialValue) : String(Math.trunc(n.initialValue));
-          needVar(n.varName, C_TYPE[n.varType], init, n.varType === 'float' || n.varType === 'double', it);
-          if (!/%[-+ #0]*[a-zA-Z]/.test(n.text)) {
-            warnings.push(`数值条目 "${pg.name}/${n.varName}" 的显示文本不含格式化占位符（如 %d）`);
-          }
-          break;
-        }
-        case 'switch': {
-          const s = it as SwitchItem;
-          if (!s.varName) { warnings.push(`存在未命名开关条目（页面 ${pg.name}），已跳过绑定`); break; }
-          needVar(s.varName, 'uint8_t', String(Math.trunc(s.initialValue)), false, it);
-          if (!/%[-+ #0]*s/.test(s.text)) {
-            warnings.push(`开关条目 "${s.varName}" 的显示文本建议包含 %s 用于显示 on/off`);
-          }
-          break;
-        }
-        case 'slider':
-        case 'progress': {
-          const sl = it as { varName: string; initialValue: number };
-          if (!sl.varName) { warnings.push(`存在未命名${it.kind === 'slider' ? '滑块' : '进度'}条目（页面 ${pg.name}）`); break; }
-          needVar(sl.varName, 'int', String(Math.trunc(sl.initialValue)), false, it);
-          break;
-        }
         case 'button': {
           const cb = toCIdent(it.cbName, 'btn_cb');
           if (!buttonCbs.has(cb)) buttonCbs.set(cb, it.buttonId);
@@ -219,6 +210,12 @@ export function generateCode(
   const genItem = (it: Item, pg: Page): string[] => {
     const lines: string[] = [];
     const pgLabel = `${pg.name}`;
+    const resolveVar = (varId: string | null): VarDef | null => {
+      if (!varId) return null;
+      const v = varById.get(varId);
+      if (!v) warnings.push(`页面 ${pgLabel} 的条目引用了已删除的变量，已按普通文本生成`);
+      return v ?? null;
+    };
     switch (it.kind) {
       case 'text': {
         const code = drawText(it.text, it.scale);
@@ -227,19 +224,47 @@ export function generateCode(
       }
       case 'number': {
         const n = it as NumberItem;
-        if (!vars.has(n.varName)) break;
-        const bind = n.varType === 'float' || n.varType === 'double'
-          ? `u8g2_MenuItemValue_${n.varType}(&${n.varName}, ${floatLit(n.step)}, ${floatLit(n.min)}, ${floatLit(n.max)});`
-          : `u8g2_MenuItemValue_${n.varType}(&${n.varName}, ${Math.trunc(n.step)}, ${Math.trunc(n.min)}, ${Math.trunc(n.max)});`;
-        lines.push(`    ${bind}`);
-        lines.push(`    ${drawTextWithArg(n.text, n.scale, n.varName)}`);
+        const v = resolveVar(n.varId);
+        if (v && n.editable !== false) {
+          const bind = v.isFloat
+            ? `u8g2_MenuItemValue_${v.srcType}(&${v.name}, ${floatLit(v.step)}, ${floatLit(v.min)}, ${floatLit(v.max)});`
+            : `u8g2_MenuItemValue_${v.srcType}(&${v.name}, ${Math.trunc(v.step)}, ${Math.trunc(v.min)}, ${Math.trunc(v.max)});`;
+          lines.push(`    ${bind}`);
+        }
+        if (v) {
+          lines.push(`    ${drawTextWithArg(n.text, n.scale, v.name)}`);
+          if (n.editable !== false && !/%[-+ #0]*[a-zA-Z]/.test(n.text)) {
+            warnings.push(`数值条目 "${pgLabel}" 的显示文本不含格式化占位符（如 %d）`);
+          }
+        } else if (/%[-+ #0]*[a-zA-Z]/.test(n.text)) {
+          warnings.push(`页面 ${pgLabel} 的数值条目未绑定变量但文本含占位符，已按普通文本生成`);
+          const code = drawText(n.text.replace(/%[-+ #0]*[a-zA-Z]/g, ''), n.scale);
+          if (code) lines.push(`    ${code}`);
+        } else {
+          const code = drawText(n.text, n.scale);
+          if (code) lines.push(`    ${code}`);
+        }
         break;
       }
       case 'switch': {
         const s = it as SwitchItem;
-        if (!vars.has(s.varName)) break;
-        lines.push(`    u8g2_MenuItemValue_switch(&${s.varName}, ${Math.trunc(s.openValue)});`);
-        lines.push(`    ${drawTextWithArg(s.text, s.scale, `${s.varName} ? "${cstr(s.onText)}" : "${cstr(s.offText)}"`)}`);
+        const v = resolveVar(s.varId);
+        if (v) {
+          if (v.srcType !== 'uint8') {
+            warnings.push(`开关条目绑定的变量 "${v.name}" 应为 uint8 类型（当前 ${v.srcType}），已跳过绑定`);
+            const code = drawText(s.text, s.scale);
+            if (code) lines.push(`    ${code}`);
+            break;
+          }
+          lines.push(`    u8g2_MenuItemValue_switch(&${v.name}, ${Math.trunc(s.openValue)});`);
+          lines.push(`    ${drawTextWithArg(s.text, s.scale, `${v.name} ? "${cstr(s.onText)}" : "${cstr(s.offText)}"`)}`);
+          if (!/%[-+ #0]*s/.test(s.text)) {
+            warnings.push(`开关条目 "${v.name}" 的显示文本建议包含 %s 用于显示 on/off`);
+          }
+        } else {
+          const code = drawText(s.text, s.scale);
+          if (code) lines.push(`    ${code}`);
+        }
         break;
       }
       case 'button': {
@@ -272,16 +297,19 @@ export function generateCode(
         if (code) lines.push(`    ${code}`);
         break;
       }
-      case 'slider': {
-        const sl = it as { varName: string; step: number; min: number; max: number };
-        if (!vars.has(sl.varName)) break;
-        lines.push(`    u8g2_MenuDrawItemSlider_bind(&${sl.varName}, ${Math.trunc(sl.step)}, ${Math.trunc(sl.min)}, ${Math.trunc(sl.max)});`);
-        break;
-      }
+      case 'slider':
       case 'progress': {
-        const pr = it as { varName: string; step: number; min: number; max: number };
-        if (!vars.has(pr.varName)) break;
-        lines.push(`    u8g2_MenuDrawItemProgressBar_bind(&${pr.varName}, ${Math.trunc(pr.step)}, ${Math.trunc(pr.min)}, ${Math.trunc(pr.max)});`);
+        const v = resolveVar(it.varId);
+        if (!v) {
+          warnings.push(`页面 ${pgLabel} 的${it.kind === 'slider' ? '滑块' : '进度'}条目未绑定变量，已跳过`);
+          break;
+        }
+        if (!INT_TYPES.has(v.srcType)) {
+          warnings.push(`滑块/进度条绑定的变量 "${v.name}" 须为整型（当前 ${v.srcType}），已跳过`);
+          break;
+        }
+        const fn = it.kind === 'slider' ? 'Slider' : 'ProgressBar';
+        lines.push(`    u8g2_MenuDrawItem${fn}_bind(&${v.name}, ${Math.trunc(v.step)}, ${Math.trunc(v.min)}, ${Math.trunc(v.max)});`);
         break;
       }
       case 'chart': {
