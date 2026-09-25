@@ -1,4 +1,5 @@
 import type { Item, NumberItem, Page, Project, SwitchItem, NumVarType } from './types';
+import { WEAK_HOOKS } from './types';
 
 export interface CodegenResult {
   c: string;
@@ -353,6 +354,41 @@ export function generateCode(
       cParts.push(`void ${cb}(u8g2_t *u8g2)`);
       cParts.push(`{`);
       cParts.push(userBlock(`cb_${cb}`, cBlocks, '    '));
+      cParts.push(`}`);
+      cParts.push('');
+    }
+  }
+
+  // 弱定义函数重写
+  const selectedHooks = (project.weakHooks ?? [])
+    .map((fn) => WEAK_HOOKS.find((h) => h.fn === fn))
+    .filter((h): h is NonNullable<typeof h> => !!h);
+  if (selectedHooks.length || cBlocks.has('weak') || WEAK_HOOKS.some((h) => (cBlocks.get(`weak_${h.fn}`) ?? '').trim())) {
+    cParts.push(`/* ==================== 弱定义函数重写 ==================== */`);
+    cParts.push(`/* 以下函数与库 u8g2_menu_weak.c 中的弱定义同名，`);
+    cParts.push(` * 链接时将自动替换库的默认行为；取消勾选即可恢复默认。 */`);
+    // 未勾选但留有手写内容的函数：以 #if 0 形式保留（保留 USER CODE 标记，
+    // 保证再次勾选时手写内容能取回），避免手写代码丢失
+    const disabled = WEAK_HOOKS.filter((h) => !project.weakHooks?.includes(h.fn)
+      && (cBlocks.get(`weak_${h.fn}`) ?? '').trim());
+    const disabledText = disabled.map((h) => [
+      `#if 0   /* 已取消勾选 ${h.fn}，手写内容保留于此；重新勾选后恢复编译 */`,
+      `${h.decl}`,
+      `{`,
+      userBlock(`weak_${h.fn}`, cBlocks, '    '),
+      `}`,
+      `#endif`,
+    ].join('\n')).join('\n');
+    cParts.push(disabledText ? `${userBlock('weak', cBlocks, '').replace(/\n$/, '')}\n${disabledText}\n` : userBlock('weak', cBlocks, ''));
+    cParts.push('');
+    for (const hook of selectedHooks) {
+      cParts.push(`/* ${hook.label}: ${hook.desc} */`);
+      cParts.push(`${hook.decl}`);
+      cParts.push(`{`);
+      cParts.push(userBlock(`weak_${hook.fn}`, cBlocks, '    '));
+      const body: string[] = hook.bodyArgs.split('\n').map((l) => `    ${l}`);
+      if (hook.retNote) body.push(`    ${hook.retNote}`);
+      cParts.push(...body);
       cParts.push(`}`);
       cParts.push('');
     }

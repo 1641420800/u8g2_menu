@@ -173,8 +173,108 @@ export interface Project {
   marqueeSpeed: number;
   /** 跑马灯停留字符数（u8g2_MenuSetPositionOffsetStrHeaderLen） */
   marqueeHeaderLen: number;
+  /** 勾选重写的弱定义函数名（见 WEAK_HOOKS）；未勾选的沿用库默认实现 */
+  weakHooks: string[];
   pages: Page[];
 }
+
+/** 弱定义函数目录：勾选后在生成代码中输出骨架并替换库的默认行为 */
+export interface WeakHook {
+  /** 函数名（与 u8g2_menu_weak.c 一致） */
+  fn: string;
+  /** 面板中的短标签 */
+  label: string;
+  /** 面板中的用途说明（面向不熟悉库的用户） */
+  desc: string;
+  /** 完整声明（生成 .c 用） */
+  decl: string;
+  /** 函数体内对参数的 (void) 消警语句 */
+  bodyArgs: string;
+  /** 非 void 返回时，默认 return 语句及其语义注释 */
+  retNote?: string;
+}
+
+export const WEAK_HOOKS: WeakHook[] = [
+  {
+    fn: 'u8g2_menuItemEnter_weak',
+    label: '光标进入某行',
+    desc: '选中行切换到新行号的瞬间触发。适合做提示音、联动外设等。',
+    decl: 'void u8g2_menuItemEnter_weak(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)',
+    bodyArgs: '(void)u8g2_menu;\n    (void)item;',
+  },
+  {
+    fn: 'u8g2_menuItemLeave_weak',
+    label: '光标离开某行',
+    desc: '光标离开某一行时触发（item = 离开的行号）。',
+    decl: 'void u8g2_menuItemLeave_weak(u8g2_menu_t *u8g2_menu, u8g2_uint_t item)',
+    bodyArgs: '(void)u8g2_menu;\n    (void)item;',
+  },
+  {
+    fn: 'u8g2_menuValueAdd_weak',
+    label: '数值加一步',
+    desc: '正在编辑的值被"加"一步后触发（p = 变量地址）。',
+    decl: 'void u8g2_menuValueAdd_weak(void *p)',
+    bodyArgs: '(void)p;',
+  },
+  {
+    fn: 'u8g2_menuValueSub_weak',
+    label: '数值减一步',
+    desc: '正在编辑的值被"减"一步后触发（p = 变量地址）。',
+    decl: 'void u8g2_menuValueSub_weak(void *p)',
+    bodyArgs: '(void)p;',
+  },
+  {
+    fn: 'u8g2_menuValueChange_weak',
+    label: '数值变化（推荐）',
+    desc: '值被加或减之后都会触发（p = 变量地址）。想把改动实时写入硬件（DAC/PWM/音量）用这个即可。',
+    decl: 'void u8g2_menuValueChange_weak(void *p)',
+    bodyArgs: '(void)p;',
+  },
+  {
+    fn: 'u8g2_menuKeyEvent_weak',
+    label: '按键事件（可改键）',
+    desc: '任意按键触发。修改 *u8g2_menuKeyValue 可以把某个键替换成其他功能。',
+    decl: 'void u8g2_menuKeyEvent_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue)',
+    bodyArgs: '(void)u8g2_menu;\n    (void)u8g2_menuKeyValue;',
+  },
+  {
+    fn: 'u8g2_menuCharEvent_weak',
+    label: '字符输入',
+    desc: '字符串编辑条目（u8g2_MenuItem_str）收到字符时触发，可修改 *c 过滤输入。',
+    decl: 'void u8g2_menuCharEvent_weak(u8g2_menu_t *u8g2_menu, char *c)',
+    bodyArgs: '(void)u8g2_menu;\n    (void)c;',
+  },
+  {
+    fn: 'menuEventUserHandle_weak',
+    label: '事件过滤器',
+    desc: '事件队列分发前调用。返回 1 = 该事件由你处理，库不再处理；返回 0 = 交给库。',
+    decl: 'uint8_t menuEventUserHandle_weak(u8g2_menu_t *u8g2_menu, u8g2_menu_event_item_t *eventItem)',
+    bodyArgs: '(void)u8g2_menu;\n    (void)eventItem;',
+    retNote: 'return 0;',
+  },
+  {
+    fn: 'menuEventUserKey_weak',
+    label: '自定义按键',
+    desc: 'MENU_Key_USER_1~6 按下时触发；默认 6 个功能键（上下/确认/返回/加/减）不会进入这里。',
+    decl: 'void menuEventUserKey_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)',
+    bodyArgs: '(void)u8g2_menu;\n    (void)u8g2_menuKeyValue;',
+  },
+  {
+    fn: 'menuEventKey_weak',
+    label: '按键拦截',
+    desc: '任意按键的"最前哨"。返回 1 = 事件已被你处理（可做全局快捷键）；返回 0 = 继续交给库分发。',
+    decl: 'uint8_t menuEventKey_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)',
+    bodyArgs: '(void)u8g2_menu;\n    (void)u8g2_menuKeyValue;',
+    retNote: 'return 0;',
+  },
+  {
+    fn: 'menuEventKeyPre_weak',
+    label: '按键预处理（改键映射）',
+    desc: '按键分发前修改键值。注意：重写它会覆盖库默认的"编辑状态下 上/下/确认 → 加/减/返回"映射，需自行处理。',
+    decl: 'void menuEventKeyPre_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue)',
+    bodyArgs: '(void)u8g2_menu;\n    (void)u8g2_menuKeyValue;',
+  },
+];
 
 export const KIND_LABELS: Record<ItemKind, string> = {
   text: '文本',

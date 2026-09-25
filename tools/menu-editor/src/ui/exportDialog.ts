@@ -12,6 +12,8 @@ let tab: 'c' | 'h' = 'c';
 
 export function showExportDialog(host: HTMLElement, result: ExportResult): void {
   current = result;
+  // 重复触发时先关闭已打开的对话框，避免蒙层叠加
+  host.querySelectorAll(':scope > .ume-modal-mask').forEach((m) => m.remove());
   openDialog(host);
 }
 

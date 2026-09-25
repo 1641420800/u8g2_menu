@@ -114,6 +114,42 @@ describe('codegen', () => {
     expect(warnings.length).toBe(1);
     expect(warnings[0]).toContain('未指定目标页面');
   });
+
+  it('勾选弱函数生成骨架（含返回值语义注释）', () => {
+    const proj = createProject();
+    proj.weakHooks = ['u8g2_menuValueChange_weak', 'menuEventKey_weak'];
+    const { c } = generateCode(proj);
+    expect(c).toContain('/* ==================== 弱定义函数重写 ==================== */');
+    expect(c).toContain('void u8g2_menuValueChange_weak(void *p)');
+    expect(c).toContain('/* USER CODE BEGIN weak_u8g2_menuValueChange_weak */');
+    expect(c).toContain('(void)p;');
+    expect(c).toContain('uint8_t menuEventKey_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)');
+    expect(c).toContain('return 0;');
+    // 未勾选的函数不应生成
+    expect(c).not.toContain('u8g2_menuItemEnter_weak(u8g2_menu_t');
+  });
+
+  it('取消勾选后手写弱函数内容以 #if 0 保留', () => {
+    const proj = createProject();
+    proj.weakHooks = ['u8g2_menuValueChange_weak'];
+    const first = generateCode(proj);
+    const modified = first.c.replace(
+      '/* USER CODE BEGIN weak_u8g2_menuValueChange_weak */',
+      '/* USER CODE BEGIN weak_u8g2_menuValueChange_weak */\n    set_volume_from_menu();',
+    );
+    // 取消勾选后重新生成
+    proj.weakHooks = [];
+    const second = generateCode(proj, { c: modified });
+    expect(second.c).toContain('#if 0');
+    expect(second.c).toContain('set_volume_from_menu();');
+    // 激活态定义（带标签注释）不再生成，仅剩 #if 0 保留块
+    expect(second.c).not.toContain('/* 数值变化（推荐）:');
+    // 重新勾选后恢复编译，且手写内容仍在
+    proj.weakHooks = ['u8g2_menuValueChange_weak'];
+    const third = generateCode(proj, { c: second.c });
+    expect(third.c).toContain('/* 数值变化（推荐）:');
+    expect(third.c).toContain('set_volume_from_menu();');
+  });
 });
 
 describe('helpers', () => {

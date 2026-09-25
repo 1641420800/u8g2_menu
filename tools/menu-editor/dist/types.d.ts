@@ -139,8 +139,26 @@ export interface Project {
     marqueeSpeed: number;
     /** 跑马灯停留字符数（u8g2_MenuSetPositionOffsetStrHeaderLen） */
     marqueeHeaderLen: number;
+    /** 勾选重写的弱定义函数名（见 WEAK_HOOKS）；未勾选的沿用库默认实现 */
+    weakHooks: string[];
     pages: Page[];
 }
+/** 弱定义函数目录：勾选后在生成代码中输出骨架并替换库的默认行为 */
+export interface WeakHook {
+    /** 函数名（与 u8g2_menu_weak.c 一致） */
+    fn: string;
+    /** 面板中的短标签 */
+    label: string;
+    /** 面板中的用途说明（面向不熟悉库的用户） */
+    desc: string;
+    /** 完整声明（生成 .c 用） */
+    decl: string;
+    /** 函数体内对参数的 (void) 消警语句 */
+    bodyArgs: string;
+    /** 非 void 返回时，默认 return 语句及其语义注释 */
+    retNote?: string;
+}
+export declare const WEAK_HOOKS: WeakHook[];
 export declare const KIND_LABELS: Record<ItemKind, string>;
 export declare const KIND_ICON: Record<ItemKind, string>;
 /** 支持的 u8g2 字体（WASM 预览与代码生成共用同一份清单） */

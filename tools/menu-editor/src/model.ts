@@ -93,6 +93,7 @@ export function createProject(): Project {
     selectorLineSpacing: 0,
     marqueeSpeed: 0.2,
     marqueeHeaderLen: 5,
+    weakHooks: [],
     pages: [main, settings],
   };
   // 子页面指向

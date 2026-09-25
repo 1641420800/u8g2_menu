@@ -1,5 +1,5 @@
 import type { Project, Page, Item } from './types';
-import { SCHEMA_VERSION } from './types';
+import { SCHEMA_VERSION, WEAK_HOOKS } from './types';
 
 export class SchemaError extends Error {}
 
@@ -77,6 +77,12 @@ export function parseProject(json: string | unknown): Project {
   const selector = ['default', 'rotundity', 'square'].includes(r.selector as string)
     ? r.selector as Project['selector'] : 'rotundity';
 
+  // 弱函数勾选：仅保留目录中的已知函数名
+  const known = new Set(WEAK_HOOKS.map((h) => h.fn));
+  const weakHooks = Array.isArray(r.weakHooks)
+    ? [...new Set(r.weakHooks.filter((n): n is string => typeof n === 'string' && known.has(n)))]
+    : [];
+
   return {
     version: SCHEMA_VERSION,
     name: str(r.name, '未命名工程'),
@@ -89,6 +95,7 @@ export function parseProject(json: string | unknown): Project {
     selectorLineSpacing: num(r.selectorLineSpacing, 0),
     marqueeSpeed: num(r.marqueeSpeed, 0.2),
     marqueeHeaderLen: num(r.marqueeHeaderLen, 5),
+    weakHooks,
     pages,
   };
 }
