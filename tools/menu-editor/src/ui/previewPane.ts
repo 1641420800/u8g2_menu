@@ -48,7 +48,7 @@ export function renderPreviewPane(
     </div>
     <div class="ume-preview-meta">
       <span>键盘 ↑↓ 确认 返回 ＋/－ 亦可操作</span>
-      <span id="ume-live-page"></span>
+      <select id="ume-page-jump" title="预览跳转到指定页" style="max-width:120px"></select>
       <span id="ume-live-value"></span>
     </div>
   `, el);

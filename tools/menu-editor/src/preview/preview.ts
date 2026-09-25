@@ -328,6 +328,11 @@ export class WasmPreview {
     this.mod?.ccall('em_key', null, ['number'], [k]);
   }
 
+  /** 预览跳转到指定页（不经过子页面链路） */
+  navTo(pageIdx: number): void {
+    this.mod?.ccall('em_nav', null, ['number'], [pageIdx]);
+  }
+
   /** 读取值池槽位的实时值（绑定变量的条目：槽位 = 变量在池中的下标） */
   getInt(slot: number): number {
     return this.mod?._em_get_ipool(slot) ?? 0;

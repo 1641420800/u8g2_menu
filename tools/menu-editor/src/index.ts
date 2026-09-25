@@ -279,14 +279,35 @@ export class MenuEditor {
   }
 
   private updateLiveInfo(): void {
-    const pageEl = document.getElementById('ume-live-page');
     const valEl = document.getElementById('ume-live-value');
+    const jump = document.getElementById('ume-page-jump') as HTMLSelectElement | null;
     const st = this.store.getState();
     const pageIdx = this.store.getState().project.pages.findIndex((p) => p.id === st.selection.pageId);
-    if (pageEl && pageIdx >= 0) {
+
+    // 「预览页」下拉：页面列表变化时重建选项，值始终跟随预览实际所在页
+    if (jump) {
+      const pages = st.project.pages;
+      const sig = pages.map((p) => p.name).join('|');
+      if (jump.dataset.sig !== sig) {
+        jump.dataset.sig = sig;
+        jump.innerHTML = '';
+        pages.forEach((p, i) => {
+          const opt = document.createElement('option');
+          opt.value = String(i);
+          opt.textContent = `${i + 1}. ${p.name}`;
+          jump.appendChild(opt);
+        });
+        jump.onchange = () => {
+          const target = parseInt(jump.value, 10);
+          if (Number.isFinite(target)) this.preview.navTo(target);
+        };
+      }
       const cur = this.preview.currentPage;
-      pageEl.textContent = `预览页: ${this.store.getState().project.pages[cur]?.name ?? '?'}`;
+      if (document.activeElement !== jump && jump.value !== String(cur)) {
+        jump.value = String(cur);
+      }
     }
+
     if (valEl && pageIdx >= 0 && st.selection.itemId) {
       const page = st.project.pages[pageIdx];
       const idx = page.items.findIndex((i) => i.id === st.selection.itemId);

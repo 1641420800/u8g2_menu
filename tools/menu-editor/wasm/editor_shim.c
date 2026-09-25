@@ -524,6 +524,17 @@ void em_pages_commit(int count)
         u8g2_MenuReplaceItem(&em_menu, target);
 }
 
+/* 预览跳转到指定页（编辑器「预览页」下拉用） */
+void em_nav(int page)
+{
+    if (!em_menu_ready) return;
+    if (page < 0 || page >= EM_MAX_PAGES || page >= em_page_count) return;
+    if (em_page_len[page] == 0) return;
+    em_current_page = (uint8_t)page;
+    if (em_menu.menuItem != em_page_stubs[page])
+        u8g2_MenuReplaceItem(&em_menu, em_page_stubs[page]);
+}
+
 uint8_t *em_frame(uint16_t ms)
 {
     if (!em_menu_ready) return NULL;

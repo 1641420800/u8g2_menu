@@ -44,6 +44,8 @@ export declare class WasmPreview {
     stop(): void;
     private renderFrame;
     key(k: MenuKey): void;
+    /** 预览跳转到指定页（不经过子页面链路） */
+    navTo(pageIdx: number): void;
     /** 读取值池槽位的实时值（绑定变量的条目：槽位 = 变量在池中的下标） */
     getInt(slot: number): number;
     getSwitch(slot: number): number;
