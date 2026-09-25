@@ -266,7 +266,7 @@ export class MenuEditor {
       if (this.destroyed) return;
       const st = this.store.getState();
       renderTree(this.els.left, this.store);
-      renderStyle(this.els.styleEl, this.store, this.preview);
+      renderStyle(this.els.styleEl, this.store);
       renderProperty(this.els.propEl, this.store, {
         openXbmEditor: (pageId, itemId) => openXbmEditor(this.container, this.store, pageId, itemId),
       });

@@ -24,7 +24,6 @@ export type IntVarType = 'uint8' | 'uint16' | 'uint32' | 'int8' | 'int16' | 'int
 export type NumVarType = IntVarType | 'float' | 'double';
 export type ChartKind = 'line' | 'point' | 'bar';
 export type SelectorKind = 'default' | 'rotundity' | 'square';
-export type LayerMode = 'AND' | 'OR' | 'XOR' | 'XNOR';
 
 export interface ItemBase {
   id: string;
@@ -174,15 +173,7 @@ export interface Project {
   marqueeSpeed: number;
   /** 跑马灯停留字符数（u8g2_MenuSetPositionOffsetStrHeaderLen） */
   marqueeHeaderLen: number;
-  /** 整页图层包裹（u8g2_MenuStartLayer/EndLayer）；none = 不使用 */
-  layerWrap: LayerMode | 'none';
   pages: Page[];
-}
-
-/** 预览/样式面板使用的消息框测试参数 */
-export interface MsgboxTest {
-  text: string;
-  timeoutMs: number;       // 0 = U8G2_MENU_INFINITE_TIMEOUT（不自动关闭）
 }
 
 export const KIND_LABELS: Record<ItemKind, string> = {

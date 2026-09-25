@@ -360,23 +360,13 @@ export function generateCode(
 
   // 页面函数
   cParts.push(`/* ======================== 页面函数 ======================== */`);
-  if (project.layerWrap !== 'none') {
-    cParts.push(`/* 注意: 本工程启用了图层包裹 (${project.layerWrap})。`);
-    cParts.push(` * 库的图层模块存在已知问题，使用前请确认 src/u8g2_menu_layer.c 可正常编译。 */`);
-  }
   cParts.push('');
   project.pages.forEach((pg, i) => {
     cParts.push(`/* 页面: ${pg.name} */`);
     cParts.push(`void ${pageFns[i]}(void)`);
     cParts.push(`{`);
     cParts.push(userBlock(`page_${pageFns[i]}_pre`, cBlocks, '    '));
-    if (project.layerWrap !== 'none') {
-      cParts.push(`    u8g2_MenuStartLayer(u8g2_MenuGetU8g2(u8g2_MenuGetCurrentMenu()));`);
-    }
     for (const it of pg.items) cParts.push(...genItem(it, pg));
-    if (project.layerWrap !== 'none') {
-      cParts.push(`    u8g2_MenuEndLayer(Layer${project.layerWrap});`);
-    }
     cParts.push(`}`);
     cParts.push('');
   });

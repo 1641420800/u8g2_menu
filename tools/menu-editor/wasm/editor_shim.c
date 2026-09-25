@@ -18,7 +18,6 @@
  *   em_reset_dynamic()                  重置值池/资源池游标（结构变化时调用）
  *   em_frame(ms) -> ptr                 一帧：Clear + DrawMenu + Send + Time_ISR，返回显存
  *   em_key(key)                         注入按键 (u8g2_MenuKeys)
- *   em_msgbox(text, timeout) / em_msgbox_close()
  *   em_font_h() / em_font_w()           当前字体度量
  *   em_get_ipool(slot) / em_get_fpool(slot) / em_get_upool(slot)   读取实时编辑值
  *   em_get_current_page()               当前页（子页面跳转后同步 UI）
@@ -523,19 +522,6 @@ void em_key(int key)
     if (!em_menu_ready) return;
     if (key <= MENU_Key_None || key >= MENU_Key_Num) return;
     u8g2_MenuKeys(&em_menu, (u8g2_menuKeyValue_t)key);
-}
-
-void em_msgbox(const char *text, int timeout)
-{
-    if (!em_menu_ready || !text) return;
-    u8g2_MenuDrawMessageBox_str(&em_menu, text,
-                                timeout > 0 ? (uint32_t)timeout : U8G2_MENU_INFINITE_TIMEOUT);
-}
-
-void em_msgbox_close(void)
-{
-    if (!em_menu_ready) return;
-    u8g2_MenuDrawMessageBoxClose(&em_menu);
 }
 
 int em_font_h(void) { return em_menu_ready ? (int)u8g2_GetMaxCharHeight(&em_u8g2) : 8; }

@@ -44,8 +44,6 @@ export declare class WasmPreview {
     stop(): void;
     private renderFrame;
     key(k: MenuKey): void;
-    showMsgbox(text: string, timeoutMs: number): void;
-    closeMsgbox(): void;
     /** 读取预览中某槽位的实时值（数值/滑条/进度条条目） */
     getInt(page: number, idx: number): number;
     getSwitch(page: number, idx: number): number;

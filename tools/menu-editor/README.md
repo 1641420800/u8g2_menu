@@ -15,7 +15,7 @@
 ## 特性
 
 - **条目类型全覆盖**：文本(含 printf 格式/二倍大)、数值编辑(uint8..double)、开关、按钮回调、子页面、滑块条、进度条、折线/散点/柱状图表、XBM 位图（内置像素编辑器）、多行文本区、自绘板占位
-- **像素级预览**：预览引擎由 Emscripten 把本仓库的 `u8g2_menu` 与 `u8g2` 源码编译为 WASM。编辑器的声明式条目表经 C shim 调用与生成代码**完全相同的库函数路径**——预览即真机行为，含选择器样式、跑马灯、动画、消息框、滚动条
+- **像素级预览**：预览引擎由 Emscripten 把本仓库的 `u8g2_menu` 与 `u8g2` 源码编译为 WASM。编辑器的声明式条目表经 C shim 调用与生成代码**完全相同的库函数路径**——预览即真机行为，含选择器样式、跑马灯、动画、滚动条
 - **一键生成 C 代码**：`menu_pages.c/.h`，CubeMX 风格 `USER CODE BEGIN/END` 保留区，再次生成不覆盖手写回调；图表填充、自绘板、按钮回调均生成骨架
 - **工程文件**：带版本的 JSON，导入/导出/localStorage 自动保存；撤销/重做
 
@@ -54,7 +54,6 @@ const editor = new MenuEditor(el, { wasmUrl: 'prebuilt/u8g2-menu-preview.js' });
   "font": "u8g2_font_wqy12_t_gb2312",
   "selector": "rotundity",            // default | rotundity | square
   "marqueeSpeed": 0.2, "marqueeHeaderLen": 5,
-  "layerWrap": "none",                // 实验性，见下
   "pages": [
     {
       "name": "主页", "fnName": "",
@@ -97,7 +96,6 @@ GitHub Actions（`.github/workflows/build-wasm.yml`）会在 `src/u8g2_menu*.c/h
 ## 已知限制
 
 - 预览分辨率固定 128×64（WASM 内置 ssd1306 驱动）；工程分辨率可改，仅影响生成代码注释
-- 图层包裹（`layerWrap`）只生成代码，预览不生效——库的 `u8g2_menu_layer.c` 目前存在已知编译问题
 - 自绘板（board）与图表真实数据需在 USER CODE 区手写，预览中显示占位框/示例数据
 - 文本区预览内容上限 256 字节
 

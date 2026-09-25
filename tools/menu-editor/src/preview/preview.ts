@@ -314,14 +314,6 @@ export class WasmPreview {
     this.mod?.ccall('em_key', null, ['number'], [k]);
   }
 
-  showMsgbox(text: string, timeoutMs: number): void {
-    this.mod?.ccall('em_msgbox', null, ['string', 'number'], [text, timeoutMs]);
-  }
-
-  closeMsgbox(): void {
-    this.mod?.ccall('em_msgbox_close', null, [], []);
-  }
-
   /** 读取预览中某槽位的实时值（数值/滑条/进度条条目） */
   getInt(page: number, idx: number): number {
     return this.mod?._em_get_ipool(page * 64 + idx) ?? 0;

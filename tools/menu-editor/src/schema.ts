@@ -76,8 +76,6 @@ export function parseProject(json: string | unknown): Project {
 
   const selector = ['default', 'rotundity', 'square'].includes(r.selector as string)
     ? r.selector as Project['selector'] : 'rotundity';
-  const layerWrap = ['none', 'AND', 'OR', 'XOR', 'XNOR'].includes(r.layerWrap as string)
-    ? r.layerWrap as Project['layerWrap'] : 'none';
 
   return {
     version: SCHEMA_VERSION,
@@ -91,7 +89,6 @@ export function parseProject(json: string | unknown): Project {
     selectorLineSpacing: num(r.selectorLineSpacing, 0),
     marqueeSpeed: num(r.marqueeSpeed, 0.2),
     marqueeHeaderLen: num(r.marqueeHeaderLen, 5),
-    layerWrap,
     pages,
   };
 }

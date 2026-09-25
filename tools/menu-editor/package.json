@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build && npm run build:iife",
+    "build": "vite build && npm run build:iife && npm run dts",
     "build:iife": "esbuild src/index.ts --bundle --minify --format=iife --global-name=U8G2MenuEditor --outfile=dist/u8g2-menu-editor.iife.js",
     "dts": "tsc -p tsconfig.dts.json",
     "test": "vitest run",

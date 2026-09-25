@@ -114,14 +114,6 @@ describe('codegen', () => {
     expect(warnings.length).toBe(1);
     expect(warnings[0]).toContain('未指定目标页面');
   });
-
-  it('图层包裹生成 StartLayer/EndLayer', () => {
-    const proj = createProject();
-    proj.layerWrap = 'XOR';
-    const { c } = generateCode(proj);
-    expect(c).toContain('u8g2_MenuStartLayer(');
-    expect(c).toContain('u8g2_MenuEndLayer(LayerXOR);');
-  });
 });
 
 describe('helpers', () => {
