@@ -663,6 +663,8 @@ void u8g2_MenuKeyScann(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyV
 | `key` | 硬件按键电平（1=按下，0=未按；需根据电路取反） |
 | `time` | 扫描时间间隔（ms） |
 
+按键行为：按下瞬间立即触发一次；持续按住超过 `MenuKey_holdTime` 后按 `MenuKey_repeatTime` 的间隔连发，松开即停止。
+
 ### 9.2 字符输入
 
 ```c
@@ -680,8 +682,8 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
 ### 9.4 消抖参数配置（宏）
 
 ```c
-#define MenuKey_holdTime       800   // 长按触发时间(ms)
-#define MenuKey_repeatTime     200   // 长按重复触发间隔(ms)
+#define MenuKey_holdTime       500   // 按下后持续按住多久开始长按连发(ms)
+#define MenuKey_repeatTime     100   // 长按连发间隔(ms),需小于 MenuKey_holdTime
 #define MenuKey_debouncePeriod 20    // 消抖稳定检测周期(ms)
 #define MenuKey_triggerHigh    18    // 触发高电平阈值
 #define MenuKey_triggerLow     2     // 释放低电平阈值
@@ -1109,8 +1111,8 @@ void menuEventKeyPre_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menu
 ### 19.4 按键消抖参数
 
 ```c
-#define MenuKey_holdTime       800    // 长按触发时间(ms)
-#define MenuKey_repeatTime     200    // 长按重复触发间隔(ms)
+#define MenuKey_holdTime       500    // 按下后持续按住多久开始长按连发(ms)
+#define MenuKey_repeatTime     100    // 长按连发间隔(ms),需小于 MenuKey_holdTime
 #define MenuKey_debouncePeriod 20     // 消抖稳定检测周期(ms)
 #define MenuKey_triggerHigh    18     // 触发高电平阈值
 #define MenuKey_triggerLow     2      // 释放低电平阈值

@@ -47,8 +47,8 @@ extern "C" {
 #define U8G2_MENU_MIN_VALUE_DIFF        0.0f        // 图表幅值的最小值
 #define U8G2_MENU_CHART_SPACE_RATIO     1.1f        // 图表上下留空的比例
 // 菜单按键相关
-#define MenuKey_holdTime                800         // 菜单按键的长按触发时间
-#define MenuKey_repeatTime              200         // 菜单按键的长按重复触发时间
+#define MenuKey_holdTime                500         // 按下后持续按住多久开始长按连发(单位:ms)
+#define MenuKey_repeatTime              100         // 长按连发间隔(单位:ms,需小于 MenuKey_holdTime)
 #define MenuKey_debouncePeriod          20          // 按键消抖稳定检测周期(单位:ms)
 #define MenuKey_triggerHigh             18          // 按键触发高电平阈值
 #define MenuKey_triggerLow              2           // 按键释放低电平阈值

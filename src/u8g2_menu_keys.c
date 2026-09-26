@@ -50,30 +50,26 @@ void u8g2_MenuKeyScann(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyV
 {
     if(!u8g2_menu || u8g2_menuKeyValue >= MENU_Key_Num) return;
 
-    u8g2_menu->keyTim[u8g2_menuKeyValue] += time;
-    if(u8g2_menu->keyTim[u8g2_menuKeyValue] > MenuKey_holdTime && u8g2_menu->keyTim[u8g2_menuKeyValue] < MenuKey_holdTime + MenuKey_repeatTime && key != 0)
+    if(key != 0)
     {
-        u8g2_menu->keyTim[u8g2_menuKeyValue] = MenuKey_holdTime + MenuKey_repeatTime;
-        u8g2_MenuKeys(u8g2_menu,u8g2_menuKeyValue);
+        u8g2_menu->keyTim[u8g2_menuKeyValue] += time;
+        if(u8g2_menu->keyLog[u8g2_menuKeyValue] == 0)
+        {
+            // 按下沿:立即触发一次
+            u8g2_MenuKeys(u8g2_menu,u8g2_menuKeyValue);
+        }
+        else if(u8g2_menu->keyTim[u8g2_menuKeyValue] >= MenuKey_holdTime)
+        {
+            // 持续按住:到达长按时间后按固定间隔连发
+            u8g2_MenuKeys(u8g2_menu,u8g2_menuKeyValue);
+            u8g2_menu->keyTim[u8g2_menuKeyValue] = MenuKey_holdTime - MenuKey_repeatTime;
+        }
     }
-    else if(u8g2_menu->keyTim[u8g2_menuKeyValue] > MenuKey_holdTime + MenuKey_repeatTime * 2 && key != 0)
-    {
-        u8g2_menu->keyTim[u8g2_menuKeyValue] = MenuKey_holdTime + MenuKey_repeatTime;
-        u8g2_MenuKeys(u8g2_menu,u8g2_menuKeyValue);
-    }
-
-    if(key == 0 && u8g2_menu->keyLog[u8g2_menuKeyValue] != 0)
+    else
     {
         u8g2_menu->keyTim[u8g2_menuKeyValue] = 0;
     }
-    if(key != 0 && u8g2_menu->keyLog[u8g2_menuKeyValue] == 0)
-    {
-        if(u8g2_menu->keyTim[u8g2_menuKeyValue] <= MenuKey_holdTime)
-        {
-            u8g2_MenuKeys(u8g2_menu,u8g2_menuKeyValue);
-        }
-    }
-    
+
     u8g2_menu->keyLog[u8g2_menuKeyValue] = key;
 }
 /**
