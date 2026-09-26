@@ -1,4 +1,4 @@
-import type { Item, NumberItem, Page, Project, SwitchItem, NumVarType } from './types';
+import type { Item, NumberItem, Page, Project, SwitchItem, NumVarType, ChartBuffer, ChartSource } from './types';
 import { WEAK_HOOKS } from './types';
 
 export interface CodegenResult {
@@ -32,6 +32,13 @@ function floatLit(v: number): string {
   if (!Number.isFinite(v)) return '0.0f';
   const s = v.toString();
   return /[-.]|e/i.test(s) ? `${s}f` : `${s}.0f`;
+}
+
+/** 数据源缓冲区的示例填充语句（在 buf_<name>_fill 助手内使用） */
+function bufSampleLine(name: string, len: number, sample: ChartBuffer['sample']): string {
+  if (sample === 'ramp') return `${name}[i] = (float)i;`;
+  if (sample === 'noise') return `${name}[i] = (float)((i * 37) % ${len});`;
+  return `${name}[i] = 50.0f + 40.0f * sinf(i * 0.5f);`;
 }
 
 /** 提取旧文件里 USER CODE 区内容（按标记名索引） */
@@ -106,16 +113,126 @@ export function generateCode(
   const buttonCbs = new Map<string, number>();   // cbName -> buttonId(首个)
   const boardCbs = new Set<string>();
 
-  // ---------- 图表 / 文本区 / XBM 资源 ----------
-  const charts: string[] = [];    // 生成的静态资源声明
-  const chartInits: string[] = []; // 页内初始化语句
+  // ---------- 图表：数据源缓冲区（手动创建）+ 每条目叠加层（dis 自动生成） ----------
+  const bufDefs: string[] = [];                  // 缓冲区数组 + 填充助手
+  const bufById = new Map<string, { name: string; lenMacro: string; len: number }>();
+  for (const b of project.chartBuffers ?? []) {
+    if (!b.name) { warnings.push('存在未命名数据源缓冲区，已跳过'); continue; }
+    const name = toCIdent(b.name, 'buf');
+    if ([...bufById.values()].some((x) => x.name === name)) {
+      warnings.push(`缓冲区名 "${b.name}" 与其它缓冲区重名，已跳过`);
+      continue;
+    }
+    const len = Math.max(2, Math.trunc(b.dataLen));
+    const lenMacro = `${name.toUpperCase()}_LEN`;
+    bufById.set(b.id, { name, lenMacro, len });
+    const blockName = `fill_${name}`;
+    const hasUserFill = (cBlocks.get(blockName) ?? '').trim() !== '';
+    bufDefs.push(
+      `#define ${lenMacro} ${len}`,
+      `static float ${name}[${lenMacro}];`,
+      `static uint8_t ${name}_filled = 0;`,
+      `static void ${name}_fill(void)`,
+      `{`,
+      userBlock(blockName, cBlocks, '    '),
+      ...(b.sample !== 'none' && !hasUserFill
+        ? [`    for (uint16_t i = 0; i < ${lenMacro}; ++i) { ${bufSampleLine(name, len, b.sample)} }`]
+        : []),
+      `}`,
+    );
+  }
+
+  const chartRes: string[] = [];                 // dis 数组 + chart 结构 + layers
+  const chartInitByItem = new Map<string, string[]>();  // itemId -> init-once 块
+  const chartDrawByItem = new Map<string, string>();    // itemId -> 绘制调用
+  const bufFillGuards = new Map<string, string>();      // bufferId -> 守卫调用行
+  {
+    let chartIdx = 0;
+    let layerIdx = 0;
+    const fillGuard = (bufId: string): string => {
+      const b = bufById.get(bufId);
+      if (!b) return '';
+      if (!bufFillGuards.has(bufId)) {
+        bufFillGuards.set(bufId, `        if (!${b.name}_filled) { ${b.name}_filled = 1; ${b.name}_fill(); }`);
+      }
+      return bufFillGuards.get(bufId)!;
+    };
+    for (const pg of project.pages) {
+      for (const it of pg.items) {
+        if (it.kind !== 'chart') continue;
+        const sources = it.sources.filter((s) => bufById.has(s.bufferId));
+        if (it.sources.length && !sources.length) {
+          warnings.push(`页面 ${pg.name} 的图表条目数据源无效（缓冲区不存在），已跳过`);
+          continue;
+        }
+        if (!sources.length) {
+          warnings.push(`页面 ${pg.name} 的图表条目未绑定数据源，已跳过`);
+          continue;
+        }
+        const h = Math.max(4, Math.trunc(it.height));
+        // 每个数据源：dis 数组 + chart 结构（自动生成）
+        const structs: { name: string; s: ChartSource; b: { name: string; lenMacro: string } }[] = [];
+        for (const s of sources) {
+          const b = bufById.get(s.bufferId)!;
+          const cname = `chart${chartIdx++}`;
+          chartRes.push(
+            `static float ${cname}_dis[${b.lenMacro}];`,
+            `static u8g2_chart_t ${cname};`,
+          );
+          structs.push({ name: cname, s, b });
+        }
+        if (structs.length === 1) {
+          // 单源：与库示例一致的简洁写法
+          const { name: cname, s, b } = structs[0];
+          chartRes.push(`static uint8_t ${cname}_inited = 0;`);
+          chartInitByItem.set(it.id, [
+            `    if (!${cname}_inited) {`,
+            `        ${cname}_inited = 1;`,
+            `        u8g2_chart_init(&${cname}, ${b.name}, ${cname}_dis, ${b.lenMacro});`,
+            fillGuard(s.bufferId),
+            `    }`,
+          ]);
+          const fn = s.chartKind === 'point' ? 'Point' : s.chartKind === 'bar' ? 'Bar' : 'Line';
+          const range = (s.min !== undefined && s.max !== undefined)
+            ? `${floatLit(s.max)}, ${floatLit(s.min)}` : '0, 0';
+          chartDrawByItem.set(it.id, `    u8g2_MenuDrawItem${fn}Chart(&${cname}, ${h}, ${range});`);
+        } else {
+          // 多源叠加：u8g2_MenuDrawItemChart(数组, N, h) 同区域依次绘制
+          const layers = `chart_layers_${layerIdx++}`;
+          chartRes.push(
+            `static u8g2_menu_drawChart_t ${layers}[${structs.length}];`,
+            `static uint8_t ${layers}_inited = 0;`,
+          );
+          const init: string[] = [
+            `    if (!${layers}_inited) {`,
+            `        ${layers}_inited = 1;`,
+          ];
+          structs.forEach(({ name: cname, s, b }, si) => {
+            init.push(`        u8g2_chart_init(&${cname}, ${b.name}, ${cname}_dis, ${b.lenMacro});`);
+            init.push(fillGuard(s.bufferId));
+            const fn = s.chartKind === 'point' ? 'u8g2_drawPointChart' : s.chartKind === 'bar' ? 'u8g2_drawBarChart' : 'u8g2_drawLineChart';
+            const range = (s.min !== undefined && s.max !== undefined)
+              ? `${floatLit(s.max)}, ${floatLit(s.min)}` : '0, 0';
+            init.push(`        ${layers}[${si}].drawChart = ${fn};`);
+            init.push(`        ${layers}[${si}].chart = &${cname};`);
+            init.push(`        ${layers}[${si}].max = ${range.split(', ')[0]};`);
+            init.push(`        ${layers}[${si}].min = ${range.split(', ')[1]};`);
+          });
+          init.push(`    }`);
+          chartInitByItem.set(it.id, init);
+          chartDrawByItem.set(it.id, `    u8g2_MenuDrawItemChart(${layers}, ${structs.length}, ${h});`);
+        }
+      }
+    }
+  }
+
+  // ---------- 文本区 / XBM 资源 ----------
   const xbmDefs: string[] = [];
   const textAreas: string[] = [];
   const taInits: string[] = [];
   const xbmNames = new Set<string>();
   const xbmNameById = new Map<string, string>();
 
-  let chartIdx = 0;
   let taIdx = 0;
 
   for (const pg of project.pages) {
@@ -129,33 +246,6 @@ export function generateCode(
         case 'board':
           boardCbs.add(toCIdent(it.cbName, 'board_cb'));
           break;
-        case 'chart': {
-          const idx = chartIdx++;
-          charts.push(
-            `#define CHART${idx}_LEN ${Math.max(2, Math.trunc(it.dataLen))}`,
-            `static float chart${idx}_data[CHART${idx}_LEN];`,
-            `static float chart${idx}_dis[CHART${idx}_LEN];`,
-            `static u8g2_chart_t chart${idx};`,
-            `static uint8_t chart${idx}_inited = 0;`,
-          );
-          const fill =
-            it.sample === 'sine'
-              ? `chart${idx}_data[i] = 50.0f + 40.0f * sinf(i * 0.5f);`
-              : it.sample === 'ramp'
-                ? `chart${idx}_data[i] = (float)i;`
-                : `chart${idx}_data[i] = (float)((i * 37) % CHART${idx}_LEN);`;
-          const blockName = `chart${idx}_fill`;
-          const hasUserFill = (cBlocks.get(blockName) ?? '').trim() !== '';
-          chartInits.push([
-            `    if (!chart${idx}_inited) {`,
-            `        chart${idx}_inited = 1;`,
-            `        u8g2_chart_init(&chart${idx}, chart${idx}_data, chart${idx}_dis, CHART${idx}_LEN);`,
-            userBlock(blockName, cBlocks, '        '),
-            ...(hasUserFill ? [] : [`        for (uint16_t i = 0; i < CHART${idx}_LEN; ++i) { ${fill} }`]),
-            `    }`,
-          ].join('\n'));
-          break;
-        }
         case 'xbm': {
           let name = toCIdent(it.name, 'icon');
           while (xbmNames.has(name)) name = `${name}_2`;
@@ -204,7 +294,6 @@ export function generateCode(
       : `u8g2_MenuUTF8Printf(${lit}, ${arg});`;
   };
 
-  let chartCursor = 0;
   let taCursor = 0;
 
   const genItem = (it: Item, pg: Page): string[] => {
@@ -313,13 +402,11 @@ export function generateCode(
         break;
       }
       case 'chart': {
-        const idx = chartCursor++;
-        lines.push(...chartInits[idx].split('\n'));
-        const fn = it.chartKind === 'point' ? 'Point' : it.chartKind === 'bar' ? 'Bar' : 'Line';
-        const range = (it.min !== undefined && it.max !== undefined)
-          ? `${floatLit(it.max)}, ${floatLit(it.min)}`
-          : '0, 0';
-        lines.push(`    u8g2_MenuDrawItem${fn}Chart(&chart${idx}, ${Math.max(4, Math.trunc(it.height))}, ${range});`);
+        const init = chartInitByItem.get(it.id);
+        const draw = chartDrawByItem.get(it.id);
+        if (!init || !draw) break;
+        lines.push(...init);
+        lines.push(draw);
         break;
       }
       case 'xbm':
@@ -349,7 +436,7 @@ export function generateCode(
   cParts.push(` */`);
   cParts.push(`#include "menu_pages.h"`);
   cParts.push(`#include "u8g2_menu.h"`);
-  if (charts.length) cParts.push(`#include <math.h>`);
+  if ((project.chartBuffers ?? []).some((b) => b.sample === 'sine')) cParts.push(`#include <math.h>`);
   cParts.push('');
   cParts.push(userBlock('includes', cBlocks, ''));
   cParts.push('');
@@ -360,10 +447,10 @@ export function generateCode(
   for (const v of vars.values()) cParts.push(`${v.type} ${v.name} = ${v.init};`);
   cParts.push('');
 
-  // 资源（图表/文本区/XBM）
-  if (charts.length || textAreas.length || xbmDefs.length) {
+  // 资源（数据源缓冲区/图表/文本区/XBM）
+  if (bufDefs.length || chartRes.length || textAreas.length || xbmDefs.length) {
     cParts.push(`/* ======================== 页面资源 ======================== */`);
-    cParts.push(...charts, ...textAreas, ...xbmDefs);
+    cParts.push(...bufDefs, ...chartRes, ...textAreas, ...xbmDefs);
     cParts.push('');
   }
 

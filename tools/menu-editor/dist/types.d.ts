@@ -69,17 +69,30 @@ export interface ProgressItem extends ItemBase {
     /** 绑定的变量 id（须为整型） */
     varId: string | null;
 }
-export interface ChartItem extends ItemBase {
-    kind: 'chart';
+export interface ChartSource {
+    /** 数据源缓冲区 id（Project.chartBuffers） */
+    bufferId: string;
     chartKind: ChartKind;
-    /** 数据点数 */
-    dataLen: number;
-    /** 项高度（像素），一般取行高 × 行数 */
-    height: number;
-    /** 预览用示例数据模式 */
-    sample: 'sine' | 'ramp' | 'noise';
+    /** 固定量程；都省略 = 自动量程 */
     min?: number;
     max?: number;
+}
+export interface ChartItem extends ItemBase {
+    kind: 'chart';
+    /** 叠加的数据源列表（1 个 = 单图表；多个 = 同区域叠加绘制） */
+    sources: ChartSource[];
+    /** 项高度（像素） */
+    height: number;
+}
+/** 手动创建的图表数据源缓冲区（float 数组，多个图表条目可共用） */
+export interface ChartBuffer {
+    id: string;
+    /** C 数组名 */
+    name: string;
+    /** 数据点数 */
+    dataLen: number;
+    /** 预览/示例填充模式；none = 完全由用户代码填充 */
+    sample: 'sine' | 'ramp' | 'noise' | 'none';
 }
 export interface XbmItem extends ItemBase {
     kind: 'xbm';
@@ -146,6 +159,8 @@ export interface Project {
     weakHooks: string[];
     /** 全局变量池：条目按 id 引用绑定 */
     variables: Variable[];
+    /** 图表数据源缓冲区池：图表条目按 id 引用，可多图表共用 */
+    chartBuffers: ChartBuffer[];
     pages: Page[];
 }
 /** 弱定义函数目录：勾选后在生成代码中输出骨架并替换库的默认行为 */

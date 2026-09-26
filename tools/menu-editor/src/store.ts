@@ -1,6 +1,6 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
-import type { Item, ItemKind, Page, Project, Variable } from './types';
-import { createProject, cloneProject, genId, createItem, createVariable, uniqueVarName } from './model';
+import type { Item, ItemKind, Page, Project, Variable, ChartBuffer } from './types';
+import { createProject, cloneProject, genId, createItem, createVariable, uniqueVarName, createChartBuffer, uniqueBufName } from './model';
 
 export interface Selection {
   pageId: string | null;
@@ -39,6 +39,12 @@ export interface EditorStore extends EditorState {
   /** 删除变量；被条目引用时返回引用数且不删除 */
   removeVariable: (varId: string) => number;
   updateVariable: (varId: string, patch: Partial<Variable>, coalesceKey?: string) => void;
+
+  /** 新建图表数据源缓冲区（自动唯一命名），返回新缓冲区 */
+  addChartBuffer: (partial?: Partial<ChartBuffer>) => ChartBuffer;
+  /** 删除缓冲区；被图表数据源引用时返回引用数且不删除 */
+  removeChartBuffer: (bufId: string) => number;
+  updateChartBuffer: (bufId: string, patch: Partial<ChartBuffer>, coalesceKey?: string) => void;
 }
 
 const COALESCE_MS = 800;
@@ -221,6 +227,38 @@ export function createEditorStore() {
   updateVariable: (varId, patch, coalesceKey) => {
     get().update((p) => {
       const v = (p.variables ?? []).find((x) => x.id === varId);
+      if (v) Object.assign(v, patch);
+    }, coalesceKey);
+  },
+
+  addChartBuffer: (partial) => {
+    let created: ChartBuffer | null = null;
+    get().update((p) => {
+      p.chartBuffers = p.chartBuffers ?? [];
+      const name = uniqueBufName(p.chartBuffers, partial?.name ?? 'buf_new');
+      created = createChartBuffer({ ...partial, name });
+      p.chartBuffers.push(created);
+    });
+    return created!;
+  },
+
+  removeChartBuffer: (bufId) => {
+    let refs = 0;
+    for (const pg of get().project.pages) {
+      for (const it of pg.items) {
+        if (it.kind === 'chart' && it.sources.some((s) => s.bufferId === bufId)) refs++;
+      }
+    }
+    if (refs > 0) return refs;
+    get().update((p) => {
+      p.chartBuffers = (p.chartBuffers ?? []).filter((v) => v.id !== bufId);
+    });
+    return 0;
+  },
+
+  updateChartBuffer: (bufId, patch, coalesceKey) => {
+    get().update((p) => {
+      const v = (p.chartBuffers ?? []).find((x) => x.id === bufId);
       if (v) Object.assign(v, patch);
     }, coalesceKey);
   },

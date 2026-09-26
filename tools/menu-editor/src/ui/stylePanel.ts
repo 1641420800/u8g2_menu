@@ -1,11 +1,12 @@
 import { html, render, nothing, type TemplateResult } from 'lit-html';
 import type { EditorStoreApi } from '../store';
-import type { Project, Variable } from '../types';
+import type { Project, Variable, ChartBuffer } from '../types';
 import { FONTS, WEAK_HOOKS } from '../types';
 import { numField, selectField, textField } from './common';
 
-/** 当前展开编辑的变量 id（跨渲染保持） */
+/** 当前展开编辑的变量/缓冲区 id（跨渲染保持） */
 let expandedVarId: string | null = null;
+let expandedBufId: string | null = null;
 
 const TYPE_OPTIONS: { value: Variable['type']; label: string }[] = [
   { value: 'uint8', label: 'uint8 (0~255)' },
@@ -80,6 +81,65 @@ function countRefs(project: Project, varId: string): number {
   return n;
 }
 
+/** 图表数据源缓冲区管理区（多个图表条目可共用，data_dis 由生成器自动分配） */
+function renderBufManager(store: EditorStoreApi, project: Project): TemplateResult {
+  const bufs = project.chartBuffers ?? [];
+  const refsOf = (bufId: string): number => {
+    let n = 0;
+    for (const pg of project.pages) {
+      for (const it of pg.items) {
+        if (it.kind === 'chart' && it.sources.some((s) => s.bufferId === bufId)) n++;
+      }
+    }
+    return n;
+  };
+
+  const bufRow = (b: ChartBuffer): TemplateResult => {
+    const editing = expandedBufId === b.id;
+    const up = (patch: Partial<ChartBuffer>, key?: string) =>
+      store.getState().updateChartBuffer(b.id, patch, key);
+    const nameBad = b.name && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(b.name);
+    const refs = refsOf(b.id);
+    return html`<div class="ume-var-item ${editing ? 'editing' : ''}">
+      <div class="ume-var-row" @click=${() => { expandedBufId = editing ? null : b.id; }}>
+        <span class="ume-var-name" title=${b.name}>${b.name || '(未命名)'}</span>
+        <span class="ume-var-meta">${b.dataLen} 点 · ${({ sine: '正弦', ramp: '斜坡', noise: '伪随机', none: '手动填充' } as Record<string, string>)[b.sample]}${refs ? ` · ${refs} 处引用` : ''}</span>
+        <button class="ume-mini" title="删除缓冲区" @click=${(e: Event) => {
+          e.stopPropagation();
+          const n = store.getState().removeChartBuffer(b.id);
+          if (n > 0) alert(`该缓冲区被 ${n} 个图表条目的数据源引用，请先在条目里移除数据源再删除`);
+        }}>✕</button>
+      </div>
+      ${editing ? html`<div class="ume-var-edit">
+        ${textField('数组名', b.name, (val) => up({ name: val.trim() }, `bn-${b.id}`))}
+        ${nameBad ? html`<div class="ume-warn">数组名不是合法的 C 标识符，生成时会自动清洗</div>` : nothing}
+        ${numField('点数', b.dataLen, (x) => up({ dataLen: Math.min(512, Math.max(2, Math.trunc(x))) }, `bl-${b.id}`))}
+        ${selectField('示例填充', b.sample, [
+          { value: 'sine', label: '正弦（演示）' },
+          { value: 'ramp', label: '斜坡（演示）' },
+          { value: 'noise', label: '伪随机（演示）' },
+          { value: 'none', label: '不填充（全部手写）' },
+        ], (v) => up({ sample: v as ChartBuffer['sample'] }))}
+        <div class="ume-hint">真实数据在生成的 buf_xxx_fill() 或主循环里写 buf_xxx[i]；dis 显示缓冲由生成器自动分配</div>
+      </div>` : nothing}
+    </div>`;
+  };
+
+  return html`
+    <div class="ume-panel-title">
+      数据源缓冲区 (${bufs.length})
+      <button class="ume-mini" title="新建缓冲区" @click=${() => {
+        const b = store.getState().addChartBuffer();
+        expandedBufId = b.id;
+      }}>＋ 新建</button>
+    </div>
+    ${bufs.length ? bufs.map(bufRow) : html`<div class="ume-empty-hint">
+      图表的数据源缓冲区（float 数组）。手动创建后，在图表条目的属性里绑定——
+      多个图表条目可共用同一缓冲区，多个缓冲区可叠加显示。
+    </div>`}
+  `;
+}
+
 export function renderStyle(el: HTMLElement, store: EditorStoreApi): void {
   const { project } = store.getState();
   const up = (patch: Partial<Project>, key?: string) => store.getState().update((p) => { Object.assign(p, patch); }, key);
@@ -128,6 +188,7 @@ export function renderStyle(el: HTMLElement, store: EditorStoreApi): void {
     </div>
 
     ${renderVarManager(store, project)}
+    ${renderBufManager(store, project)}
 
     <div class="ume-panel-title">样式</div>
     ${selectField('字体', project.font, FONTS.map((f) => ({ value: f.id, label: f.label })),

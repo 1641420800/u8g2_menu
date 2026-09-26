@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateCode, extractUserBlocks, toCIdent, cstr } from '../src/codegen';
-import { createProject, createVariable, createPage } from '../src/model';
+import { createProject, createVariable, createChartBuffer, createPage } from '../src/model';
 import type { Project } from '../src/types';
 import { parseProject, serializeProject } from '../src/schema';
 
@@ -88,18 +88,64 @@ describe('codegen', () => {
     expect(c).toContain('u8g2_MenuDrawItemXBMP(8, 2, menu_xbm_icon);');
   });
 
-  it('图表条目生成 init + 绘制，自动量程传 0,0', () => {
+  it('图表：单数据源生成缓冲区定义 + init + 绘制，自动量程传 0,0', () => {
     const proj = createProject();
+    proj.pages = proj.pages.slice(0, 2); // 去掉演示工程的图表页，隔离编号
     const pg = createPage('图表');
     pg.items = [{
-      id: 'c1', kind: 'chart', label: '', chartKind: 'line', dataLen: 16,
-      height: 32, sample: 'sine',
+      id: 'c1', kind: 'chart', label: '', height: 32,
+      sources: [{ bufferId: proj.chartBuffers[0].id, chartKind: 'line' }],
     }];
     proj.pages.push(pg);
     const { c } = generateCode(proj);
-    expect(c).toContain('#define CHART0_LEN 16');
-    expect(c).toContain('u8g2_chart_init(&chart0, chart0_data, chart0_dis, CHART0_LEN);');
+    expect(c).toContain('#define BUF_DEMO_LEN 32');
+    expect(c).toContain('static float buf_demo[BUF_DEMO_LEN];');
+    expect(c).toContain('static float chart0_dis[BUF_DEMO_LEN];');
+    expect(c).toContain('u8g2_chart_init(&chart0, buf_demo, chart0_dis, BUF_DEMO_LEN);');
     expect(c).toContain('u8g2_MenuDrawItemLineChart(&chart0, 32, 0, 0);');
+    // 缓冲区填充助手 + 守卫调用
+    expect(c).toContain('static void buf_demo_fill(void)');
+    expect(c).toContain('if (!buf_demo_filled) { buf_demo_filled = 1; buf_demo_fill(); }');
+  });
+
+  it('图表：多数据源叠加生成 drawChart 数组 + MenuDrawItemChart', () => {
+    const proj = createProject();
+    const b2 = createChartBuffer({ name: 'buf_humi', dataLen: 24, sample: 'noise' });
+    proj.chartBuffers.push(b2);
+    const pg = createPage('叠加');
+    pg.items = [{
+      id: 'c1', kind: 'chart', label: '', height: 40,
+      sources: [
+        { bufferId: proj.chartBuffers[0].id, chartKind: 'line' },
+        { bufferId: b2.id, chartKind: 'point', min: 0, max: 50 },
+      ],
+    }];
+    proj.pages.push(pg);
+    const { c } = generateCode(proj);
+    expect(c).toContain('static u8g2_menu_drawChart_t chart_layers_0[2];');
+    expect(c).toContain('chart_layers_0[0].drawChart = u8g2_drawLineChart;');
+    expect(c).toContain('chart_layers_0[1].drawChart = u8g2_drawPointChart;');
+    expect(c).toContain('chart_layers_0[1].max = 50.0f;');
+    expect(c).toContain('u8g2_MenuDrawItemChart(chart_layers_0, 2, 40);');
+    // 两个缓冲区各自填充守卫
+    expect(c).toContain('buf_demo_fill();');
+    expect(c).toContain('buf_humi_fill();');
+  });
+
+  it('多个图表条目共用同一缓冲区', () => {
+    const proj = createProject();
+    const pg = createPage('共用');
+    pg.items = [
+      { id: 'c1', kind: 'chart', label: '', height: 30, sources: [{ bufferId: proj.chartBuffers[0].id, chartKind: 'line' }] },
+      { id: 'c2', kind: 'chart', label: '', height: 30, sources: [{ bufferId: proj.chartBuffers[0].id, chartKind: 'bar' }] },
+    ];
+    proj.pages.push(pg);
+    const { c } = generateCode(proj);
+    // 缓冲区只定义一次
+    expect(c.match(/static float buf_demo\[BUF_DEMO_LEN\];/g)?.length).toBe(1);
+    // 两个图表结构（dis 各自独立），都指向 buf_demo
+    expect(c).toContain('u8g2_chart_init(&chart0, buf_demo, chart0_dis, BUF_DEMO_LEN);');
+    expect(c).toContain('u8g2_chart_init(&chart1, buf_demo, chart1_dis, BUF_DEMO_LEN);');
   });
 
   it('再次生成时 USER CODE 区内容被保留', () => {
@@ -114,22 +160,22 @@ describe('codegen', () => {
     expect(second.c).toContain('/* USER CODE END cb_btn_about_cb */');
   });
 
-  it('用户手写的图表填充会替换默认示例数据', () => {
+  it('用户手写的缓冲区填充会替换默认示例数据', () => {
     const proj = createProject();
     const pg = createPage('图表');
     pg.items = [{
-      id: 'c1', kind: 'chart', label: '', chartKind: 'bar', dataLen: 8,
-      height: 20, sample: 'ramp',
+      id: 'c1', kind: 'chart', label: '', height: 20,
+      sources: [{ bufferId: proj.chartBuffers[0].id, chartKind: 'bar' }],
     }];
     proj.pages.push(pg);
     const first = generateCode(proj);
     const modified = first.c.replace(
-      '/* USER CODE BEGIN chart0_fill */',
-      '/* USER CODE BEGIN chart0_fill */\n        for (int i = 0; i < 8; i++) chart0_data[i] = adc[i];',
+      '/* USER CODE BEGIN fill_buf_demo */',
+      '/* USER CODE BEGIN fill_buf_demo */\n    for (int i = 0; i < BUF_DEMO_LEN; i++) buf_demo[i] = adc[i];',
     );
     const second = generateCode(proj, { c: modified });
     expect(second.c).toContain('adc[i];');
-    expect(second.c).not.toContain('(i * 37) % CHART0_LEN');
+    expect(second.c).not.toContain('(i * 37) % BUF_DEMO_LEN');
   });
 
   it('未设置目标的子页面给出警告', () => {

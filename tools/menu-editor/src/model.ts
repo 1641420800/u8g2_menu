@@ -1,5 +1,5 @@
 import type {
-  Item, ItemKind, Page, Project, XbmItem, NumberItem, ChartItem, BoardItem, Variable,
+  Item, ItemKind, Page, Project, XbmItem, NumberItem, ChartItem, BoardItem, Variable, ChartBuffer,
 } from './types';
 
 let idSeq = 0;
@@ -19,6 +19,25 @@ export function createVariable(partial?: Partial<Variable>): Variable {
     step: 1,
     ...partial,
   };
+}
+
+export function createChartBuffer(partial?: Partial<ChartBuffer>): ChartBuffer {
+  return {
+    id: genId('buf'),
+    name: 'buf_new',
+    dataLen: 32,
+    sample: 'sine',
+    ...partial,
+  };
+}
+
+/** 唯一缓冲区名：base, base_2, base_3... */
+export function uniqueBufName(existing: ChartBuffer[], base: string): string {
+  const used = new Set(existing.map((v) => v.name));
+  if (!used.has(base)) return base;
+  let i = 2;
+  while (used.has(`${base}_${i}`)) i++;
+  return `${base}_${i}`;
 }
 
 /** 唯一变量名：base, base_2, base_3... */
@@ -56,7 +75,7 @@ export function createItem(kind: ItemKind): Item {
       return { ...base, kind, varId: null };
     case 'chart':
       return {
-        ...base, kind, chartKind: 'line', dataLen: 24, height: 32, sample: 'sine',
+        ...base, kind, sources: [], height: 32,
       } satisfies ChartItem;
     case 'xbm':
       return createXbm(16, 16);
@@ -93,6 +112,9 @@ export function createProject(): Project {
     createVariable({ name: 'var_switch', type: 'uint8', initialValue: 0, min: 0, max: 1, step: 1 }),
     createVariable({ name: 'var_slider', type: 'int32', initialValue: 50, min: 0, max: 100, step: 2 }),
   ];
+  const chartBuffers: ChartBuffer[] = [
+    createChartBuffer({ name: 'buf_demo', dataLen: 32, sample: 'sine' }),
+  ];
   const main = createPage('主页');
   main.items = [
     withFields(createItem('text'), { text: 'u8g2_menu' }),
@@ -104,6 +126,15 @@ export function createProject(): Project {
     withFields(createItem('number'), { text: '音量:%d', varId: variables[0].id }),
     withFields(createItem('switch'), { text: '开关:%s', varId: variables[1].id }),
     withFields(createItem('slider'), { varId: variables[2].id }),
+    withFields(createItem('submenu'), { text: '图表' }),
+    createItem('back'),
+  ];
+  const chartPage = createPage('图表');
+  chartPage.items = [
+    withFields(createItem('chart'), {
+      height: 36,
+      sources: [{ bufferId: chartBuffers[0].id, chartKind: 'line' }],
+    }),
     createItem('back'),
   ];
   const proj: Project = {
@@ -120,10 +151,12 @@ export function createProject(): Project {
     marqueeHeaderLen: 5,
     weakHooks: [],
     variables,
-    pages: [main, settings],
+    chartBuffers,
+    pages: [main, settings, chartPage],
   };
   // 子页面指向
   (main.items[1] as { targetPageId: string | null }).targetPageId = settings.id;
+  (settings.items[3] as { targetPageId: string | null }).targetPageId = chartPage.id;
   return proj;
 }
 

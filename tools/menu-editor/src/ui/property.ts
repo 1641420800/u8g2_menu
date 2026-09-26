@@ -1,7 +1,7 @@
 import { html, render, nothing, type TemplateResult } from 'lit-html';
 import type { EditorStoreApi } from '../store';
 import type {
-  Item, NumberItem, SwitchItem, ButtonItem, SubmenuItem, ChartItem,
+  Item, NumberItem, SwitchItem, ButtonItem, SubmenuItem, ChartItem, ChartSource,
   XbmItem, TextAreaItem, BoardItem, Variable,
 } from '../types';
 import { KIND_LABELS } from '../types';
@@ -165,18 +165,50 @@ export function renderProperty(
       }
       case 'chart': {
         const c = item as ChartItem;
+        const buffers = project.chartBuffers ?? [];
+        const setSources = (sources: ChartSource[]) => upItem({ sources } as Partial<Item>);
+
+        const sourceRow = (s: ChartSource, si: number): TemplateResult => {
+          const b = buffers.find((x) => x.id === s.bufferId);
+          const auto = s.min === undefined || s.max === undefined;
+          return html`<div class="ume-var-item">
+            <div class="ume-var-row">
+              <span class="ume-var-name">${b?.name ?? '(无效)'}</span>
+              <span class="ume-var-meta">${({ line: '折线', point: '散点', bar: '柱状' } as Record<string, string>)[s.chartKind] ?? s.chartKind}${auto ? ' · 自动量程' : ` · ${s.min}~${s.max}`}</span>
+              <button class="ume-mini" title="移除该数据源" @click=${() => setSources(c.sources.filter((_, i) => i !== si))}>✕</button>
+            </div>
+            <div class="ume-var-edit">
+              ${selectField('缓冲区', s.bufferId, buffers.map((x) => ({ value: x.id, label: `${x.name} (${x.dataLen}点)` })), (vid) => setSources(c.sources.map((x, i) => i === si ? { ...x, bufferId: vid } : x)))}
+              ${selectField('绘制', s.chartKind, [
+                { value: 'line', label: '折线' }, { value: 'point', label: '散点' }, { value: 'bar', label: '柱状' },
+              ], (k) => setSources(c.sources.map((x, i) => i === si ? { ...x, chartKind: k as ChartSource['chartKind'] } : x)))}
+              ${checkField('自动量程', auto, (on) => setSources(c.sources.map((x, i) => i === si ? { ...x, min: on ? undefined : 0, max: on ? undefined : 100 } : x)))}
+              ${!auto ? html`
+                ${numField('量程上限', s.max ?? 100, (v2) => setSources(c.sources.map((x, i) => i === si ? { ...x, max: v2 } : x)), 'any')}
+                ${numField('量程下限', s.min ?? 0, (v2) => setSources(c.sources.map((x, i) => i === si ? { ...x, min: v2 } : x)), 'any')}` : nothing}
+            </div>
+          </div>`;
+        };
+
         body = html`
-          ${selectField('类型', c.chartKind, [
-            { value: 'line', label: '折线图' }, { value: 'point', label: '散点图' }, { value: 'bar', label: '柱状图' },
-          ], (v) => upItem({ chartKind: v }))}
-          ${numField('数据点数', c.dataLen, (v) => upItem({ dataLen: Math.max(2, Math.trunc(v)) }))}
-          ${numField('高度(px)', c.height, (v) => upItem({ height: Math.max(8, Math.trunc(v)) }))}
-          ${selectField('示例数据', c.sample, [
-            { value: 'sine', label: '正弦' }, { value: 'ramp', label: '斜坡' }, { value: 'noise', label: '伪随机' },
-          ], (v) => upItem({ sample: v }))}
-          ${numField('量程上限', c.max ?? 0, (v) => upItem({ max: v || undefined }), 'any')}
-          ${numField('量程下限', c.min ?? 0, (v) => upItem({ min: v || undefined }), 'any')}
-          <div class="ume-hint">上下限均填 0 表示自动量程；真实数据在 USER CODE 区填充</div>
+          ${numField('高度(px)', c.height, (v) => upItem({ height: Math.max(4, Math.trunc(v)) }))}
+          <div class="ume-field wide"><label>数据源</label>
+            <div style="flex:1">
+              ${(c.sources ?? []).map(sourceRow)}
+              ${(c.sources ?? []).length === 0 ? html`<div class="ume-hint">尚未绑定数据源——点下方按钮创建并绑定</div>` : nothing}
+              <button class="ume-btn sm" style="margin-top:4px" ?disabled=${(c.sources ?? []).length >= 4}
+                @click=${() => {
+                  if (!buffers.length) {
+                    const b = store.getState().addChartBuffer();
+                    setSources([...(c.sources ?? []), { bufferId: b.id, chartKind: 'line' }]);
+                    return;
+                  }
+                  setSources([...(c.sources ?? []), { bufferId: buffers[0].id, chartKind: 'line' }]);
+                }}>＋ 添加数据源${(c.sources ?? []).length > 0 ? '（叠加）' : ''}</button>
+              ${!buffers.length ? html`<div class="ume-hint">将自动新建数据源缓冲区（在右侧「数据源」区可改点名/点数/示例）</div>` : nothing}
+            </div>
+          </div>
+          <div class="ume-hint">多个数据源在同一区域叠加绘制（最多 4 个）；示例/真实数据在生成的 buf_xxx_fill 里填充</div>
         `;
         break;
       }

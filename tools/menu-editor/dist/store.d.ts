@@ -1,5 +1,5 @@
 import { type StoreApi } from 'zustand/vanilla';
-import type { Item, ItemKind, Page, Project, Variable } from './types';
+import type { Item, ItemKind, Page, Project, Variable, ChartBuffer } from './types';
 export interface Selection {
     pageId: string | null;
     itemId: string | null;
@@ -32,6 +32,11 @@ export interface EditorStore extends EditorState {
     /** 删除变量；被条目引用时返回引用数且不删除 */
     removeVariable: (varId: string) => number;
     updateVariable: (varId: string, patch: Partial<Variable>, coalesceKey?: string) => void;
+    /** 新建图表数据源缓冲区（自动唯一命名），返回新缓冲区 */
+    addChartBuffer: (partial?: Partial<ChartBuffer>) => ChartBuffer;
+    /** 删除缓冲区；被图表数据源引用时返回引用数且不删除 */
+    removeChartBuffer: (bufId: string) => number;
+    updateChartBuffer: (bufId: string, patch: Partial<ChartBuffer>, coalesceKey?: string) => void;
 }
 export declare function createEditorStore(): StoreApi<EditorStore>;
 /** 默认单例（多数集成场景只有一个编辑器实例） */

@@ -1,10 +1,12 @@
-import type { Project, Page, Item, Variable, NumVarType } from './types';
+import type { Project, Page, Item, Variable, NumVarType, ChartBuffer } from './types';
 import { SCHEMA_VERSION, WEAK_HOOKS } from './types';
 import { genId } from './model';
 
 export class SchemaError extends Error {}
 
 const VAR_TYPES: ReadonlySet<string> = new Set(['uint8', 'uint16', 'uint32', 'int8', 'int16', 'int32', 'int', 'float', 'double']);
+const CHART_KINDS: ReadonlySet<string> = new Set(['line', 'point', 'bar']);
+const SAMPLES: ReadonlySet<string> = new Set(['sine', 'ramp', 'noise', 'none']);
 
 function isObj(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -69,6 +71,17 @@ function parseVariable(raw: unknown): Variable | null {
     min: num(raw.min, 0),
     max: num(raw.max, 100),
     step: num(raw.step, 1),
+  };
+}
+
+function parseChartBuffer(raw: unknown): ChartBuffer | null {
+  if (!isObj(raw)) return null;
+  const sample = str(raw.sample, 'sine');
+  return {
+    id: str(raw.id, '') || genId('buf'),
+    name: str(raw.name, ''),
+    dataLen: Math.min(512, Math.max(2, Math.trunc(num(raw.dataLen, 32)))),
+    sample: (SAMPLES.has(sample) ? sample : 'sine') as ChartBuffer['sample'],
   };
 }
 
@@ -187,6 +200,14 @@ export function parseProject(json: string | unknown): Project {
     variables = migrateLegacyItems(pages);
   }
 
+  // 图表数据源缓冲区：显式字段优先；旧图表条目（自带 chartKind/dataLen）自动迁移
+  let chartBuffers: ChartBuffer[];
+  if (Array.isArray(r.chartBuffers)) {
+    chartBuffers = r.chartBuffers.map(parseChartBuffer).filter((v): v is ChartBuffer => !!v);
+  } else {
+    chartBuffers = migrateLegacyCharts(pages);
+  }
+
   return {
     version: SCHEMA_VERSION,
     name: str(r.name, '未命名工程'),
@@ -201,8 +222,48 @@ export function parseProject(json: string | unknown): Project {
     marqueeHeaderLen: num(r.marqueeHeaderLen, 5),
     weakHooks,
     variables,
+    chartBuffers,
     pages,
   };
+}
+
+/** 旧版图表条目迁移：chartKind/dataLen/sample/min/max 收敛为缓冲区 + 数据源 */
+function migrateLegacyCharts(pages: Page[]): ChartBuffer[] {
+  const buffers: ChartBuffer[] = [];
+  let seq = 0;
+  const newBuf = (): ChartBuffer => {
+    const b: ChartBuffer = {
+      id: genId('buf'),
+      name: `buf_chart_${++seq}`,
+      dataLen: 32,
+      sample: 'sine',
+    };
+    buffers.push(b);
+    return b;
+  };
+  for (const pg of pages) {
+    for (const it of pg.items) {
+      if (it.kind !== 'chart') continue;
+      const raw = it as unknown as Record<string, unknown>;
+      if (Array.isArray(raw.sources)) continue; // 已是新模型
+      const buf = newBuf();
+      buf.dataLen = Math.min(512, Math.max(2, Math.trunc(num(raw.dataLen, 32))));
+      const sample = str(raw.sample, 'sine');
+      if (SAMPLES.has(sample)) buf.sample = sample as ChartBuffer['sample'];
+      const kind = str(raw.chartKind, 'line');
+      const src: Record<string, unknown> = {
+        bufferId: buf.id,
+        chartKind: CHART_KINDS.has(kind) ? kind : 'line',
+      };
+      if (raw.max !== undefined && raw.max !== null) src.max = num(raw.max, 0);
+      if (raw.min !== undefined && raw.min !== null) src.min = num(raw.min, 0);
+      (it as { sources?: unknown[]; height?: number }).sources = [src];
+      if (raw.height === undefined) (it as { height?: number }).height = 32;
+      delete raw.chartKind; delete raw.dataLen; delete raw.sample;
+      delete raw.max; delete raw.min;
+    }
+  }
+  return buffers;
 }
 
 /** 历史版本迁移（当前仅 v1，占位） */

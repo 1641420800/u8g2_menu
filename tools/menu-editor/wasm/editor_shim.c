@@ -84,7 +84,32 @@ static uint8_t em_upool[EM_SLOTS];
 #define EM_CHART_POOL_FLOATS 32768
 static float    em_chart_pool[EM_CHART_POOL_FLOATS];
 static uint32_t em_chart_used = 0;
-static u8g2_chart_t em_charts[EM_MAX_PAGES][EM_MAX_ITEMS];
+
+/* 数据源缓冲区（手动创建，多图表可共用） */
+#define EM_MAX_BUFS        32
+#define EM_BUF_POOL_FLOATS 32768
+#define EM_BUF_MAX_LEN     512
+typedef struct {
+    float   *data;
+    uint16_t len;
+    uint8_t  alloc;
+} em_buf_t;
+static em_buf_t  em_bufs[EM_MAX_BUFS];
+static float     em_buf_pool[EM_BUF_POOL_FLOATS];
+static uint32_t  em_buf_used = 0;
+
+/* 图表结构池（每个条目-数据源对一个，dis 缓冲从 float 池分配） */
+#define EM_CHART_STRUCTS 128
+static u8g2_chart_t em_chart_structs[EM_CHART_STRUCTS];
+static uint32_t em_chart_structs_used = 0;
+
+/* 图表叠加层：一个条目最多 4 个数据源，同区域依次绘制 */
+#define EM_MAX_CHART_SRC 4
+typedef struct {
+    u8g2_menu_drawChart_t src[EM_MAX_CHART_SRC];
+    uint8_t n;
+} em_chart_layers_t;
+static em_chart_layers_t em_chart_layers[EM_MAX_PAGES][EM_MAX_ITEMS];
 
 #define EM_BITS_POOL_BYTES 65536
 static uint8_t  em_bits_pool[EM_BITS_POOL_BYTES];
@@ -262,19 +287,9 @@ static void em_dispatch(uint8_t page)
             break;
 
         case EM_Chart: {
-            u8g2_chart_t *ch = &em_charts[page][i];
-            if (!ch->data) break;
-            u8g2_chart_update(ch);
-            {
-                u8g2_menu_drawChart_t dc;
-                dc.drawChart = (it->chartKind == 1) ? u8g2_drawPointChart
-                             : (it->chartKind == 2) ? u8g2_drawBarChart
-                             : u8g2_drawLineChart;
-                dc.chart = ch;
-                dc.max = it->chartFixed ? (float)it->i_max : 0;
-                dc.min = it->chartFixed ? (float)it->i_min : 0;
-                u8g2_MenuDrawItemChart(&dc, 1, it->area_h);
-            }
+            em_chart_layers_t *L = &em_chart_layers[page][i];
+            if (L->n == 0) break;
+            u8g2_MenuDrawItemChart(L->src, L->n, it->area_h);
             break;
         }
 
@@ -335,10 +350,13 @@ int em_init(int width, int height)
 void em_reset_dynamic(void)
 {
     em_chart_used = 0;
+    em_chart_structs_used = 0;
     em_bits_used = 0;
     em_ta_used = 0;
-    memset(em_charts, 0, sizeof(em_charts));
+    em_buf_used = 0;
     memset(em_tas, 0, sizeof(em_tas));
+    memset(em_chart_layers, 0, sizeof(em_chart_layers));
+    memset(em_bufs, 0, sizeof(em_bufs));
     memset(em_page_len, 0, sizeof(em_page_len));
     em_btn_count = 0;
     em_btn_last = 0;
@@ -370,7 +388,6 @@ void em_page_begin(int page)
 {
     if (page < 0 || page >= EM_MAX_PAGES) return;
     /* 重新设置该页时丢弃旧图表/文本区资源指针（由 em_page_item 重建） */
-    memset(&em_charts[page], 0, sizeof(em_charts[page]));
     memset(&em_tas[page], 0, sizeof(em_tas[page]));
     em_page_len[page] = 0;
 }
@@ -431,28 +448,10 @@ void em_page_item(int page, int idx, int kind, int varType, int scale,
         if (em_ipool[slot] < i_min || em_ipool[slot] > i_max)
             em_ipool[slot] = i_value;
         break;
-    case EM_Chart: {
-        uint32_t len = (uint32_t)chart_len;
-        if (len < 2) len = 2;
-        if (len > 512) len = 512;
-        if (em_chart_used + len * 2 <= EM_CHART_POOL_FLOATS) {
-            float *data = &em_chart_pool[em_chart_used];
-            float *dis = data + len;
-            em_chart_used += len * 2;
-            for (uint32_t j = 0; j < len; j++) {
-                /* 示例数据模式由 i_value 传入: 0 sine, 1 ramp, 2 noise */
-                if (i_value == 1) {
-                    data[j] = (float)j;
-                } else if (i_value == 2) {
-                    data[j] = (float)((j * 37) % len);
-                } else {
-                    data[j] = 50.0f + 40.0f * sinf((float)j * 0.5f);
-                }
-            }
-            u8g2_chart_init(&em_charts[page][idx], data, dis, (uint16_t)len);
-        }
+    case EM_Chart:
+        /* 数据源/叠加层由 em_item_chart_add 逐个添加；此处仅复位层数 */
+        em_chart_layers[page][idx].n = 0;
         break;
-    }
     case EM_XBM:
         /* 位图数据由 em_item_bits 二次调用写入 */
         it->i_value = -1;
@@ -533,6 +532,61 @@ void em_nav(int page)
     em_current_page = (uint8_t)page;
     if (em_menu.menuItem != em_page_stubs[page])
         u8g2_MenuReplaceItem(&em_menu, em_page_stubs[page]);
+}
+
+/* ===================== 图表数据源缓冲区 ===================== */
+
+/* 定义数据源缓冲区（bufSlot = 缓冲区在池中的下标；sample: 0 sine 1 ramp 2 noise 3 none） */
+void em_buf_define(int bufSlot, int len, int sample)
+{
+    if (bufSlot < 0 || bufSlot >= EM_MAX_BUFS) return;
+    if (len < 2) len = 2;
+    if (len > EM_BUF_MAX_LEN) len = EM_BUF_MAX_LEN;
+    em_buf_t *b = &em_bufs[bufSlot];
+    if (b->alloc && b->len == (uint16_t)len) {
+        /* 复用已分配缓冲，仅刷新示例数据 */
+    } else {
+        if (em_buf_used + (uint32_t)len > EM_BUF_POOL_FLOATS) return;
+        b->data = &em_buf_pool[em_buf_used];
+        em_buf_used += (uint32_t)len;
+        b->len = (uint16_t)len;
+        b->alloc = 1;
+    }
+    for (int j = 0; j < len; j++) {
+        switch (sample) {
+        case 1: b->data[j] = (float)j; break;
+        case 2: b->data[j] = (float)((j * 37) % len); break;
+        case 3: b->data[j] = 0.0f; break;
+        default: b->data[j] = 50.0f + 40.0f * sinf((float)j * 0.5f); break;
+        }
+    }
+}
+
+/* 为图表条目追加一个叠加数据源（kind: 0 line 1 point 2 bar；fixed 时用 fmax/fmin，否则自动量程） */
+void em_item_chart_add(int page, int idx, int bufSlot, int kind, int fixed, float fmax, float fmin)
+{
+    if (page < 0 || page >= EM_MAX_PAGES || idx < 0 || idx >= EM_MAX_ITEMS) return;
+    if (bufSlot < 0 || bufSlot >= EM_MAX_BUFS) return;
+    em_buf_t *b = &em_bufs[bufSlot];
+    if (!b->alloc || !b->data) return;
+    em_chart_layers_t *L = &em_chart_layers[page][idx];
+    if (L->n >= EM_MAX_CHART_SRC) return;
+    if (em_chart_structs_used >= EM_CHART_STRUCTS) return;
+    if (em_chart_used + (uint32_t)b->len * 2 > EM_CHART_POOL_FLOATS) return;
+
+    /* chart 结构 + dis 缓冲自动生成（每个条目-数据源对独立） */
+    u8g2_chart_t *ch = &em_chart_structs[em_chart_structs_used++];
+    float *dis = &em_chart_pool[em_chart_used];
+    em_chart_used += (uint32_t)b->len;
+    u8g2_chart_init(ch, b->data, dis, b->len);
+
+    L->src[L->n].drawChart = (kind == 1) ? u8g2_drawPointChart
+                           : (kind == 2) ? u8g2_drawBarChart
+                           : u8g2_drawLineChart;
+    L->src[L->n].chart = ch;
+    L->src[L->n].max = fixed ? fmax : 0;
+    L->src[L->n].min = fixed ? fmin : 0;
+    L->n++;
 }
 
 uint8_t *em_frame(uint16_t ms)

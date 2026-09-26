@@ -113,16 +113,19 @@ export class WasmPreview {
 
   /** 结构签名：只有页面/条目结构或资源尺寸变化才重置资源池（保留预览中的编辑值） */
   private signature(p: Project): string {
-    return JSON.stringify(p.pages.map((pg) => ({
-      n: pg.items.length,
-      k: pg.items.map((it) => it.kind).join(','),
-      res: pg.items.map((it) => {
-        if (it.kind === 'chart') return `${it.dataLen}|${it.sample}`;
-        if (it.kind === 'xbm') return `${it.w}x${it.h}`;
-        if (it.kind === 'textarea') return Math.ceil(it.content.length / 64);
-        return '';
-      }).join(','),
-    })));
+    return JSON.stringify({
+      bufs: (p.chartBuffers ?? []).map((b) => `${b.name}|${b.dataLen}|${b.sample}`),
+      pages: p.pages.map((pg) => ({
+        n: pg.items.length,
+        k: pg.items.map((it) => it.kind).join(','),
+        res: pg.items.map((it) => {
+          if (it.kind === 'chart') return (it.sources ?? []).map((s) => `${s.bufferId}|${s.chartKind}|${s.min ?? 'a'}|${s.max ?? 'a'}`).join('>');
+          if (it.kind === 'xbm') return `${it.w}x${it.h}`;
+          if (it.kind === 'textarea') return Math.ceil(it.content.length / 64);
+          return '';
+        }).join(','),
+      })),
+    });
   }
 
   /** 全量同步编辑器模型到预览引擎 */
@@ -140,6 +143,14 @@ export class WasmPreview {
     const varSlot = (vid: string | null): number =>
       vid ? (project.variables ?? []).findIndex((v) => v.id === vid) : -1;
     const varById = new Map((project.variables ?? []).map((v) => [v.id, v]));
+
+    // 数据源缓冲区定义（在页面条目之前；sample: 0 sine 1 ramp 2 noise 3 none）
+    (project.chartBuffers ?? []).forEach((b, bi) => {
+      mod.ccall('em_buf_define', null, ['number', 'number', 'number'],
+        [bi, intT(b.dataLen), { sine: 0, ramp: 1, noise: 2, none: 3 }[b.sample]]);
+    });
+    const bufSlotOf = (bid: string): number =>
+      (project.chartBuffers ?? []).findIndex((v) => v.id === bid);
     project.pages.forEach((pg, pi) => {
       mod.ccall('em_page_begin', null, ['number'], [pi]);
       pg.items.forEach((it, ii) => {
@@ -220,15 +231,20 @@ export class WasmPreview {
             break;
           }
           case 'chart': {
-            const sample = { sine: 0, ramp: 1, noise: 2 }[it.sample];
-            const fixed = it.min !== undefined && it.max !== undefined ? 1 : 0;
+            // 复位叠加层数，然后逐个数据源添加（kind: 0 line 1 point 2 bar）
             mod.ccall('em_page_item', null, [...slotBase,
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number', 'number', 'number', 'number', 'number', 'number',
               'number', 'number'],
-              [pi, ii, 8, 0, 1, { line: 0, point: 1, bar: 2 }[it.chartKind], 0, 0, 0, fixed,
-                sample, 0, fixed ? intT(it.min!) : 0, fixed ? intT(it.max!) : 0, -1, 0, 0,
-                intT(it.height), intT(it.dataLen), 0]);
+              [pi, ii, 8, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, intT(it.height), 0, 0, -1]);
+            for (const s of it.sources ?? []) {
+              const fixed = s.min !== undefined && s.max !== undefined ? 1 : 0;
+              mod.ccall('em_item_chart_add', null,
+                ['number', 'number', 'number', 'number', 'number', 'number', 'number'],
+                [pi, ii, bufSlotOf(s.bufferId),
+                  { line: 0, point: 1, bar: 2 }[s.chartKind], fixed,
+                  fixed ? (s.max ?? 0) : 0, fixed ? (s.min ?? 0) : 0]);
+            }
             break;
           }
           case 'xbm': {
