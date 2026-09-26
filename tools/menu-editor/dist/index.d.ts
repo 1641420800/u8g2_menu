@@ -24,6 +24,7 @@ export declare class MenuEditor {
     private changeTimer;
     private lastExport;
     private destroyed;
+    private activateRightTab;
     constructor(container: HTMLElement, opts?: MenuEditorOptions);
     getData(): Project;
     loadData(data: unknown): void;

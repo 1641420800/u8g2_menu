@@ -44,6 +44,7 @@ export class MenuEditor {
   private changeTimer: number | undefined;
   private lastExport: { c: string } | null = null;
   private destroyed = false;
+  private activateRightTab: (key: string) => void = () => {};
 
   constructor(container: HTMLElement, opts: MenuEditorOptions = {}) {
     this.container = container;
@@ -166,6 +167,19 @@ export class MenuEditor {
     });
     container.querySelector('[data-act="generate"]')!.addEventListener('click', () => this.generate());
 
+    // 右栏 Tab 切换（属性/资源/设置）
+    const tabButtons = container.querySelectorAll<HTMLButtonElement>('.ume-tabs button');
+    const activateTab = (key: string) => {
+      tabButtons.forEach((b) => b.classList.toggle('active', b.dataset.tab === key));
+      this.els.propEl.style.display = key === 'prop' ? '' : 'none';
+      this.els.resEl.style.display = key === 'res' ? '' : 'none';
+      this.els.setEl.style.display = key === 'set' ? '' : 'none';
+    };
+    tabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => activateTab(btn.dataset.tab ?? 'prop'));
+    });
+    this.activateRightTab = activateTab;
+
     // 快捷键
     this.onKeyDown = this.onKeyDown.bind(this);
     document.addEventListener('keydown', this.onKeyDown);
@@ -174,11 +188,16 @@ export class MenuEditor {
     this.store.getState().select(this.store.getState().project.pages[0]?.id ?? null, null);
 
     // 订阅渲染
+    let lastSelectedItemId: string | null = null;
     this.store.subscribe(() => {
       this.preview.sync(this.store.getState().project);
       this.persist();
       this.scheduleRender();
       this.notifyChange();
+      // 选中某个条目时自动切到属性 Tab（页面级选中不切，避免预览跳页时被打断）
+      const itemId = this.store.getState().selection.itemId;
+      if (itemId && itemId !== lastSelectedItemId) this.activateRightTab('prop');
+      lastSelectedItemId = itemId;
     });
 
     this.scheduleRender();
