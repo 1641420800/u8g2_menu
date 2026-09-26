@@ -33,8 +33,10 @@ createServer(async (req, res) => {
     res.writeHead(200, {
       'content-type': MIME[extname(file).toLowerCase()] ?? 'application/octet-stream',
       'cross-origin-opener-policy': 'same-origin',
-      // 开发/演示服务器：禁止缓存，避免 wasm/js 更新后浏览器用旧产物
+      // 开发/演示服务器：禁止缓存，避免 wasm/js 更新后浏览器用旧产物；
+      // 允许跨域：其他前端项目可直接 <script> / fetch 本服务器的 dist 与 prebuilt 产物
       'cache-control': 'no-store',
+      'access-control-allow-origin': '*',
     });
     res.end(data);
   } catch {
