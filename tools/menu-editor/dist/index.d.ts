@@ -31,6 +31,8 @@ export declare class MenuEditor {
     /** 生成 C 代码（保留 USER CODE），返回结果并弹出对话框 */
     generate(): CodegenResult;
     downloadC(): void;
+    /** 生成路径（generate/downloadC 共用）：现场取模 + 警告收口 + 保留 USER CODE */
+    private produceCode;
     /** 现场取模：从 WASM 真库逐字拉取字形，生成子集字体 */
     private buildFontSubset;
     destroy(): void;

@@ -42,23 +42,33 @@ export function readHeader(font: Uint8Array): FontHeader {
   };
 }
 
+export interface SubsetResult {
+  /** 子集字体字节 */
+  font: Uint8Array;
+  /** 实际收录的字形数（glyph_cnt 头字段仅 8 位，超过 255 会回绕） */
+  included: number;
+  /** 字符集中未在源字体命中字形的编码（运行时无法渲染这些字符） */
+  missing: number[];
+}
+
 /**
  * 生成 u8g2 格式子集字体。
  * @param sourceFont 源字体字节（供头部度量；字形经 fetcher 获取）
  * @param unicodes 需要收录的编码集合
- * @returns 子集字体字节；一个字形都没拿到时返回 null
+ * @returns 子集结果；一个字形都没拿到时返回 null
  */
 export function subsetFont(
   sourceFont: Uint8Array,
   unicodes: Set<number>,
   fetcher: GlyphFetcher,
-): Uint8Array | null {
+): SubsetResult | null {
   const ascii: { encoding: number; entry: Uint8Array }[] = [];
   const unicode: { encoding: number; entry: Uint8Array }[] = [];
+  const missing: number[] = [];
   const sorted = [...unicodes].sort((a, b) => a - b);
   for (const enc of sorted) {
     const entry = fetcher(enc);
-    if (!entry || !entry.length) continue;
+    if (!entry || !entry.length) { missing.push(enc); continue; }
     if (enc <= 255) ascii.push({ encoding: enc, entry });
     else unicode.push({ encoding: enc, entry });
   }
@@ -107,7 +117,7 @@ export function subsetFont(
     p += g.entry.length;
   }
   out[p] = 0; out[p + 1] = 0; // unicode 终止
-  return out;
+  return { font: out, included: total, missing };
 }
 
 /** 从 UTF-8 字符串取编码集合 */

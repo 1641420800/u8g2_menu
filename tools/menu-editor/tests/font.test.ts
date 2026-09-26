@@ -66,29 +66,32 @@ describe('子集生成（手工最小字体）', () => {
   it('ASCII 子集：条目字节保真、glyph_cnt 正确、终止符存在', () => {
     const src = miniFetcher(MINI);
     const sub = subsetFont(MINI, new Set([0x30, 0x39]), src)!;
-    expect(sub[0]).toBe(2);
+    expect(sub.included).toBe(2);
+    expect(sub.font[0]).toBe(2);
     // 走查输出段
     let p = 23;
-    const back = miniFetcher(sub);
+    const out = sub.font;
+    const back = miniFetcher(out);
     for (const enc of [0x30, 0x39]) {
-      const size = sub[p + 1];
-      expect(sub[p]).toBe(enc);
-      expect(sub.slice(p, p + size)).toEqual(src(enc));
+      const size = out[p + 1];
+      expect(out[p]).toBe(enc);
+      expect(out.slice(p, p + size)).toEqual(src(enc));
       expect(back(enc)).toEqual(src(enc));
       p += size;
     }
-    expect(sub[p]).toBe(0); // 终止
+    expect(out[p]).toBe(0); // 终止
   });
 
   it('中文子集：unicode 段为单条目表 + 条目保真 + 可读回', () => {
     const src = miniFetcher(MINI);
     const set = new Set([0x83dc, 0x5355]); // 菜 单
     const sub = subsetFont(MINI, set, src)!;
-    expect(sub[0]).toBe(2);
-    const startUnicode = getWord(sub, 21);
-    expect(getWord(sub, 23 + startUnicode)).toBe(4); // delta
-    expect(getWord(sub, 23 + startUnicode + 2)).toBe(0xffff); // bound
-    const back = miniFetcher(sub);
+    const out = sub.font;
+    expect(out[0]).toBe(2);
+    const startUnicode = getWord(out, 21);
+    expect(getWord(out, 23 + startUnicode)).toBe(4); // delta
+    expect(getWord(out, 23 + startUnicode + 2)).toBe(0xffff); // bound
+    const back = miniFetcher(out);
     for (const enc of set) {
       expect(back(enc)).toEqual(src(enc));
     }
@@ -97,17 +100,39 @@ describe('子集生成（手工最小字体）', () => {
   it('混合 ASCII+中文子集：头加速指针正确修补', () => {
     const src = miniFetcher(MINI);
     const sub = subsetFont(MINI, new Set([0x30, 0x39, 0x83dc, 0x5355]), src)!;
-    expect(sub[0]).toBe(4);
+    const out = sub.font;
+    expect(out[0]).toBe(4);
+    expect(sub.included).toBe(4);
+    expect(sub.missing).toEqual([]);
     // 'A' 不在集内 → upperA=0；lowerA=0
-    expect(getWord(sub, 17)).toBe(0);
-    expect(getWord(sub, 19)).toBe(0);
+    expect(getWord(out, 17)).toBe(0);
+    expect(getWord(out, 19)).toBe(0);
     // unicode 段起点 = 23 + ascii(6+7+2=15) + 终止已在内 → 23+15=38
-    expect(getWord(sub, 21)).toBe(15);
+    expect(getWord(out, 21)).toBe(15);
   });
 
   it('全部未命中返回 null', () => {
     const src = miniFetcher(MINI);
     expect(subsetFont(MINI, new Set([0x4e2d]), src)).toBeNull();
+  });
+
+  it('部分未命中：missing 记录未收录编码', () => {
+    const src = miniFetcher(MINI);
+    const sub = subsetFont(MINI, new Set([0x30, 0x4e2d]), src)!;
+    expect(sub.included).toBe(1);
+    expect(sub.missing).toEqual([0x4e2d]);
+    expect(sub.font[0]).toBe(1);
+  });
+
+  it('超过 255 字形：included 如实记录，glyph_cnt 头字段回绕', () => {
+    const encs = new Set<number>();
+    for (let i = 0; i < 300; i++) encs.add(0x100 + i);
+    const fake: GlyphFetcher = (encoding) =>
+      new Uint8Array([(encoding >> 8) & 0xff, encoding & 0xff, 5, 0xaa, 0xbb]);
+    const sub = subsetFont(MINI, encs, fake)!;
+    expect(sub.included).toBe(300);
+    expect(sub.missing).toEqual([]);
+    expect(sub.font[0]).toBe(300 & 0xff); // 头字段 8 位，写入时回绕
   });
 });
 

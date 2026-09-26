@@ -27,13 +27,21 @@ export interface FontHeader {
 export declare function getWord(b: Uint8Array, off: number): number;
 /** 从 WASM 读取的源字体字节中提取 23 字节头信息（仅用度量字段） */
 export declare function readHeader(font: Uint8Array): FontHeader;
+export interface SubsetResult {
+    /** 子集字体字节 */
+    font: Uint8Array;
+    /** 实际收录的字形数（glyph_cnt 头字段仅 8 位，超过 255 会回绕） */
+    included: number;
+    /** 字符集中未在源字体命中字形的编码（运行时无法渲染这些字符） */
+    missing: number[];
+}
 /**
  * 生成 u8g2 格式子集字体。
  * @param sourceFont 源字体字节（供头部度量；字形经 fetcher 获取）
  * @param unicodes 需要收录的编码集合
- * @returns 子集字体字节；一个字形都没拿到时返回 null
+ * @returns 子集结果；一个字形都没拿到时返回 null
  */
-export declare function subsetFont(sourceFont: Uint8Array, unicodes: Set<number>, fetcher: GlyphFetcher): Uint8Array | null;
+export declare function subsetFont(sourceFont: Uint8Array, unicodes: Set<number>, fetcher: GlyphFetcher): SubsetResult | null;
 /** 从 UTF-8 字符串取编码集合 */
 export declare function charsOf(s: string): number[];
 /** 固定保留的 ASCII 可打印集（数字/字母/标点，printf 输出必需） */

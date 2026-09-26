@@ -30,6 +30,8 @@ export declare class WasmPreview {
     private fontSig;
     private events;
     private lastKnownPage;
+    /** 预览侧子集字体未能应用时的提示（生成代码时并入警告）；null = 应用正常或未开启取模 */
+    fontApplyWarning: string | null;
     constructor(container: HTMLElement, events?: PreviewEvents);
     /** 加载 WASM 引擎（幂等） */
     load(wasmUrl: string): Promise<void>;
@@ -41,6 +43,8 @@ export declare class WasmPreview {
     private signature;
     /** 全量同步编辑器模型到预览引擎 */
     sync(project: Project): void;
+    /** 应用子集字体到预览引擎；失败时记录 fontApplyWarning（供生成代码时并入警告） */
+    private applyFontSubset;
     start(): void;
     stop(): void;
     private renderFrame;

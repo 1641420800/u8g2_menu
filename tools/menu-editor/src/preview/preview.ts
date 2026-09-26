@@ -64,6 +64,8 @@ export class WasmPreview {
   private fontSig: string | null = null;
   private events: PreviewEvents;
   private lastKnownPage = 0;
+  /** 预览侧子集字体未能应用时的提示（生成代码时并入警告）；null = 应用正常或未开启取模 */
+  fontApplyWarning: string | null = null;
 
   constructor(container: HTMLElement, events: PreviewEvents = {}) {
     this.canvas = document.createElement('canvas');
@@ -240,22 +242,26 @@ export class WasmPreview {
       const sig = project.font + '|' + [...charset].sort((a, b) => a - b).join(',');
       if (sig !== this.fontSig) {
         this.fontSig = sig;
-        const fontIdx = this.fontIndex(project.font);
-        // 字形数据从 WASM 真库逐字拉取（与渲染完全同一查找路径）
-        const fetcher = (encoding: number): Uint8Array | null => {
-          const mod = this.mod!;
-          const ptr = mod.ccall('em_scratch', 'number', ['number'], [64]) as number;
-          const len = mod.ccall('em_font_glyph', 'number',
-            ['number', 'number', 'number', 'number'], [fontIdx, encoding, 64, ptr]) as number;
-          if (!len) return null;
-          return mod.HEAPU8.slice(ptr, ptr + len);
-        };
-        const srcFont = this.getFontBytes(fontIdx);
-        const sub = srcFont ? subsetFont(srcFont, charset, fetcher) : null;
-        if (sub) this.useCustomFont(sub);
+        this.applyFontSubset(this.fontIndex(project.font), charset);
       }
     } else if (this.fontSig !== null) {
       this.fontSig = null; // 关闭取模：下次 sync 由 set_style 恢复内置字体
+      this.fontApplyWarning = null;
+    }
+  }
+
+  /** 应用子集字体到预览引擎；失败时记录 fontApplyWarning（供生成代码时并入警告） */
+  private applyFontSubset(fontIdx: number, charset: Set<number>): void {
+    this.fontApplyWarning = null;
+    const srcFont = this.getFontBytes(fontIdx);
+    const fetcher = this.glyphFetcher(fontIdx);
+    const sub = srcFont && fetcher ? subsetFont(srcFont, charset, fetcher) : null;
+    if (!sub) {
+      this.fontApplyWarning = '现场取模未命中任何字形，预览使用内置字体';
+      return;
+    }
+    if (!this.useCustomFont(sub.font)) {
+      this.fontApplyWarning = `子集字体 ${sub.font.length} 字节超过预览槽位容量，预览已回退全字库（导出的 menu_font 数组不受影响）`;
     }
   }
 

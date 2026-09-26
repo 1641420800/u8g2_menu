@@ -1,6 +1,6 @@
-import { createStore as je } from "zustand/vanilla";
-import { render as ae, html as x, nothing as D } from "lit-html";
-const Fe = `/* u8g2-menu-editor 样式（前缀 ume-） */
+import { createStore as Ue } from "zustand/vanilla";
+import { render as ae, html as $, nothing as D } from "lit-html";
+const je = `/* u8g2-menu-editor 样式（前缀 ume-） */
 .ume {
   --ume-bg: #f4f6f9;
   --ume-panel: #ffffff;
@@ -321,11 +321,11 @@ const Fe = `/* u8g2-menu-editor 样式（前缀 ume-） */
 .ume-tabs button { border: none; border-bottom: 2px solid transparent; background: transparent; padding: 6px 14px 5px; font: inherit; font-size: 12px; color: var(--ume-dim); cursor: pointer; }
 .ume-tabs button:hover { color: var(--ume-text); }
 .ume-tabs button.active { color: var(--ume-accent); border-bottom-color: var(--ume-accent); font-weight: 600; }`;
-let he = 0;
+let fe = 0;
 function O(i) {
-  return he = (he + 1) % 1e9, `${i}_${Date.now().toString(36)}_${he.toString(36)}`;
+  return fe = (fe + 1) % 1e9, `${i}_${Date.now().toString(36)}_${fe.toString(36)}`;
 }
-function me(i) {
+function de(i) {
   return {
     id: O("vb"),
     name: "var_new",
@@ -337,7 +337,7 @@ function me(i) {
     ...i
   };
 }
-function Ne(i) {
+function Te(i) {
   return {
     id: O("buf"),
     name: "buf_new",
@@ -346,21 +346,21 @@ function Ne(i) {
     ...i
   };
 }
+function Fe(i, t) {
+  const e = new Set(i.map((s) => s.name));
+  if (!e.has(t)) return t;
+  let n = 2;
+  for (; e.has(`${t}_${n}`); ) n++;
+  return `${t}_${n}`;
+}
 function ze(i, t) {
-  const e = new Set(i.map((r) => r.name));
+  const e = new Set(i.map((s) => s.name));
   if (!e.has(t)) return t;
   let n = 2;
   for (; e.has(`${t}_${n}`); ) n++;
   return `${t}_${n}`;
 }
-function Re(i, t) {
-  const e = new Set(i.map((r) => r.name));
-  if (!e.has(t)) return t;
-  let n = 2;
-  for (; e.has(`${t}_${n}`); ) n++;
-  return `${t}_${n}`;
-}
-function X(i) {
+function W(i) {
   const t = { id: O("it"), label: "", bind: { type: "none" } };
   switch (i) {
     case "text":
@@ -377,7 +377,7 @@ function X(i) {
         height: 32
       };
     case "xbm":
-      return Oe(16, 16);
+      return Re(16, 16);
     case "textarea":
       return {
         ...t,
@@ -392,7 +392,7 @@ function X(i) {
       return { ...t, kind: i, w: 64, h: 32, cbName: "board_cb" };
   }
 }
-function Oe(i, t) {
+function Re(i, t) {
   const e = Math.ceil(i / 8);
   return {
     id: O("it"),
@@ -405,47 +405,47 @@ function Oe(i, t) {
     bits: new Array(e * t).fill(0)
   };
 }
-function be(i) {
+function he(i) {
   return { id: O("pg"), name: i, fnName: "", items: [], userCodePre: "" };
 }
-function ce(i, t) {
+function le(i, t) {
   return { ...i, ...t };
 }
-function W(i, t) {
+function J(i, t) {
   return { ...i, ...t };
 }
-function qe() {
+function Oe() {
   const i = [
-    me({ name: "var_value", type: "int32", initialValue: 50, min: 0, max: 100, step: 1 }),
-    me({ name: "var_switch", type: "uint8", initialValue: 0, min: 0, max: 1, step: 1 }),
-    me({ name: "var_slider", type: "int32", initialValue: 50, min: 0, max: 100, step: 2 })
+    de({ name: "var_value", type: "int32", initialValue: 50, min: 0, max: 100, step: 1 }),
+    de({ name: "var_switch", type: "uint8", initialValue: 0, min: 0, max: 1, step: 1 }),
+    de({ name: "var_slider", type: "int32", initialValue: 50, min: 0, max: 100, step: 2 })
   ], t = [
-    Ne({ name: "buf_demo", dataLen: 32, sample: "sine" })
-  ], e = be("主页");
+    Te({ name: "buf_demo", dataLen: 32, sample: "sine" })
+  ], e = he("主页");
   e.items = [
-    ce(X("text"), { text: "u8g2_menu" }),
-    W(X("text"), { text: "系统设置", bind: { type: "submenu", targetPageId: null } }),
-    W(X("text"), { text: "关于", bind: { type: "button", cbName: "btn_about_cb", buttonId: 1 } })
+    le(W("text"), { text: "u8g2_menu" }),
+    J(W("text"), { text: "系统设置", bind: { type: "submenu", targetPageId: null } }),
+    J(W("text"), { text: "关于", bind: { type: "button", cbName: "btn_about_cb", buttonId: 1 } })
   ];
-  const n = be("设置");
+  const n = he("设置");
   n.items = [
-    W(ce(X("text"), { text: "音量:%d" }), { bind: { type: "value", varId: i[0].id } }),
-    W(ce(X("text"), { text: "开关:%s" }), {
+    J(le(W("text"), { text: "音量:%d" }), { bind: { type: "value", varId: i[0].id } }),
+    J(le(W("text"), { text: "开关:%s" }), {
       bind: { type: "switch", varId: i[1].id, openValue: 1, onText: "on", offText: "off" }
     }),
-    W(X("slider"), { bind: { type: "value", varId: i[2].id } }),
-    W(X("text"), { text: "图表", bind: { type: "submenu", targetPageId: null } }),
-    W(X("text"), { text: "返回", bind: { type: "back" } })
+    J(W("slider"), { bind: { type: "value", varId: i[2].id } }),
+    J(W("text"), { text: "图表", bind: { type: "submenu", targetPageId: null } }),
+    J(W("text"), { text: "返回", bind: { type: "back" } })
   ];
-  const r = be("图表");
-  r.items = [
-    ce(X("chart"), {
+  const s = he("图表");
+  s.items = [
+    le(W("chart"), {
       height: 36,
       sources: [{ bufferId: t[0].id, chartKind: "line" }]
     }),
-    W(X("text"), { text: "返回", bind: { type: "back" } })
+    J(W("text"), { text: "返回", bind: { type: "back" } })
   ];
-  const s = {
+  const r = {
     version: 1,
     name: "我的菜单",
     width: 128,
@@ -462,28 +462,28 @@ function qe() {
     fontExtra: "",
     variables: i,
     chartBuffers: t,
-    pages: [e, n, r]
+    pages: [e, n, s]
   };
-  return e.items[1].bind.targetPageId = n.id, n.items[3].bind.targetPageId = r.id, s;
+  return e.items[1].bind.targetPageId = n.id, n.items[3].bind.targetPageId = s.id, r;
 }
-function He(i) {
+function qe(i) {
   return structuredClone(i);
 }
-const Xe = 800;
+const He = 800;
 function Ae() {
   let i = null, t = 0;
-  return je()((e, n) => ({
-    project: qe(),
+  return Ue()((e, n) => ({
+    project: Oe(),
     selection: { pageId: null, itemId: null },
     past: [],
     future: [],
     dirty: !1,
-    update: (r, s) => {
-      const a = Date.now(), o = !!s && s === i && a - t < Xe;
-      i = s ?? null, t = a, e((u) => {
-        const c = He(u.project);
-        return r(c), {
-          project: c,
+    update: (s, r) => {
+      const a = Date.now(), o = !!r && r === i && a - t < He;
+      i = r ?? null, t = a, e((u) => {
+        const l = qe(u.project);
+        return s(l), {
+          project: l,
           dirty: !0,
           past: o ? u.past : [...u.past.slice(-99), u.project],
           future: []
@@ -491,148 +491,148 @@ function Ae() {
       });
     },
     undo: () => {
-      e((r) => r.past.length ? {
-        project: r.past[r.past.length - 1],
-        past: r.past.slice(0, -1),
-        future: [r.project, ...r.future.slice(0, 99)],
+      e((s) => s.past.length ? {
+        project: s.past[s.past.length - 1],
+        past: s.past.slice(0, -1),
+        future: [s.project, ...s.future.slice(0, 99)],
         dirty: !0
-      } : r);
+      } : s);
     },
     redo: () => {
-      e((r) => {
-        if (!r.future.length) return r;
-        const [s, ...a] = r.future;
+      e((s) => {
+        if (!s.future.length) return s;
+        const [r, ...a] = s.future;
         return {
-          project: s,
-          past: [...r.past, r.project],
+          project: r,
+          past: [...s.past, s.project],
           future: a,
           dirty: !0
         };
       });
     },
-    select: (r, s = null) => e({ selection: { pageId: r, itemId: s } }),
-    addPage: (r) => {
-      const s = { id: O("pg"), name: r ?? `页面${n().project.pages.length + 1}`, fnName: "", items: [], userCodePre: "" };
+    select: (s, r = null) => e({ selection: { pageId: s, itemId: r } }),
+    addPage: (s) => {
+      const r = { id: O("pg"), name: s ?? `页面${n().project.pages.length + 1}`, fnName: "", items: [], userCodePre: "" };
       return n().update((a) => {
-        a.pages.push(s);
-      }), e({ selection: { pageId: s.id, itemId: null } }), s;
+        a.pages.push(r);
+      }), e({ selection: { pageId: r.id, itemId: null } }), r;
     },
-    removePage: (r) => {
+    removePage: (s) => {
       n().update((a) => {
-        a.pages = a.pages.filter((o) => o.id !== r);
+        a.pages = a.pages.filter((o) => o.id !== s);
         for (const o of a.pages)
           for (const u of o.items)
-            u.bind.type === "submenu" && u.bind.targetPageId === r && (u.bind.targetPageId = null);
+            u.bind.type === "submenu" && u.bind.targetPageId === s && (u.bind.targetPageId = null);
       });
-      const { selection: s } = n();
-      s.pageId === r && e({ selection: { pageId: null, itemId: null } });
+      const { selection: r } = n();
+      r.pageId === s && e({ selection: { pageId: null, itemId: null } });
     },
-    movePage: (r, s) => {
+    movePage: (s, r) => {
       n().update((a) => {
-        const o = a.pages.findIndex((c) => c.id === r), u = o + s;
+        const o = a.pages.findIndex((l) => l.id === s), u = o + r;
         o < 0 || u < 0 || u >= a.pages.length || ([a.pages[o], a.pages[u]] = [a.pages[u], a.pages[o]]);
       });
     },
-    updatePage: (r, s) => {
+    updatePage: (s, r) => {
       n().update((a) => {
-        const o = a.pages.find((u) => u.id === r);
-        o && Object.assign(o, s);
+        const o = a.pages.find((u) => u.id === s);
+        o && Object.assign(o, r);
       });
     },
-    addItem: (r, s) => {
+    addItem: (s, r) => {
       var u;
-      const a = s ?? n().selection.pageId ?? ((u = n().project.pages[0]) == null ? void 0 : u.id);
+      const a = r ?? n().selection.pageId ?? ((u = n().project.pages[0]) == null ? void 0 : u.id);
       if (!a) return null;
-      const o = Ze(r);
-      return n().update((c) => {
-        const l = c.pages.find((p) => p.id === a);
-        l == null || l.items.push(o);
+      const o = We(s);
+      return n().update((l) => {
+        const d = l.pages.find((m) => m.id === a);
+        d == null || d.items.push(o);
       }), e({ selection: { pageId: a, itemId: o.id } }), o;
     },
-    removeItem: (r, s) => {
+    removeItem: (s, r) => {
       n().update((o) => {
-        const u = o.pages.find((c) => c.id === r);
-        u && (u.items = u.items.filter((c) => c.id !== s));
+        const u = o.pages.find((l) => l.id === s);
+        u && (u.items = u.items.filter((l) => l.id !== r));
       });
       const { selection: a } = n();
-      a.itemId === s && e({ selection: { pageId: r, itemId: null } });
+      a.itemId === r && e({ selection: { pageId: s, itemId: null } });
     },
-    moveItem: (r, s, a) => {
+    moveItem: (s, r, a) => {
       n().update((o) => {
-        const u = o.pages.find((p) => p.id === r);
+        const u = o.pages.find((m) => m.id === s);
         if (!u) return;
-        const c = u.items.findIndex((p) => p.id === s), l = c + a;
-        c < 0 || l < 0 || l >= u.items.length || ([u.items[c], u.items[l]] = [u.items[l], u.items[c]]);
+        const l = u.items.findIndex((m) => m.id === r), d = l + a;
+        l < 0 || d < 0 || d >= u.items.length || ([u.items[l], u.items[d]] = [u.items[d], u.items[l]]);
       });
     },
-    duplicateItem: (r, s) => {
+    duplicateItem: (s, r) => {
       let a = null;
       n().update((o) => {
-        const u = o.pages.find((l) => l.id === r);
+        const u = o.pages.find((d) => d.id === s);
         if (!u) return;
-        const c = u.items.findIndex((l) => l.id === s);
-        c < 0 || (a = structuredClone(u.items[c]), a.id = O("it"), u.items.splice(c + 1, 0, a));
-      }), a && e({ selection: { pageId: r, itemId: a.id } });
+        const l = u.items.findIndex((d) => d.id === r);
+        l < 0 || (a = structuredClone(u.items[l]), a.id = O("it"), u.items.splice(l + 1, 0, a));
+      }), a && e({ selection: { pageId: s, itemId: a.id } });
     },
-    updateItem: (r, s, a, o) => {
+    updateItem: (s, r, a, o) => {
       n().update((u) => {
-        const c = u.pages.find((p) => p.id === r), l = c == null ? void 0 : c.items.find((p) => p.id === s);
-        l && Object.assign(l, a);
+        const l = u.pages.find((m) => m.id === s), d = l == null ? void 0 : l.items.find((m) => m.id === r);
+        d && Object.assign(d, a);
       }, o);
     },
-    addVariable: (r) => {
-      let s = null;
+    addVariable: (s) => {
+      let r = null;
       return n().update((a) => {
         a.variables = a.variables ?? [];
-        const o = Re(a.variables, (r == null ? void 0 : r.name) ?? "var_new");
-        s = me({ ...r, name: o }), a.variables.push(s);
-      }), s;
+        const o = ze(a.variables, (s == null ? void 0 : s.name) ?? "var_new");
+        r = de({ ...s, name: o }), a.variables.push(r);
+      }), r;
     },
-    removeVariable: (r) => {
-      let s = 0;
+    removeVariable: (s) => {
+      let r = 0;
       for (const a of n().project.pages)
         for (const o of a.items)
-          "varId" in o && o.varId === r && s++;
-      return s > 0 ? s : (n().update((a) => {
-        a.variables = (a.variables ?? []).filter((o) => o.id !== r);
+          "varId" in o && o.varId === s && r++;
+      return r > 0 ? r : (n().update((a) => {
+        a.variables = (a.variables ?? []).filter((o) => o.id !== s);
       }), 0);
     },
-    updateVariable: (r, s, a) => {
+    updateVariable: (s, r, a) => {
       n().update((o) => {
-        const u = (o.variables ?? []).find((c) => c.id === r);
-        u && Object.assign(u, s);
+        const u = (o.variables ?? []).find((l) => l.id === s);
+        u && Object.assign(u, r);
       }, a);
     },
-    addChartBuffer: (r) => {
-      let s = null;
+    addChartBuffer: (s) => {
+      let r = null;
       return n().update((a) => {
         a.chartBuffers = a.chartBuffers ?? [];
-        const o = ze(a.chartBuffers, (r == null ? void 0 : r.name) ?? "buf_new");
-        s = Ne({ ...r, name: o }), a.chartBuffers.push(s);
-      }), s;
+        const o = Fe(a.chartBuffers, (s == null ? void 0 : s.name) ?? "buf_new");
+        r = Te({ ...s, name: o }), a.chartBuffers.push(r);
+      }), r;
     },
-    removeChartBuffer: (r) => {
-      let s = 0;
+    removeChartBuffer: (s) => {
+      let r = 0;
       for (const a of n().project.pages)
         for (const o of a.items)
-          o.kind === "chart" && o.sources.some((u) => u.bufferId === r) && s++;
-      return s > 0 ? s : (n().update((a) => {
-        a.chartBuffers = (a.chartBuffers ?? []).filter((o) => o.id !== r);
+          o.kind === "chart" && o.sources.some((u) => u.bufferId === s) && r++;
+      return r > 0 ? r : (n().update((a) => {
+        a.chartBuffers = (a.chartBuffers ?? []).filter((o) => o.id !== s);
       }), 0);
     },
-    updateChartBuffer: (r, s, a) => {
+    updateChartBuffer: (s, r, a) => {
       n().update((o) => {
-        const u = (o.chartBuffers ?? []).find((c) => c.id === r);
-        u && Object.assign(u, s);
+        const u = (o.chartBuffers ?? []).find((l) => l.id === s);
+        u && Object.assign(u, r);
       }, a);
     }
   }));
 }
 Ae();
-function Ze(i) {
-  return X(i);
+function We(i) {
+  return W(i);
 }
-const ge = 1, ie = [
+const be = 1, ie = [
   {
     fn: "u8g2_menuItemEnter_weak",
     label: "光标进入某行",
@@ -720,7 +720,7 @@ const ge = 1, ie = [
     bodyArgs: `(void)u8g2_menu;
     (void)u8g2_menuKeyValue;`
   }
-], fe = {
+], pe = {
   text: "文本",
   slider: "滑块条",
   progress: "进度条",
@@ -728,7 +728,7 @@ const ge = 1, ie = [
   xbm: "位图 XBM",
   textarea: "文本区",
   board: "自绘板"
-}, Ye = {
+}, Xe = {
   text: "T",
   slider: "▭",
   progress: "▬",
@@ -736,14 +736,14 @@ const ge = 1, ie = [
   xbm: "▦",
   textarea: "¶",
   board: "✎"
-}, pe = {
+}, me = {
   none: "无",
   value: "数值",
   switch: "开关",
   button: "按钮",
   submenu: "子页面",
   back: "返回"
-}, Ge = [
+}, Ze = [
   { id: "u8g2_font_5x7_tf", label: "5x7 (ASCII)" },
   { id: "u8g2_font_6x10_tf", label: "6x10 (ASCII)" },
   { id: "u8g2_font_6x12_tf", label: "6x12 (ASCII)" },
@@ -759,57 +759,57 @@ const ge = 1, ie = [
 ];
 class ne extends Error {
 }
-const Ve = /* @__PURE__ */ new Set(["uint8", "uint16", "uint32", "int8", "int16", "int32", "int", "float", "double"]), Pe = /* @__PURE__ */ new Set(["line", "point", "bar"]), Le = /* @__PURE__ */ new Set(["sine", "ramp", "noise", "none"]);
+const Ne = /* @__PURE__ */ new Set(["uint8", "uint16", "uint32", "int8", "int16", "int32", "int", "float", "double"]), Ve = /* @__PURE__ */ new Set(["line", "point", "bar"]), Pe = /* @__PURE__ */ new Set(["sine", "ramp", "noise", "none"]);
 function se(i) {
   return typeof i == "object" && i !== null && !Array.isArray(i);
 }
-function P(i, t) {
+function V(i, t) {
   return typeof i == "string" ? i : t;
 }
-function E(i, t) {
+function S(i, t) {
   return typeof i == "number" && Number.isFinite(i) ? i : t;
 }
-const Je = ["text", "slider", "progress", "chart", "xbm", "textarea", "board"], We = ["number", "switch", "button", "submenu", "back"], Qe = ["none", "value", "switch", "button", "submenu", "back"];
-function et(i) {
+const Ye = ["text", "slider", "progress", "chart", "xbm", "textarea", "board"], Ge = ["number", "switch", "button", "submenu", "back"], Je = ["none", "value", "switch", "button", "submenu", "back"];
+function Qe(i) {
   if (!se(i)) throw new ne("条目格式错误");
-  const t = P(i.kind, "");
-  if (!(Je.includes(t) || We.includes(t)))
+  const t = V(i.kind, "");
+  if (!(Ye.includes(t) || Ge.includes(t)))
     throw new ne(`未知条目类型: ${String(t)}`);
   const e = structuredClone(i);
-  switch (e.id = P(i.id, ""), e.id || (e.id = `it_${Math.random().toString(36).slice(2, 10)}`), e.label = P(i.label, ""), t) {
+  switch (e.id = V(i.id, ""), e.id || (e.id = `it_${Math.random().toString(36).slice(2, 10)}`), e.label = V(i.label, ""), t) {
     case "text":
     case "number":
     case "switch":
     case "button":
     case "submenu":
     case "back":
-      e.text = P(i.text, ""), e.scale = i.scale === 2 ? 2 : 1;
+      e.text = V(i.text, ""), e.scale = i.scale === 2 ? 2 : 1;
       break;
   }
   return e;
 }
-function tt(i) {
+function et(i) {
   for (const t of i)
     for (const e of t.items) {
       const n = e;
-      if (!(n.bind && se(n.bind) && Qe.includes(P(n.bind.type, "none")))) {
+      if (!(n.bind && se(n.bind) && Je.includes(V(n.bind.type, "none")))) {
         switch (n.kind) {
           case "number": {
-            const r = n.varId ?? null;
-            n.editable === !1 ? (n.kind = "text", n.displayVarId = r, n.bind = { type: "none" }) : (n.kind = "text", n.displayVarId = null, n.bind = { type: "value", varId: r });
+            const s = n.varId ?? null;
+            n.editable === !1 ? (n.kind = "text", n.displayVarId = s, n.bind = { type: "none" }) : (n.kind = "text", n.displayVarId = null, n.bind = { type: "value", varId: s });
             break;
           }
           case "switch":
             n.kind = "text", n.displayVarId = null, n.bind = {
               type: "switch",
               varId: n.varId ?? null,
-              openValue: E(n.openValue, 1),
-              onText: P(n.onText, "on"),
-              offText: P(n.offText, "off")
+              openValue: S(n.openValue, 1),
+              onText: V(n.onText, "on"),
+              offText: V(n.offText, "off")
             };
             break;
           case "button":
-            n.kind = "text", n.displayVarId = null, n.bind = { type: "button", cbName: P(n.cbName, "btn_cb"), buttonId: E(n.buttonId, 1) };
+            n.kind = "text", n.displayVarId = null, n.bind = { type: "button", cbName: V(n.cbName, "btn_cb"), buttonId: S(n.buttonId, 1) };
             break;
           case "submenu":
             n.kind = "text", n.displayVarId = null, n.bind = { type: "submenu", targetPageId: n.targetPageId ?? null };
@@ -829,92 +829,92 @@ function tt(i) {
       }
     }
 }
-function nt(i) {
+function tt(i) {
   if (!se(i)) throw new ne("页面格式错误");
-  const t = Array.isArray(i.items) ? i.items.map(et) : [];
+  const t = Array.isArray(i.items) ? i.items.map(Qe) : [];
   return {
-    id: P(i.id, "") || `pg_${Math.random().toString(36).slice(2, 10)}`,
-    name: P(i.name, "未命名页面"),
-    fnName: P(i.fnName, ""),
+    id: V(i.id, "") || `pg_${Math.random().toString(36).slice(2, 10)}`,
+    name: V(i.name, "未命名页面"),
+    fnName: V(i.fnName, ""),
     items: t,
-    userCodePre: P(i.userCodePre, "")
+    userCodePre: V(i.userCodePre, "")
+  };
+}
+function nt(i) {
+  if (!se(i)) return null;
+  const t = V(i.type, "int32");
+  return {
+    id: V(i.id, "") || O("vb"),
+    name: V(i.name, ""),
+    type: Ne.has(t) ? t : "int32",
+    initialValue: S(i.initialValue, 0),
+    min: S(i.min, 0),
+    max: S(i.max, 100),
+    step: S(i.step, 1)
   };
 }
 function at(i) {
   if (!se(i)) return null;
-  const t = P(i.type, "int32");
+  const t = V(i.sample, "sine");
   return {
-    id: P(i.id, "") || O("vb"),
-    name: P(i.name, ""),
-    type: Ve.has(t) ? t : "int32",
-    initialValue: E(i.initialValue, 0),
-    min: E(i.min, 0),
-    max: E(i.max, 100),
-    step: E(i.step, 1)
+    id: V(i.id, "") || O("buf"),
+    name: V(i.name, ""),
+    dataLen: Math.min(512, Math.max(2, Math.trunc(S(i.dataLen, 32)))),
+    sample: Pe.has(t) ? t : "sine"
   };
 }
 function it(i) {
-  if (!se(i)) return null;
-  const t = P(i.sample, "sine");
-  return {
-    id: P(i.id, "") || O("buf"),
-    name: P(i.name, ""),
-    dataLen: Math.min(512, Math.max(2, Math.trunc(E(i.dataLen, 32)))),
-    sample: Le.has(t) ? t : "sine"
+  const t = /* @__PURE__ */ new Map(), e = [], n = (s, r) => {
+    let a = t.get(s);
+    return a || (a = r(), t.set(s, a), e.push(a)), a;
   };
-}
-function st(i) {
-  const t = /* @__PURE__ */ new Map(), e = [], n = (r, s) => {
-    let a = t.get(r);
-    return a || (a = s(), t.set(r, a), e.push(a)), a;
-  };
-  for (const r of i)
-    for (const s of r.items) {
-      const a = s;
-      switch (s.kind) {
+  for (const s of i)
+    for (const r of s.items) {
+      const a = r;
+      switch (r.kind) {
         case "number":
           if (a.varId === void 0 || a.varId === null) {
-            const u = typeof a.varName == "string" && a.varName ? a.varName : "var_unnamed", c = n(u, () => ({
+            const u = typeof a.varName == "string" && a.varName ? a.varName : "var_unnamed", l = n(u, () => ({
               id: O("vb"),
               name: u,
-              type: Ve.has(String(a.varType)) ? String(a.varType) : "int32",
-              initialValue: E(a.initialValue, 0),
-              min: E(a.min, 0),
-              max: E(a.max, 100),
-              step: E(a.step, 1)
+              type: Ne.has(String(a.varType)) ? String(a.varType) : "int32",
+              initialValue: S(a.initialValue, 0),
+              min: S(a.min, 0),
+              max: S(a.max, 100),
+              step: S(a.step, 1)
             }));
-            s.varId = c.id;
+            r.varId = l.id;
           }
-          a.editable === void 0 && (s.editable = !0), delete a.varName, delete a.varType, delete a.step, delete a.min, delete a.max, delete a.initialValue, delete a.decimals;
+          a.editable === void 0 && (r.editable = !0), delete a.varName, delete a.varType, delete a.step, delete a.min, delete a.max, delete a.initialValue, delete a.decimals;
           break;
         case "slider":
         case "progress":
           if (a.varId === void 0 || a.varId === null) {
-            const u = typeof a.varName == "string" && a.varName ? a.varName : "var_unnamed", c = n(u, () => ({
+            const u = typeof a.varName == "string" && a.varName ? a.varName : "var_unnamed", l = n(u, () => ({
               id: O("vb"),
               name: u,
               type: "int",
-              initialValue: E(a.initialValue, 0),
-              min: E(a.min, 0),
-              max: E(a.max, 100),
-              step: E(a.step, 1)
+              initialValue: S(a.initialValue, 0),
+              min: S(a.min, 0),
+              max: S(a.max, 100),
+              step: S(a.step, 1)
             }));
-            s.varId = c.id;
+            r.varId = l.id;
           }
           delete a.varName, delete a.step, delete a.min, delete a.max, delete a.initialValue;
           break;
         case "switch":
           if (a.varId === void 0 || a.varId === null) {
-            const u = typeof a.varName == "string" && a.varName ? a.varName : "var_unnamed", c = n(u, () => ({
+            const u = typeof a.varName == "string" && a.varName ? a.varName : "var_unnamed", l = n(u, () => ({
               id: O("vb"),
               name: u,
               type: "uint8",
-              initialValue: E(a.initialValue, 0),
+              initialValue: S(a.initialValue, 0),
               min: 0,
               max: 1,
               step: 1
             }));
-            s.varId = c.id;
+            r.varId = l.id;
           }
           delete a.varName, delete a.initialValue;
           break;
@@ -922,7 +922,7 @@ function st(i) {
     }
   return e;
 }
-function ve(i) {
+function ge(i) {
   let t;
   if (typeof i == "string")
     try {
@@ -933,82 +933,82 @@ function ve(i) {
   else
     t = i;
   if (!se(t)) throw new ne("不是有效的工程文件");
-  const e = t, n = E(e.version, 0);
-  if (n > ge)
-    throw new ne(`工程版本 v${n} 高于当前支持的 v${ge}，请升级编辑器`);
-  const r = Array.isArray(e.pages) ? e.pages.map(nt) : [];
-  if (!r.length) throw new ne("工程至少需要一个页面");
-  const s = ["default", "rotundity", "square"].includes(e.selector) ? e.selector : "rotundity", a = new Set(ie.map((l) => l.fn)), o = Array.isArray(e.weakHooks) ? [...new Set(e.weakHooks.filter((l) => typeof l == "string" && a.has(l)))] : [];
+  const e = t, n = S(e.version, 0);
+  if (n > be)
+    throw new ne(`工程版本 v${n} 高于当前支持的 v${be}，请升级编辑器`);
+  const s = Array.isArray(e.pages) ? e.pages.map(tt) : [];
+  if (!s.length) throw new ne("工程至少需要一个页面");
+  const r = ["default", "rotundity", "square"].includes(e.selector) ? e.selector : "rotundity", a = new Set(ie.map((d) => d.fn)), o = Array.isArray(e.weakHooks) ? [...new Set(e.weakHooks.filter((d) => typeof d == "string" && a.has(d)))] : [];
   let u;
-  Array.isArray(e.variables) ? u = e.variables.map(at).filter((l) => !!l) : u = st(r);
-  let c;
-  return Array.isArray(e.chartBuffers) ? c = e.chartBuffers.map(it).filter((l) => !!l) : c = rt(r), tt(r), ot(r, c), {
-    version: ge,
-    name: P(e.name, "未命名工程"),
-    width: E(e.width, 128),
-    height: E(e.height, 64),
-    font: P(e.font, "u8g2_font_wqy12_t_gb2312"),
-    selector: s,
-    selectorLeftMargin: E(e.selectorLeftMargin, 16),
-    selectorTopMargin: E(e.selectorTopMargin, 0),
-    selectorLineSpacing: E(e.selectorLineSpacing, 0),
-    marqueeSpeed: E(e.marqueeSpeed, 0.2),
-    marqueeHeaderLen: E(e.marqueeHeaderLen, 5),
+  Array.isArray(e.variables) ? u = e.variables.map(nt).filter((d) => !!d) : u = it(s);
+  let l;
+  return Array.isArray(e.chartBuffers) ? l = e.chartBuffers.map(at).filter((d) => !!d) : l = st(s), et(s), rt(s, l), {
+    version: be,
+    name: V(e.name, "未命名工程"),
+    width: S(e.width, 128),
+    height: S(e.height, 64),
+    font: V(e.font, "u8g2_font_wqy12_t_gb2312"),
+    selector: r,
+    selectorLeftMargin: S(e.selectorLeftMargin, 16),
+    selectorTopMargin: S(e.selectorTopMargin, 0),
+    selectorLineSpacing: S(e.selectorLineSpacing, 0),
+    marqueeSpeed: S(e.marqueeSpeed, 0.2),
+    marqueeHeaderLen: S(e.marqueeHeaderLen, 5),
     weakHooks: o,
     fontSubset: t.fontSubset === !0,
-    fontExtra: P(t.fontExtra, ""),
+    fontExtra: V(t.fontExtra, ""),
     variables: u,
-    chartBuffers: c,
-    pages: r
+    chartBuffers: l,
+    pages: s
   };
 }
-function rt(i) {
+function st(i) {
   const t = [];
   let e = 0;
   const n = () => {
-    const r = {
+    const s = {
       id: O("buf"),
       name: `buf_chart_${++e}`,
       dataLen: 32,
       sample: "sine"
     };
-    return t.push(r), r;
+    return t.push(s), s;
   };
-  for (const r of i)
-    for (const s of r.items) {
-      if (s.kind !== "chart") continue;
-      const a = s;
+  for (const s of i)
+    for (const r of s.items) {
+      if (r.kind !== "chart") continue;
+      const a = r;
       if (Array.isArray(a.sources)) continue;
       const o = n();
-      o.dataLen = Math.min(512, Math.max(2, Math.trunc(E(a.dataLen, 32))));
-      const u = P(a.sample, "sine");
-      Le.has(u) && (o.sample = u);
-      const c = P(a.chartKind, "line"), l = {
+      o.dataLen = Math.min(512, Math.max(2, Math.trunc(S(a.dataLen, 32))));
+      const u = V(a.sample, "sine");
+      Pe.has(u) && (o.sample = u);
+      const l = V(a.chartKind, "line"), d = {
         bufferId: o.id,
-        chartKind: Pe.has(c) ? c : "line"
+        chartKind: Ve.has(l) ? l : "line"
       };
-      a.max !== void 0 && a.max !== null && (l.max = E(a.max, 0)), a.min !== void 0 && a.min !== null && (l.min = E(a.min, 0)), s.sources = [l], a.height === void 0 && (s.height = 32), delete a.chartKind, delete a.dataLen, delete a.sample, delete a.max, delete a.min;
+      a.max !== void 0 && a.max !== null && (d.max = S(a.max, 0)), a.min !== void 0 && a.min !== null && (d.min = S(a.min, 0)), r.sources = [d], a.height === void 0 && (r.height = 32), delete a.chartKind, delete a.dataLen, delete a.sample, delete a.max, delete a.min;
     }
   return t;
 }
-function ot(i, t) {
+function rt(i, t) {
   const e = new Set(t.map((n) => n.id));
   for (const n of i)
-    for (const r of n.items) {
-      if (r.kind !== "chart") continue;
-      const s = r;
-      Array.isArray(s.sources) || (s.sources = []), r.sources = r.sources.filter((a) => e.has(a.bufferId)).map((a) => ({
+    for (const s of n.items) {
+      if (s.kind !== "chart") continue;
+      const r = s;
+      Array.isArray(r.sources) || (r.sources = []), s.sources = s.sources.filter((a) => e.has(a.bufferId)).map((a) => ({
         bufferId: a.bufferId,
-        chartKind: Pe.has(a.chartKind) ? a.chartKind : "line",
+        chartKind: Ve.has(a.chartKind) ? a.chartKind : "line",
         min: a.min,
         max: a.max
-      })), typeof s.height != "number" && (s.height = 32);
+      })), typeof r.height != "number" && (r.height = 32);
     }
 }
 function Ee(i) {
   return JSON.stringify(i, null, 2);
 }
-const ut = {
+const ot = {
   uint8: "uint8_t",
   uint16: "uint16_t",
   uint32: "uint32_t",
@@ -1019,7 +1019,7 @@ const ut = {
   float: "float",
   double: "double"
 };
-function J(i, t = "anon") {
+function G(i, t = "anon") {
   let e = i.trim().replace(/[^A-Za-z0-9_]/g, "_");
   return (!e || /^[0-9]/.test(e)) && (e = `_${e}`), e || t;
 }
@@ -1031,10 +1031,10 @@ function Q(i) {
   const t = i.toString();
   return /[-.]|e/i.test(t) ? `${t}f` : `${t}.0f`;
 }
-function lt(i, t, e) {
+function ut(i, t, e) {
   return e === "ramp" ? `${i}[i] = (float)i;` : e === "noise" ? `${i}[i] = (float)((i * 37) % ${t});` : `${i}[i] = 50.0f + 40.0f * sinf(i * 0.5f);`;
 }
-function ct(i) {
+function lt(i) {
   const t = /* @__PURE__ */ new Map();
   if (!i) return t;
   const e = /\/\* USER CODE BEGIN ([\w.]+) \*\/([\s\S]*?)\/\* USER CODE END \1 \*\//g;
@@ -1046,68 +1046,68 @@ function H(i, t, e) {
   const n = t.has(i) ? t.get(i) : "";
   return `${e}/* USER CODE BEGIN ${i} */${n}${e}/* USER CODE END ${i} */`;
 }
-const dt = /* @__PURE__ */ new Set(["uint8", "uint16", "uint32", "int8", "int16", "int32", "int"]);
-function Me(i, t, e) {
-  const n = [], r = ct((t == null ? void 0 : t.c) ?? ""), s = i.pages.map((d, y) => d.fnName && /^[A-Za-z_][A-Za-z0-9_]*$/.test(d.fnName) ? d.fnName : `page_${y}`), a = /* @__PURE__ */ new Map(), o = /* @__PURE__ */ new Map();
-  for (const d of i.variables ?? []) {
-    if (!d.name) {
+const ct = /* @__PURE__ */ new Set(["uint8", "uint16", "uint32", "int8", "int16", "int32", "int"]);
+function dt(i, t, e) {
+  const n = [], s = lt((t == null ? void 0 : t.c) ?? ""), r = i.pages.map((c, w) => c.fnName && /^[A-Za-z_][A-Za-z0-9_]*$/.test(c.fnName) ? c.fnName : `page_${w}`), a = /* @__PURE__ */ new Map(), o = /* @__PURE__ */ new Map();
+  for (const c of i.variables ?? []) {
+    if (!c.name) {
       n.push("存在未命名变量，已跳过");
       continue;
     }
-    if (a.has(d.name)) {
-      n.push(`变量名 "${d.name}" 重复，以第一个为准`);
+    if (a.has(c.name)) {
+      n.push(`变量名 "${c.name}" 重复，以第一个为准`);
       continue;
     }
-    /^[A-Za-z_][A-Za-z0-9_]*$/.test(d.name) || n.push(`变量名 "${d.name}" 不是合法的 C 标识符，已清洗为 "${J(d.name)}"`);
-    const y = J(d.name, "var"), b = d.type === "float" || d.type === "double", I = {
-      name: y,
-      srcType: d.type,
-      type: ut[d.type],
-      init: b ? Q(d.initialValue) : String(Math.trunc(d.initialValue)),
+    /^[A-Za-z_][A-Za-z0-9_]*$/.test(c.name) || n.push(`变量名 "${c.name}" 不是合法的 C 标识符，已清洗为 "${G(c.name)}"`);
+    const w = G(c.name, "var"), b = c.type === "float" || c.type === "double", I = {
+      name: w,
+      srcType: c.type,
+      type: ot[c.type],
+      init: b ? Q(c.initialValue) : String(Math.trunc(c.initialValue)),
       isFloat: b,
-      step: d.step,
-      min: d.min,
-      max: d.max
+      step: c.step,
+      min: c.min,
+      max: c.max
     };
-    a.set(y, I), o.set(d.id, I);
+    a.set(w, I), o.set(c.id, I);
   }
-  const u = /* @__PURE__ */ new Map(), c = /* @__PURE__ */ new Set(), l = [], p = /* @__PURE__ */ new Map();
-  for (const d of i.chartBuffers ?? []) {
-    if (!d.name) {
+  const u = /* @__PURE__ */ new Map(), l = /* @__PURE__ */ new Set(), d = [], m = /* @__PURE__ */ new Map();
+  for (const c of i.chartBuffers ?? []) {
+    if (!c.name) {
       n.push("存在未命名数据源缓冲区，已跳过");
       continue;
     }
-    const y = J(d.name, "buf");
-    if ([...p.values()].some((j) => j.name === y)) {
-      n.push(`缓冲区名 "${d.name}" 与其它缓冲区重名，已跳过`);
+    const w = G(c.name, "buf");
+    if ([...m.values()].some((j) => j.name === w)) {
+      n.push(`缓冲区名 "${c.name}" 与其它缓冲区重名，已跳过`);
       continue;
     }
-    const b = Math.max(2, Math.trunc(d.dataLen)), I = `${y.toUpperCase()}_LEN`;
-    p.set(d.id, { name: y, lenMacro: I, len: b });
-    const T = `fill_${y}`, K = (r.get(T) ?? "").trim() !== "";
-    l.push(
+    const b = Math.max(2, Math.trunc(c.dataLen)), I = `${w.toUpperCase()}_LEN`;
+    m.set(c.id, { name: w, lenMacro: I, len: b });
+    const C = `fill_${w}`, K = (s.get(C) ?? "").trim() !== "";
+    d.push(
       `#define ${I} ${b}`,
-      `static float ${y}[${I}];`,
-      `static uint8_t ${y}_filled = 0;`,
-      `static void ${y}_fill(void)`,
+      `static float ${w}[${I}];`,
+      `static uint8_t ${w}_filled = 0;`,
+      `static void ${w}_fill(void)`,
       "{",
-      H(T, r, "    "),
-      ...d.sample !== "none" && !K ? [`    for (uint16_t i = 0; i < ${I}; ++i) { ${lt(y, b, d.sample)} }`] : [],
+      H(C, s, "    "),
+      ...c.sample !== "none" && !K ? [`    for (uint16_t i = 0; i < ${I}; ++i) { ${ut(w, b, c.sample)} }`] : [],
       "}"
     );
   }
-  const $ = [], m = /* @__PURE__ */ new Map(), v = /* @__PURE__ */ new Map(), w = /* @__PURE__ */ new Map();
+  const x = [], h = /* @__PURE__ */ new Map(), g = /* @__PURE__ */ new Map(), y = /* @__PURE__ */ new Map();
   {
-    let d = 0, y = 0;
+    let c = 0, w = 0;
     const b = (I) => {
-      const T = p.get(I);
-      return T ? (w.has(I) || w.set(I, `        if (!${T.name}_filled) { ${T.name}_filled = 1; ${T.name}_fill(); }`), w.get(I)) : "";
+      const C = m.get(I);
+      return C ? (y.has(I) || y.set(I, `        if (!${C.name}_filled) { ${C.name}_filled = 1; ${C.name}_fill(); }`), y.get(I)) : "";
     };
     for (const I of i.pages)
-      for (const T of I.items) {
-        if (T.kind !== "chart") continue;
-        const K = T.sources.filter((N) => p.has(N.bufferId));
-        if (T.sources.length && !K.length) {
+      for (const C of I.items) {
+        if (C.kind !== "chart") continue;
+        const K = C.sources.filter((T) => m.has(T.bufferId));
+        if (C.sources.length && !K.length) {
           n.push(`页面 ${I.name} 的图表条目数据源无效（缓冲区不存在），已跳过`);
           continue;
         }
@@ -1115,99 +1115,99 @@ function Me(i, t, e) {
           n.push(`页面 ${I.name} 的图表条目未绑定数据源，已跳过`);
           continue;
         }
-        const j = Math.max(4, Math.trunc(T.height)), Z = [];
-        for (const N of K) {
-          const L = p.get(N.bufferId), _ = `chart${d++}`;
-          $.push(
+        const j = Math.max(4, Math.trunc(C.height)), X = [];
+        for (const T of K) {
+          const L = m.get(T.bufferId), _ = `chart${c++}`;
+          x.push(
             `static float ${_}_dis[${L.lenMacro}];`,
             `static u8g2_chart_t ${_};`
-          ), Z.push({ name: _, s: N, b: L });
+          ), X.push({ name: _, s: T, b: L });
         }
-        if (Z.length === 1) {
-          const { name: N, s: L, b: _ } = Z[0];
-          $.push(`static uint8_t ${N}_inited = 0;`), m.set(T.id, [
-            `    if (!${N}_inited) {`,
-            `        ${N}_inited = 1;`,
-            `        u8g2_chart_init(&${N}, ${_.name}, ${N}_dis, ${_.lenMacro});`,
+        if (X.length === 1) {
+          const { name: T, s: L, b: _ } = X[0];
+          x.push(`static uint8_t ${T}_inited = 0;`), h.set(C.id, [
+            `    if (!${T}_inited) {`,
+            `        ${T}_inited = 1;`,
+            `        u8g2_chart_init(&${T}, ${_.name}, ${T}_dis, ${_.lenMacro});`,
             b(L.bufferId),
             "    }"
           ]);
-          const M = L.chartKind === "point" ? "Point" : L.chartKind === "bar" ? "Bar" : "Line", ue = L.min !== void 0 && L.max !== void 0 ? `${Q(L.max)}, ${Q(L.min)}` : "0, 0";
-          v.set(T.id, `    u8g2_MenuDrawItem${M}Chart(&${N}, ${j}, ${ue});`);
+          const M = L.chartKind === "point" ? "Point" : L.chartKind === "bar" ? "Bar" : "Line", oe = L.min !== void 0 && L.max !== void 0 ? `${Q(L.max)}, ${Q(L.min)}` : "0, 0";
+          g.set(C.id, `    u8g2_MenuDrawItem${M}Chart(&${T}, ${j}, ${oe});`);
         } else {
-          const N = `chart_layers_${y++}`;
-          $.push(
-            `static u8g2_menu_drawChart_t ${N}[${Z.length}];`,
-            `static uint8_t ${N}_inited = 0;`
+          const T = `chart_layers_${w++}`;
+          x.push(
+            `static u8g2_menu_drawChart_t ${T}[${X.length}];`,
+            `static uint8_t ${T}_inited = 0;`
           );
           const L = [
-            `    if (!${N}_inited) {`,
-            `        ${N}_inited = 1;`
+            `    if (!${T}_inited) {`,
+            `        ${T}_inited = 1;`
           ];
-          Z.forEach(({ name: _, s: M, b: ue }, le) => {
-            L.push(`        u8g2_chart_init(&${_}, ${ue.name}, ${_}_dis, ${ue.lenMacro});`), L.push(b(M.bufferId));
-            const Ue = M.chartKind === "point" ? "u8g2_drawPointChart" : M.chartKind === "bar" ? "u8g2_drawBarChart" : "u8g2_drawLineChart", Se = M.min !== void 0 && M.max !== void 0 ? `${Q(M.max)}, ${Q(M.min)}` : "0, 0";
-            L.push(`        ${N}[${le}].drawChart = ${Ue};`), L.push(`        ${N}[${le}].chart = &${_};`), L.push(`        ${N}[${le}].max = ${Se.split(", ")[0]};`), L.push(`        ${N}[${le}].min = ${Se.split(", ")[1]};`);
-          }), L.push("    }"), m.set(T.id, L), v.set(T.id, `    u8g2_MenuDrawItemChart(${N}, ${Z.length}, ${j});`);
+          X.forEach(({ name: _, s: M, b: oe }, ue) => {
+            L.push(`        u8g2_chart_init(&${_}, ${oe.name}, ${_}_dis, ${oe.lenMacro});`), L.push(b(M.bufferId));
+            const Ke = M.chartKind === "point" ? "u8g2_drawPointChart" : M.chartKind === "bar" ? "u8g2_drawBarChart" : "u8g2_drawLineChart", Se = M.min !== void 0 && M.max !== void 0 ? `${Q(M.max)}, ${Q(M.min)}` : "0, 0";
+            L.push(`        ${T}[${ue}].drawChart = ${Ke};`), L.push(`        ${T}[${ue}].chart = &${_};`), L.push(`        ${T}[${ue}].max = ${Se.split(", ")[0]};`), L.push(`        ${T}[${ue}].min = ${Se.split(", ")[1]};`);
+          }), L.push("    }"), h.set(C.id, L), g.set(C.id, `    u8g2_MenuDrawItemChart(${T}, ${X.length}, ${j});`);
         }
       }
   }
-  const g = [], f = [], S = [], C = /* @__PURE__ */ new Set(), z = /* @__PURE__ */ new Map();
+  const v = [], f = [], E = [], P = /* @__PURE__ */ new Set(), z = /* @__PURE__ */ new Map();
   let R = 0;
-  for (const d of i.pages)
-    for (const y of d.items) {
-      if (y.bind.type === "button") {
-        const b = J(y.bind.cbName, "btn_cb");
-        u.has(b) || u.set(b, y.bind.buttonId);
+  for (const c of i.pages)
+    for (const w of c.items) {
+      if (w.bind.type === "button") {
+        const b = G(w.bind.cbName, "btn_cb");
+        u.has(b) || u.set(b, w.bind.buttonId);
       }
-      switch (y.kind) {
+      switch (w.kind) {
         case "board":
-          c.add(J(y.cbName, "board_cb"));
+          l.add(G(w.cbName, "board_cb"));
           break;
         case "xbm": {
-          let b = J(y.name, "icon");
-          for (; C.has(b); ) b = `${b}_2`;
-          C.add(b), z.set(y.id, b);
-          const I = y.bits.length, T = y.bits.map((K) => `0x${(K & 255).toString(16).padStart(2, "0")}`).join(", ");
-          g.push(`static const uint8_t menu_xbm_${b}[${I}] = { ${T} };`);
+          let b = G(w.name, "icon");
+          for (; P.has(b); ) b = `${b}_2`;
+          P.add(b), z.set(w.id, b);
+          const I = w.bits.length, C = w.bits.map((K) => `0x${(K & 255).toString(16).padStart(2, "0")}`).join(", ");
+          v.push(`static const uint8_t menu_xbm_${b}[${I}] = { ${C} };`);
           break;
         }
         case "textarea": {
           const b = R++;
           f.push(
-            `static char ta${b}_text[] = "${re(y.content)}";`,
+            `static char ta${b}_text[] = "${re(w.content)}";`,
             `static u8g2_menu_textArea_t ta${b};`,
             `static uint8_t ta${b}_inited = 0;`
-          ), S.push(
+          ), E.push(
             `    if (!ta${b}_inited) {`,
             `        ta${b}_inited = 1;`,
             `        u8g2_textArea_init(&ta${b}, ta${b}_text);`,
-            `        u8g2_textArea_setLineSpacing(&ta${b}, ${Math.max(0, Math.trunc(y.lineSpacing))});`,
+            `        u8g2_textArea_setLineSpacing(&ta${b}, ${Math.max(0, Math.trunc(w.lineSpacing))});`,
             "    }"
           );
           break;
         }
       }
     }
-  const G = (d, y) => {
-    if (!d) return "";
-    const b = `"${re(d)}"`;
-    return y === 2 ? `u8g2_MenuPrintf(u8g2_MenuDrawUTF8X2, ${b});` : `u8g2_MenuUTF8Printf(${b});`;
-  }, A = (d, y, b) => {
-    const I = `"${re(d)}"`;
-    return y === 2 ? `u8g2_MenuPrintf(u8g2_MenuDrawUTF8X2, ${I}, ${b});` : `u8g2_MenuUTF8Printf(${I}, ${b});`;
+  const Y = (c, w) => {
+    if (!c) return "";
+    const b = `"${re(c)}"`;
+    return w === 2 ? `u8g2_MenuPrintf(u8g2_MenuDrawUTF8X2, ${b});` : `u8g2_MenuUTF8Printf(${b});`;
+  }, A = (c, w, b) => {
+    const I = `"${re(c)}"`;
+    return w === 2 ? `u8g2_MenuPrintf(u8g2_MenuDrawUTF8X2, ${I}, ${b});` : `u8g2_MenuUTF8Printf(${I}, ${b});`;
   };
-  let V = 0;
-  const k = (d, y) => {
-    const b = [], I = `${y.name}`, T = (_) => {
+  let N = 0;
+  const k = (c, w) => {
+    const b = [], I = `${w.name}`, C = (_) => {
       if (!_) return null;
       const M = o.get(_);
       return M || n.push(`页面 ${I} 的条目引用了已删除的变量，已按普通文本生成`), M ?? null;
-    }, K = d.bind;
-    let j = null, Z = null, N = "on", L = "off";
+    }, K = c.bind;
+    let j = null, X = null, T = "on", L = "off";
     switch (K.type) {
       case "value": {
-        const _ = T(K.varId);
+        const _ = C(K.varId);
         if (_) {
           j = _;
           const M = _.isFloat ? `u8g2_MenuItemValue_${_.srcType}(&${_.name}, ${Q(_.step)}, ${Q(_.min)}, ${Q(_.max)});` : `u8g2_MenuItemValue_${_.srcType}(&${_.name}, ${Math.trunc(_.step)}, ${Math.trunc(_.min)}, ${Math.trunc(_.max)});`;
@@ -1216,140 +1216,140 @@ function Me(i, t, e) {
         break;
       }
       case "switch": {
-        const _ = T(K.varId);
-        _ && _.srcType !== "uint8" ? n.push(`开关附加值绑定的变量 "${_.name}" 应为 uint8 类型（当前 ${_.srcType}），已跳过绑定`) : _ && (Z = _, N = K.onText, L = K.offText, b.push(`    u8g2_MenuItemValue_switch(&${_.name}, ${Math.trunc(K.openValue)});`));
+        const _ = C(K.varId);
+        _ && _.srcType !== "uint8" ? n.push(`开关附加值绑定的变量 "${_.name}" 应为 uint8 类型（当前 ${_.srcType}），已跳过绑定`) : _ && (X = _, T = K.onText, L = K.offText, b.push(`    u8g2_MenuItemValue_switch(&${_.name}, ${Math.trunc(K.openValue)});`));
         break;
       }
       case "button": {
-        const _ = J(K.cbName, "btn_cb");
+        const _ = G(K.cbName, "btn_cb");
         b.push(`    u8g2_MenuItem_button(${_}, ${Math.trunc(K.buttonId)});`);
         break;
       }
       case "submenu": {
         const _ = i.pages.findIndex((M) => M.id === K.targetPageId);
-        !K.targetPageId || _ < 0 ? n.push(`页面 ${I} 的条目 "${d.label || "未命名"}" 附加值目标页面无效，已按普通文本生成`) : b.push(`    u8g2_MenuItem_menu_enter(${s[_]});`);
+        !K.targetPageId || _ < 0 ? n.push(`页面 ${I} 的条目 "${c.label || "未命名"}" 附加值目标页面无效，已按普通文本生成`) : b.push(`    u8g2_MenuItem_menu_enter(${r[_]});`);
         break;
       }
       case "back":
         b.push("    u8g2_MenuItem_menu_back();");
         break;
     }
-    switch (d.kind) {
+    switch (c.kind) {
       case "text": {
         if (j)
-          b.push(`    ${A(d.text, d.scale, j.name)}`), /%[-+ #0]*[a-zA-Z]/.test(d.text) || n.push(`页面 ${I} 的数值附加值条目显示文本不含格式化占位符（如 %d）`);
-        else if (Z)
-          b.push(`    ${A(d.text, d.scale, `${Z.name} ? "${re(N)}" : "${re(L)}"`)}`), /%[-+ #0]*s/.test(d.text) || n.push("开关附加值条目的显示文本建议包含 %s 用于显示 on/off");
-        else if (K.type === "none" && d.displayVarId) {
-          const _ = T(d.displayVarId);
+          b.push(`    ${A(c.text, c.scale, j.name)}`), /%[-+ #0]*[a-zA-Z]/.test(c.text) || n.push(`页面 ${I} 的数值附加值条目显示文本不含格式化占位符（如 %d）`);
+        else if (X)
+          b.push(`    ${A(c.text, c.scale, `${X.name} ? "${re(T)}" : "${re(L)}"`)}`), /%[-+ #0]*s/.test(c.text) || n.push("开关附加值条目的显示文本建议包含 %s 用于显示 on/off");
+        else if (K.type === "none" && c.displayVarId) {
+          const _ = C(c.displayVarId);
           if (_)
-            b.push(`    ${A(d.text, d.scale, _.name)}`), /%[-+ #0]*[a-zA-Z]/.test(d.text) || n.push(`页面 ${I} 的显示条目文本不含格式化占位符（如 %d）`);
+            b.push(`    ${A(c.text, c.scale, _.name)}`), /%[-+ #0]*[a-zA-Z]/.test(c.text) || n.push(`页面 ${I} 的显示条目文本不含格式化占位符（如 %d）`);
           else {
             n.push(`页面 ${I} 的显示条目引用了已删除的变量，已按普通文本生成`);
-            const M = G(d.text, d.scale);
+            const M = Y(c.text, c.scale);
             M && b.push(`    ${M}`);
           }
-        } else if (/%[-+ #0]*[a-zA-Z]/.test(d.text)) {
+        } else if (/%[-+ #0]*[a-zA-Z]/.test(c.text)) {
           n.push(`页面 ${I} 的文本条目含占位符但未绑定变量/显示变量，占位符已移除`);
-          const _ = G(d.text.replace(/%[-+ #0]*[a-zA-Z]/g, ""), d.scale);
+          const _ = Y(c.text.replace(/%[-+ #0]*[a-zA-Z]/g, ""), c.scale);
           _ && b.push(`    ${_}`);
         } else {
-          const _ = G(d.text, d.scale);
+          const _ = Y(c.text, c.scale);
           _ && b.push(`    ${_}`);
         }
         break;
       }
       case "slider":
       case "progress": {
-        const _ = d.kind === "slider" ? "Slider" : "ProgressBar";
+        const _ = c.kind === "slider" ? "Slider" : "ProgressBar";
         if (j) {
-          if (!dt.has(j.srcType)) {
-            n.push(`滑块/进度条附加值的变量 "${j.name}" 须为整型（当前 ${j.srcType}），已按静态显示生成`), b.push(`    u8g2_MenuDrawItem${_}(${(d.position / 100).toFixed(2)}f);`);
+          if (!ct.has(j.srcType)) {
+            n.push(`滑块/进度条附加值的变量 "${j.name}" 须为整型（当前 ${j.srcType}），已按静态显示生成`), b.push(`    u8g2_MenuDrawItem${_}(${(c.position / 100).toFixed(2)}f);`);
             break;
           }
           b.push(`    u8g2_MenuDrawItem${_}_bind(&${j.name}, ${Math.trunc(j.step)}, ${Math.trunc(j.min)}, ${Math.trunc(j.max)});`);
         } else {
-          const M = Math.min(100, Math.max(0, d.position));
+          const M = Math.min(100, Math.max(0, c.position));
           b.push(`    u8g2_MenuDrawItem${_}(${(M / 100).toFixed(2)}f);`);
         }
         break;
       }
       case "chart": {
-        const _ = m.get(d.id), M = v.get(d.id);
+        const _ = h.get(c.id), M = g.get(c.id);
         if (!_ || !M) break;
         b.push(..._), b.push(M);
         break;
       }
       case "xbm":
-        b.push(`    u8g2_MenuDrawItemXBMP(${Math.trunc(d.w)}, ${Math.trunc(d.h)}, menu_xbm_${z.get(d.id) ?? J(d.name, "icon")});`);
+        b.push(`    u8g2_MenuDrawItemXBMP(${Math.trunc(c.w)}, ${Math.trunc(c.h)}, menu_xbm_${z.get(c.id) ?? G(c.name, "icon")});`);
         break;
       case "textarea": {
-        const _ = V++;
-        b.push(...S[_].split(`
+        const _ = N++;
+        b.push(...E[_].split(`
 `));
-        const M = d.bindScroll ? "u8g2_MenuDrawTextArea_bind" : "u8g2_MenuDrawTextArea";
-        b.push(`    ${M}(&ta${_}, ${Math.max(10, Math.trunc(d.height))});`);
+        const M = c.bindScroll ? "u8g2_MenuDrawTextArea_bind" : "u8g2_MenuDrawTextArea";
+        b.push(`    ${M}(&ta${_}, ${Math.max(10, Math.trunc(c.height))});`);
         break;
       }
       case "board": {
-        const _ = J(d.cbName, "board_cb");
-        b.push(`    u8g2_MenuDrawItemBoard(${_}, ${Math.max(1, Math.trunc(d.w))}, ${Math.max(1, Math.trunc(d.h))});`);
+        const _ = G(c.cbName, "board_cb");
+        b.push(`    u8g2_MenuDrawItemBoard(${_}, ${Math.max(1, Math.trunc(c.w))}, ${Math.max(1, Math.trunc(c.h))});`);
         break;
       }
     }
     return b;
-  }, h = [];
-  h.push("/**"), h.push(` * 由 u8g2-menu-editor 自动生成，工程: ${i.name}`), h.push(" * 重新生成时，USER CODE 区域内的手写内容会被保留。"), h.push(" *"), h.push(" * main.c 里使用以下符号时，直接 extern（或复制下面声明）："), h.push(` *   u8g2_SetFont(&u8g2, ${e ? "menu_font" : i.font});`), s.forEach((d, y) => h.push(` *   void ${d}(void);   /* 页面: ${i.pages[y].name} */`));
-  for (const d of a.values()) h.push(` *   extern ${d.type} ${d.name};`);
-  for (const [d] of u) h.push(` *   void ${d}(u8g2_menu_t *menu, uint8_t ID);`);
-  for (const d of c) h.push(` *   void ${d}(u8g2_t *u8g2);`);
-  h.push(" */"), h.push('#include "u8g2_menu.h"'), (i.chartBuffers ?? []).some((d) => d.sample === "sine") && h.push("#include <math.h>"), h.push(""), h.push(H("includes", r, "")), h.push(""), s.forEach((d) => h.push(`void ${d}(void);`)), h.push(""), h.push("/* ======================== 变量定义 ======================== */"), h.push(H("variables", r, ""));
-  for (const d of a.values()) h.push(`${d.type} ${d.name} = ${d.init};`);
-  if (h.push(""), e) {
-    h.push("/* ======================== 字体（现场取模） ======================== */"), h.push("/* 仅包含工程文本用到的字形（含 ASCII 95 个 + 额外字符），"), h.push(" * main.c 里 u8g2_SetFont(&u8g2, menu_font) 即可使用；"), h.push(' * 若运行时输出超出此字符集的中文，请在编辑器"额外包含字符"里补充后重新生成。 */');
-    const d = [];
-    for (let y = 0; y < e.length; y += 16)
-      d.push("  " + [...e.slice(y, y + 16)].map((b) => `0x${b.toString(16).padStart(2, "0")}`).join(", ") + ",");
-    h.push(`const uint8_t menu_font[${e.length}] U8G2_FONT_SECTION("menu_font") = {`), h.push(...d), h.push("};"), h.push("");
+  }, p = [];
+  p.push("/**"), p.push(` * 由 u8g2-menu-editor 自动生成，工程: ${i.name}`), p.push(" * 重新生成时，USER CODE 区域内的手写内容会被保留。"), p.push(" *"), p.push(" * main.c 里使用以下符号时，直接 extern（或复制下面声明）："), p.push(` *   u8g2_SetFont(&u8g2, ${e ? "menu_font" : i.font});`), r.forEach((c, w) => p.push(` *   void ${c}(void);   /* 页面: ${i.pages[w].name} */`));
+  for (const c of a.values()) p.push(` *   extern ${c.type} ${c.name};`);
+  for (const [c] of u) p.push(` *   void ${c}(u8g2_menu_t *menu, uint8_t ID);`);
+  for (const c of l) p.push(` *   void ${c}(u8g2_t *u8g2);`);
+  p.push(" */"), p.push('#include "u8g2_menu.h"'), (i.chartBuffers ?? []).some((c) => c.sample === "sine") && p.push("#include <math.h>"), p.push(""), p.push(H("includes", s, "")), p.push(""), r.forEach((c) => p.push(`void ${c}(void);`)), p.push(""), p.push("/* ======================== 变量定义 ======================== */"), p.push(H("variables", s, ""));
+  for (const c of a.values()) p.push(`${c.type} ${c.name} = ${c.init};`);
+  if (p.push(""), e) {
+    p.push("/* ======================== 字体（现场取模） ======================== */"), p.push("/* 仅包含工程文本用到的字形（含 ASCII 95 个 + 额外字符），"), p.push(" * main.c 里 u8g2_SetFont(&u8g2, menu_font) 即可使用；"), p.push(' * 若运行时输出超出此字符集的中文，请在编辑器"额外包含字符"里补充后重新生成。 */');
+    const c = [];
+    for (let w = 0; w < e.length; w += 16)
+      c.push("  " + [...e.slice(w, w + 16)].map((b) => `0x${b.toString(16).padStart(2, "0")}`).join(", ") + ",");
+    p.push(`const uint8_t menu_font[${e.length}] U8G2_FONT_SECTION("menu_font") = {`), p.push(...c), p.push("};"), p.push("");
   }
-  if ((l.length || $.length || f.length || g.length) && (h.push("/* ======================== 页面资源 ======================== */"), h.push(...l, ...$, ...f, ...g), h.push("")), u.size || c.size) {
-    h.push("/* ======================== 回调函数 ======================== */"), h.push(H("callbacks", r, ""));
-    for (const [d] of u)
-      h.push(`void ${d}(u8g2_menu_t *menu, uint8_t ID)`), h.push("{"), h.push(H(`cb_${d}`, r, "    ")), h.push("}"), h.push("");
-    for (const d of c)
-      h.push(`void ${d}(u8g2_t *u8g2)`), h.push("{"), h.push(H(`cb_${d}`, r, "    ")), h.push("}"), h.push("");
+  if ((d.length || x.length || f.length || v.length) && (p.push("/* ======================== 页面资源 ======================== */"), p.push(...d, ...x, ...f, ...v), p.push("")), u.size || l.size) {
+    p.push("/* ======================== 回调函数 ======================== */"), p.push(H("callbacks", s, ""));
+    for (const [c] of u)
+      p.push(`void ${c}(u8g2_menu_t *menu, uint8_t ID)`), p.push("{"), p.push(H(`cb_${c}`, s, "    ")), p.push("}"), p.push("");
+    for (const c of l)
+      p.push(`void ${c}(u8g2_t *u8g2)`), p.push("{"), p.push(H(`cb_${c}`, s, "    ")), p.push("}"), p.push("");
   }
-  const U = (i.weakHooks ?? []).map((d) => ie.find((y) => y.fn === d)).filter((d) => !!d);
-  if (U.length || r.has("weak") || ie.some((d) => (r.get(`weak_${d.fn}`) ?? "").trim())) {
-    h.push("/* ==================== 弱定义函数重写 ==================== */"), h.push("/* 以下函数与库 u8g2_menu_weak.c 中的弱定义同名，"), h.push(" * 链接时将自动替换库的默认行为；取消勾选即可恢复默认。 */");
-    const y = ie.filter((b) => {
+  const U = (i.weakHooks ?? []).map((c) => ie.find((w) => w.fn === c)).filter((c) => !!c);
+  if (U.length || s.has("weak") || ie.some((c) => (s.get(`weak_${c.fn}`) ?? "").trim())) {
+    p.push("/* ==================== 弱定义函数重写 ==================== */"), p.push("/* 以下函数与库 u8g2_menu_weak.c 中的弱定义同名，"), p.push(" * 链接时将自动替换库的默认行为；取消勾选即可恢复默认。 */");
+    const w = ie.filter((b) => {
       var I;
-      return !((I = i.weakHooks) != null && I.includes(b.fn)) && (r.get(`weak_${b.fn}`) ?? "").trim();
+      return !((I = i.weakHooks) != null && I.includes(b.fn)) && (s.get(`weak_${b.fn}`) ?? "").trim();
     }).map((b) => [
       `#if 0   /* 已取消勾选 ${b.fn}，手写内容保留于此；重新勾选后恢复编译 */`,
       `${b.decl}`,
       "{",
-      H(`weak_${b.fn}`, r, "    "),
+      H(`weak_${b.fn}`, s, "    "),
       "}",
       "#endif"
     ].join(`
 `)).join(`
 `);
-    h.push(y ? `${H("weak", r, "").replace(/\n$/, "")}
-${y}
-` : H("weak", r, "")), h.push("");
+    p.push(w ? `${H("weak", s, "").replace(/\n$/, "")}
+${w}
+` : H("weak", s, "")), p.push("");
     for (const b of U) {
-      h.push(`/* ${b.label}: ${b.desc} */`), h.push(`${b.decl}`), h.push("{"), h.push(H(`weak_${b.fn}`, r, "    "));
+      p.push(`/* ${b.label}: ${b.desc} */`), p.push(`${b.decl}`), p.push("{"), p.push(H(`weak_${b.fn}`, s, "    "));
       const I = b.bodyArgs.split(`
-`).map((T) => `    ${T}`);
-      b.retNote && I.push(`    ${b.retNote}`), h.push(...I), h.push("}"), h.push("");
+`).map((C) => `    ${C}`);
+      b.retNote && I.push(`    ${b.retNote}`), p.push(...I), p.push("}"), p.push("");
     }
   }
-  return h.push("/* ======================== 页面函数 ======================== */"), h.push(""), i.pages.forEach((d, y) => {
-    h.push(`/* 页面: ${d.name} */`), h.push(`void ${s[y]}(void)`), h.push("{"), h.push(H(`page_${s[y]}_pre`, r, "    "));
-    for (const b of d.items) h.push(...k(b, d));
-    h.push("}"), h.push("");
-  }), { c: `${h.join(`
+  return p.push("/* ======================== 页面函数 ======================== */"), p.push(""), i.pages.forEach((c, w) => {
+    p.push(`/* 页面: ${c.name} */`), p.push(`void ${r[w]}(void)`), p.push("{"), p.push(H(`page_${r[w]}_pre`, s, "    "));
+    for (const b of c.items) p.push(...k(b, c));
+    p.push("}"), p.push("");
+  }), { c: `${p.join(`
 `).replace(/\n{3,}/g, `
 
 
@@ -1365,40 +1365,44 @@ function mt(i) {
     startUnicode: i[21] << 8 | i[22]
   };
 }
-function Be(i, t, e) {
-  const n = [], r = [], s = [...t].sort((m, v) => m - v);
-  for (const m of s) {
-    const v = e(m);
-    !v || !v.length || (m <= 255 ? n.push({ encoding: m, entry: v }) : r.push({ encoding: m, entry: v }));
+function Le(i, t, e) {
+  const n = [], s = [], r = [], a = [...t].sort((g, y) => g - y);
+  for (const g of a) {
+    const y = e(g);
+    if (!y || !y.length) {
+      r.push(g);
+      continue;
+    }
+    g <= 255 ? n.push({ encoding: g, entry: y }) : s.push({ encoding: g, entry: y });
   }
-  if (!n.length && !r.length) return null;
-  const a = n.length + r.length;
-  let o = 0;
-  for (const m of n) o += m.entry.length;
-  o += 2;
-  let u = 4;
-  for (const m of r) u += m.entry.length;
+  if (!n.length && !s.length) return null;
+  const o = n.length + s.length;
+  let u = 0;
+  for (const g of n) u += g.entry.length;
   u += 2;
-  const c = mt(i), l = new Uint8Array(23 + o + u);
-  l.set(c.raw, 0), l[0] = a, l[17] = 0, l[18] = 0, l[19] = 0, l[20] = 0, l[21] = 0, l[22] = 0;
-  let p = 23;
-  for (const m of n) {
-    if (m.encoding === 65) {
-      const v = p - 23;
-      l[17] = v >> 8 & 255, l[18] = v & 255;
+  let l = 4;
+  for (const g of s) l += g.entry.length;
+  l += 2;
+  const d = mt(i), m = new Uint8Array(23 + u + l);
+  m.set(d.raw, 0), m[0] = o, m[17] = 0, m[18] = 0, m[19] = 0, m[20] = 0, m[21] = 0, m[22] = 0;
+  let x = 23;
+  for (const g of n) {
+    if (g.encoding === 65) {
+      const y = x - 23;
+      m[17] = y >> 8 & 255, m[18] = y & 255;
     }
-    if (m.encoding === 97) {
-      const v = p - 23;
-      l[19] = v >> 8 & 255, l[20] = v & 255;
+    if (g.encoding === 97) {
+      const y = x - 23;
+      m[19] = y >> 8 & 255, m[20] = y & 255;
     }
-    l.set(m.entry, p), p += m.entry.length;
+    m.set(g.entry, x), x += g.entry.length;
   }
-  l[p] = 0, l[p + 1] = 0, p += 2;
-  const $ = p - 23;
-  l[21] = $ >> 8 & 255, l[22] = $ & 255, l[p] = 0, l[p + 1] = 4, l[p + 2] = 255, l[p + 3] = 255, p += 4;
-  for (const m of r)
-    l.set(m.entry, p), p += m.entry.length;
-  return l[p] = 0, l[p + 1] = 0, l;
+  m[x] = 0, m[x + 1] = 0, x += 2;
+  const h = x - 23;
+  m[21] = h >> 8 & 255, m[22] = h & 255, m[x] = 0, m[x + 1] = 4, m[x + 2] = 255, m[x + 3] = 255, x += 4;
+  for (const g of s)
+    m.set(g.entry, x), x += g.entry.length;
+  return m[x] = 0, m[x + 1] = 0, { font: m, included: o, missing: r };
 }
 function pt(i) {
   return [...i].map((t) => t.codePointAt(0)).filter((t) => Number.isFinite(t));
@@ -1408,16 +1412,16 @@ function ft() {
   for (let t = 32; t <= 126; t++) i.push(t);
   return i;
 }
-function oe(i, t) {
-  const e = new Set(ft()), n = (r) => {
-    for (const s of pt(r)) e.add(s);
+function Ie(i, t) {
+  const e = new Set(ft()), n = (s) => {
+    for (const r of pt(s)) e.add(r);
   };
-  for (const r of i.pages)
-    for (const s of r.items)
-      s.kind === "text" && n(s.text), s.kind === "textarea" && n(s.content), s.bind.type === "switch" && (n(s.bind.onText), n(s.bind.offText));
+  for (const s of i.pages)
+    for (const r of s.items)
+      r.kind === "text" && n(r.text), r.kind === "textarea" && n(r.content), r.bind.type === "switch" && (n(r.bind.onText), n(r.bind.offText));
   return n(t), e.delete(10), e.delete(13), e;
 }
-function De(i) {
+function Be(i) {
   let t = 0, e = 0;
   for (const n of i) n <= 126 ? t++ : e++;
   return { total: i.size, ascii: t, cjk: e };
@@ -1432,7 +1436,7 @@ function bt(i) {
 }
 class gt {
   constructor(t, e = {}) {
-    this.mod = null, this.img = null, this.raf = 0, this.lastT = 0, this.running = !1, this.fontIndexCache = /* @__PURE__ */ new Map(), this.structSig = "", this.fontSig = null, this.lastKnownPage = 0, this.canvas = document.createElement("canvas"), this.canvas.width = 128, this.canvas.height = 64, this.canvas.className = "ume-preview-canvas", t.appendChild(this.canvas), this.ctx = this.canvas.getContext("2d"), this.events = e;
+    this.mod = null, this.img = null, this.raf = 0, this.lastT = 0, this.running = !1, this.fontIndexCache = /* @__PURE__ */ new Map(), this.structSig = "", this.fontSig = null, this.lastKnownPage = 0, this.fontApplyWarning = null, this.canvas = document.createElement("canvas"), this.canvas.width = 128, this.canvas.height = 64, this.canvas.className = "ume-preview-canvas", t.appendChild(this.canvas), this.ctx = this.canvas.getContext("2d"), this.events = e;
   }
   /** 加载 WASM 引擎（幂等） */
   async load(t) {
@@ -1442,12 +1446,12 @@ class gt {
     const n = e.U8G2MenuPreview;
     if (!n) throw new Error("U8G2MenuPreview 未找到（检查 wasmUrl）");
     this.mod = await n({
-      locateFile: (s) => t.replace(/[^/\\]*$/, "") + s
+      locateFile: (r) => t.replace(/[^/\\]*$/, "") + r
     }), this.mod.ccall("em_init", null, ["number", "number"], [128, 64]);
-    const r = this.mod._em_font_count_export();
-    for (let s = 0; s < r; s++) {
-      const a = this.mod._em_font_name(s);
-      this.fontIndexCache.set(this.mod.UTF8ToString(a), s);
+    const s = this.mod._em_font_count_export();
+    for (let r = 0; r < s; r++) {
+      const a = this.mod._em_font_name(r);
+      this.fontIndexCache.set(this.mod.UTF8ToString(a), r);
     }
     this.start();
   }
@@ -1468,7 +1472,7 @@ class gt {
       pages: t.pages.map((e) => ({
         n: e.items.length,
         k: e.items.map((n) => n.kind).join(","),
-        res: e.items.map((n) => n.kind === "chart" ? (n.sources ?? []).map((r) => `${r.bufferId}|${r.chartKind}|${r.min ?? "a"}|${r.max ?? "a"}`).join(">") : n.kind === "xbm" ? `${n.w}x${n.h}` : n.kind === "textarea" ? Math.ceil(n.content.length / 64) : "").join(",")
+        res: e.items.map((n) => n.kind === "chart" ? (n.sources ?? []).map((s) => `${s.bufferId}|${s.chartKind}|${s.min ?? "a"}|${s.max ?? "a"}`).join(">") : n.kind === "xbm" ? `${n.w}x${n.h}` : n.kind === "textarea" ? Math.ceil(n.content.length / 64) : "").join(",")
       }))
     });
   }
@@ -1478,61 +1482,61 @@ class gt {
     if (!e) return;
     const n = this.signature(t);
     n !== this.structSig && (e.ccall("em_reset_dynamic", null, [], []), this.structSig = n);
-    const r = (l) => Math.trunc(Number.isFinite(l) ? l : 0), s = { uint8: 0, uint16: 1, uint32: 2, int8: 3, int16: 4, int32: 5, int: 6, float: 7, double: 8 }, a = { text: 0, slider: 1, progress: 2, chart: 3, xbm: 4, textarea: 5, board: 6 }, o = { none: 0, value: 1, switch: 2, button: 3, submenu: 4, back: 5 }, u = { sine: 0, ramp: 1, noise: 2, none: 3 }, c = (l) => l ? (t.variables ?? []).findIndex((p) => p.id === l) : -1;
-    if ((t.variables ?? []).forEach((l, p) => {
+    const s = (d) => Math.trunc(Number.isFinite(d) ? d : 0), r = { uint8: 0, uint16: 1, uint32: 2, int8: 3, int16: 4, int32: 5, int: 6, float: 7, double: 8 }, a = { text: 0, slider: 1, progress: 2, chart: 3, xbm: 4, textarea: 5, board: 6 }, o = { none: 0, value: 1, switch: 2, button: 3, submenu: 4, back: 5 }, u = { sine: 0, ramp: 1, noise: 2, none: 3 }, l = (d) => d ? (t.variables ?? []).findIndex((m) => m.id === d) : -1;
+    if ((t.variables ?? []).forEach((d, m) => {
       e.ccall(
         "em_var_define",
         null,
         ["number", "number", "number", "number", "number", "number"],
-        [p, s[l.type], r(l.initialValue), r(l.step), r(l.min), r(l.max)]
+        [m, r[d.type], s(d.initialValue), s(d.step), s(d.min), s(d.max)]
       );
-    }), (t.chartBuffers ?? []).forEach((l, p) => {
+    }), (t.chartBuffers ?? []).forEach((d, m) => {
       e.ccall(
         "em_buf_define",
         null,
         ["number", "number", "number"],
-        [p, r(l.dataLen), u[l.sample]]
+        [m, s(d.dataLen), u[d.sample]]
       );
-    }), t.pages.forEach((l, p) => {
-      e.ccall("em_page_begin", null, ["number"], [p]), l.items.forEach(($, m) => {
-        const v = () => {
-          const w = $.bind;
-          if (w.type === "none") return;
-          const g = w.type === "value" || w.type === "switch", f = g ? (t.variables ?? []).find((S) => S.id === w.varId) : void 0;
+    }), t.pages.forEach((d, m) => {
+      e.ccall("em_page_begin", null, ["number"], [m]), d.items.forEach((x, h) => {
+        const g = () => {
+          const y = x.bind;
+          if (y.type === "none") return;
+          const v = y.type === "value" || y.type === "switch", f = v ? (t.variables ?? []).find((E) => E.id === y.varId) : void 0;
           e.ccall(
             "em_page_bind",
             null,
             ["number", "number", "number", "number", "number", "number", "number", "number"],
             [
-              p,
               m,
-              o[w.type],
-              g && f ? s[f.type] : 0,
-              w.type === "switch" ? r(w.openValue) : 0,
-              w.type === "button" ? r(w.buttonId) : 0,
-              w.type === "submenu" ? t.pages.findIndex((S) => S.id === w.targetPageId) : -1,
-              g && f ? c(f.id) : -1
+              h,
+              o[y.type],
+              v && f ? r[f.type] : 0,
+              y.type === "switch" ? s(y.openValue) : 0,
+              y.type === "button" ? s(y.buttonId) : 0,
+              y.type === "submenu" ? t.pages.findIndex((E) => E.id === y.targetPageId) : -1,
+              v && f ? l(f.id) : -1
             ]
           );
         };
-        switch ($.kind) {
+        switch (x.kind) {
           case "text":
             e.ccall(
               "em_page_item",
               null,
               ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
               [
-                p,
                 m,
+                h,
                 a.text,
-                $.scale,
+                x.scale,
                 0,
                 0,
                 0,
-                $.displayVarId ? c($.displayVarId) : -1,
+                x.displayVarId ? l(x.displayVarId) : -1,
                 -1
               ]
-            ), e.ccall("em_item_text", null, ["number", "number", "string"], [p, m, $.text]), v();
+            ), e.ccall("em_item_text", null, ["number", "number", "string"], [m, h, x.text]), g();
             break;
           case "slider":
           case "progress":
@@ -1540,64 +1544,64 @@ class gt {
               "em_page_item",
               null,
               ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [p, m, a[$.kind], 1, 0, 0, 0, -1, -1]
-            ), v();
+              [m, h, a[x.kind], 1, 0, 0, 0, -1, -1]
+            ), g();
             break;
           case "chart":
             e.ccall(
               "em_page_item",
               null,
               ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [p, m, a.chart, 1, r($.height), 0, 0, -1, -1]
+              [m, h, a.chart, 1, s(x.height), 0, 0, -1, -1]
             );
-            for (const w of $.sources ?? [])
+            for (const y of x.sources ?? [])
               e.ccall(
                 "em_item_chart_add",
                 null,
                 ["number", "number", "number", "number", "number", "number", "number"],
                 [
-                  p,
                   m,
-                  (t.chartBuffers ?? []).findIndex((g) => g.id === w.bufferId),
-                  { line: 0, point: 1, bar: 2 }[w.chartKind],
-                  w.min !== void 0 && w.max !== void 0 ? 1 : 0,
-                  w.max ?? 0,
-                  w.min ?? 0
+                  h,
+                  (t.chartBuffers ?? []).findIndex((v) => v.id === y.bufferId),
+                  { line: 0, point: 1, bar: 2 }[y.chartKind],
+                  y.min !== void 0 && y.max !== void 0 ? 1 : 0,
+                  y.max ?? 0,
+                  y.min ?? 0
                 ]
               );
-            v();
+            g();
             break;
           case "xbm":
             e.ccall(
               "em_page_item",
               null,
               ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [p, m, a.xbm, 1, 0, r($.w), r($.h), -1, -1]
+              [m, h, a.xbm, 1, 0, s(x.w), s(x.h), -1, -1]
             );
             {
-              const w = e._em_scratch($.bits.length);
-              w && (e.HEAPU8.set(new Uint8Array($.bits), w), e._em_item_bits(p, m, w, $.bits.length));
+              const y = e._em_scratch(x.bits.length);
+              y && (e.HEAPU8.set(new Uint8Array(x.bits), y), e._em_item_bits(m, h, y, x.bits.length));
             }
-            v();
+            g();
             break;
           case "textarea":
             e.ccall(
               "em_page_item",
               null,
               ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [p, m, a.textarea, 1, r($.height), 0, 0, -1, -1]
-            ), e.ccall("em_item_text", null, ["number", "number", "string"], [p, m, $.content]), v();
+              [m, h, a.textarea, 1, s(x.height), 0, 0, -1, -1]
+            ), e.ccall("em_item_text", null, ["number", "number", "string"], [m, h, x.content]), g();
             break;
           case "board":
             e.ccall(
               "em_page_item",
               null,
               ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [p, m, a.board, 1, 0, r($.w), r($.h), -1, -1]
-            ), v();
+              [m, h, a.board, 1, 0, s(x.w), s(x.h), -1, -1]
+            ), g();
             break;
         }
-      }), e.ccall("em_page_end", null, ["number", "number"], [p, l.items.length]);
+      }), e.ccall("em_page_end", null, ["number", "number"], [m, d.items.length]);
     }), e.ccall("em_pages_commit", null, ["number"], [t.pages.length]), e.ccall(
       "em_set_style",
       null,
@@ -1605,28 +1609,26 @@ class gt {
       [
         this.fontIndex(t.font),
         { default: 0, rotundity: 1, square: 2 }[t.selector],
-        r(t.selectorLeftMargin),
-        r(t.selectorTopMargin),
-        r(t.selectorLineSpacing),
+        s(t.selectorLeftMargin),
+        s(t.selectorTopMargin),
+        s(t.selectorLineSpacing),
         t.marqueeSpeed,
         t.marqueeHeaderLen
       ]
     ), t.fontSubset) {
-      const l = oe(t, t.fontExtra), p = t.font + "|" + [...l].sort(($, m) => $ - m).join(",");
-      if (p !== this.fontSig) {
-        this.fontSig = p;
-        const $ = this.fontIndex(t.font), m = (g) => {
-          const f = this.mod, S = f.ccall("em_scratch", "number", ["number"], [64]), C = f.ccall(
-            "em_font_glyph",
-            "number",
-            ["number", "number", "number", "number"],
-            [$, g, 64, S]
-          );
-          return C ? f.HEAPU8.slice(S, S + C) : null;
-        }, v = this.getFontBytes($), w = v ? Be(v, l, m) : null;
-        w && this.useCustomFont(w);
-      }
-    } else this.fontSig !== null && (this.fontSig = null);
+      const d = Ie(t, t.fontExtra), m = t.font + "|" + [...d].sort((x, h) => x - h).join(",");
+      m !== this.fontSig && (this.fontSig = m, this.applyFontSubset(this.fontIndex(t.font), d));
+    } else this.fontSig !== null && (this.fontSig = null, this.fontApplyWarning = null);
+  }
+  /** 应用子集字体到预览引擎；失败时记录 fontApplyWarning（供生成代码时并入警告） */
+  applyFontSubset(t, e) {
+    this.fontApplyWarning = null;
+    const n = this.getFontBytes(t), s = this.glyphFetcher(t), r = n && s ? Le(n, e, s) : null;
+    if (!r) {
+      this.fontApplyWarning = "现场取模未命中任何字形，预览使用内置字体";
+      return;
+    }
+    this.useCustomFont(r.font) || (this.fontApplyWarning = `子集字体 ${r.font.length} 字节超过预览槽位容量，预览已回退全字库（导出的 menu_font 数组不受影响）`);
   }
   start() {
     if (this.running) return;
@@ -1648,13 +1650,13 @@ class gt {
     const n = e._em_frame(t);
     if (!n) return;
     this.img || (this.img = this.ctx.createImageData(128, 64));
-    const r = e.HEAPU8.subarray(n, n + ht), s = this.img.data;
-    s.fill(255);
-    for (let c = 0; c < 64; c++) {
-      const l = (c >> 3) * 128, p = 1 << (c & 7);
-      let $ = c * 128 * 4;
-      for (let m = 0; m < 128; m++)
-        r[l + m] & p && (s[$] = 17, s[$ + 1] = 24, s[$ + 2] = 39), $ += 4;
+    const s = e.HEAPU8.subarray(n, n + ht), r = this.img.data;
+    r.fill(255);
+    for (let l = 0; l < 64; l++) {
+      const d = (l >> 3) * 128, m = 1 << (l & 7);
+      let x = l * 128 * 4;
+      for (let h = 0; h < 128; h++)
+        s[d + h] & m && (r[x] = 17, r[x + 1] = 24, r[x + 2] = 39), x += 4;
     }
     this.ctx.putImageData(this.img, 0, 0);
     const a = e._em_get_current_page();
@@ -1673,28 +1675,28 @@ class gt {
   getFontBytes(t) {
     const e = this.mod;
     if (!e) return null;
-    const n = e.ccall("em_font_data", "number", ["number"], [t]), r = e.ccall("em_font_data_len", "number", ["number"], [t]);
-    return !n || !r ? null : e.HEAPU8.slice(n, n + r);
+    const n = e.ccall("em_font_data", "number", ["number"], [t]), s = e.ccall("em_font_data_len", "number", ["number"], [t]);
+    return !n || !s ? null : e.HEAPU8.slice(n, n + s);
   }
   /** 字形拉取器：从 WASM 真库逐字获取原始条目（与渲染同一路径） */
   glyphFetcher(t) {
     const e = this.mod;
     return e ? (n) => {
-      const r = e.ccall("em_scratch", "number", ["number"], [64]), s = e.ccall(
+      const s = e.ccall("em_scratch", "number", ["number"], [64]), r = e.ccall(
         "em_font_glyph",
         "number",
         ["number", "number", "number", "number"],
-        [t, n, 64, r]
+        [t, n, 64, s]
       );
-      return s ? e.HEAPU8.slice(r, r + s) : null;
+      return r ? e.HEAPU8.slice(s, s + r) : null;
     } : null;
   }
   /** 加载自定义（子集）字体并切换；超出槽位容量返回 false */
   useCustomFont(t) {
     const e = this.mod;
     if (!e) return !1;
-    const n = e.ccall("em_custom_font_ptr", "number", [], []), r = e.ccall("em_custom_font_max", "number", [], []);
-    return t.length > r ? !1 : (e.HEAPU8.set(t, n), e.ccall("em_set_custom_font", null, ["number"], [t.length]), !0);
+    const n = e.ccall("em_custom_font_ptr", "number", [], []), s = e.ccall("em_custom_font_max", "number", [], []);
+    return t.length > s ? !1 : (e.HEAPU8.set(t, n), e.ccall("em_set_custom_font", null, ["number"], [t.length]), !0);
   }
   /** 读取值池槽位的实时值（绑定变量的条目：槽位 = 变量在池中的下标） */
   getInt(t) {
@@ -1709,49 +1711,49 @@ class gt {
     this.stop(), this.canvas.remove(), this.mod = null;
   }
 }
-const vt = Object.keys(fe);
+const vt = Object.keys(pe);
 function xt(i, t, e, n) {
-  const r = i.getState(), s = e.label || "text" in e && e.text || fe[e.kind], a = e.bind.type !== "none" ? ` · ${pe[e.bind.type]}` : "", o = (u) => (c) => {
-    c.stopPropagation(), i.getState().moveItem(t.id, e.id, u);
+  const s = i.getState(), r = e.label || "text" in e && e.text || pe[e.kind], a = e.bind.type !== "none" ? ` · ${me[e.bind.type]}` : "", o = (u) => (l) => {
+    l.stopPropagation(), i.getState().moveItem(t.id, e.id, u);
   };
-  return x`<div class="ume-item-row ${n ? "selected" : ""}"
+  return $`<div class="ume-item-row ${n ? "selected" : ""}"
     @click=${() => i.getState().select(t.id, e.id)}>
-    <span class="ume-item-icon">${Ye[e.kind]}</span>
-    <span class="ume-item-name" title=${s + a}>${s}${a}</span>
+    <span class="ume-item-icon">${Xe[e.kind]}</span>
+    <span class="ume-item-name" title=${r + a}>${r}${a}</span>
     <button class="ume-mini" title="上移" @click=${o(-1)}>↑</button>
     <button class="ume-mini" title="下移" @click=${o(1)}>↓</button>
     <button class="ume-mini" title="复制" @click=${(u) => {
-    u.stopPropagation(), r.duplicateItem(t.id, e.id);
+    u.stopPropagation(), s.duplicateItem(t.id, e.id);
   }}>⧉</button>
     <button class="ume-mini" title="删除" @click=${(u) => {
-    u.stopPropagation(), r.removeItem(t.id, e.id);
+    u.stopPropagation(), s.removeItem(t.id, e.id);
   }}>✕</button>
   </div>`;
 }
 function $t(i, t) {
   const e = i.getState();
-  return x`<select class="ume-mini" style="width:auto"
+  return $`<select class="ume-mini" style="width:auto"
     title="添加条目"
     @change=${(n) => {
-    const r = n.target.value;
-    r && e.addItem(r, t.id), n.target.value = "";
+    const s = n.target.value;
+    s && e.addItem(s, t.id), n.target.value = "";
   }}>
     <option value="">＋条目</option>
-    ${vt.map((n) => x`<option value=${n}>${fe[n]}</option>`)}
+    ${vt.map((n) => $`<option value=${n}>${pe[n]}</option>`)}
   </select>`;
 }
 function _t(i, t) {
-  const { project: e, selection: n } = t.getState(), r = (s) => {
-    const a = t.getState(), o = n.pageId === s.id;
-    return x`<div class="ume-page">
+  const { project: e, selection: n } = t.getState(), s = (r) => {
+    const a = t.getState(), o = n.pageId === r.id;
+    return $`<div class="ume-page">
       <div class="ume-page-head ${o ? "selected" : ""}"
-        @click=${() => t.getState().select(s.id, null)}>
-        <span style="flex:1;overflow:hidden;text-overflow:ellipsis">${s.name}</span>
+        @click=${() => t.getState().select(r.id, null)}>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis">${r.name}</span>
         <button class="ume-mini" title="上移页面" @click=${(u) => {
-      u.stopPropagation(), a.movePage(s.id, -1);
+      u.stopPropagation(), a.movePage(r.id, -1);
     }}>↑</button>
         <button class="ume-mini" title="下移页面" @click=${(u) => {
-      u.stopPropagation(), a.movePage(s.id, 1);
+      u.stopPropagation(), a.movePage(r.id, 1);
     }}>↓</button>
         <button class="ume-mini" title="删除页面"
           @click=${(u) => {
@@ -1759,21 +1761,21 @@ function _t(i, t) {
         alert("至少保留一个页面");
         return;
       }
-      confirm(`删除页面 "${s.name}"？`) && a.removePage(s.id);
+      confirm(`删除页面 "${r.name}"？`) && a.removePage(r.id);
     }}>✕</button>
       </div>
-      ${o ? x`<div class="ume-page-items">
-        ${s.items.length ? s.items.map((u) => xt(t, s, u, n.itemId === u.id)) : x`<div class="ume-empty-hint">暂无条目，点击下方添加</div>`}
-        <div style="padding:2px 6px">${$t(t, s)}</div>
+      ${o ? $`<div class="ume-page-items">
+        ${r.items.length ? r.items.map((u) => xt(t, r, u, n.itemId === u.id)) : $`<div class="ume-empty-hint">暂无条目，点击下方添加</div>`}
+        <div style="padding:2px 6px">${$t(t, r)}</div>
       </div>` : D}
     </div>`;
   };
-  ae(x`
+  ae($`
     <div class="ume-panel-title">
       页面 / 条目 (${e.pages.length})
       <button class="ume-mini" title="新增页面" @click=${() => yt(t)}>＋ 页面</button>
     </div>
-    ${e.pages.map(r)}
+    ${e.pages.map(s)}
   `, i);
 }
 function yt(i) {
@@ -1781,50 +1783,50 @@ function yt(i) {
   t !== null && i.getState().addPage(t || void 0);
 }
 function q(i, t, e, n = "") {
-  return x`<div class="ume-field">
+  return $`<div class="ume-field">
     <label>${i}</label>
     <input type="text" .value=${t ?? ""} placeholder=${n}
-      @change=${(r) => e(r.target.value)} />
+      @change=${(s) => e(s.target.value)} />
   </div>`;
 }
 function B(i, t, e, n = 1) {
-  return x`<div class="ume-field">
+  return $`<div class="ume-field">
     <label>${i}</label>
     <input type="number" .value=${String(t)} step=${String(n)}
-      @change=${(r) => {
-    const s = parseFloat(r.target.value);
-    e(Number.isFinite(s) ? s : 0);
+      @change=${(s) => {
+    const r = parseFloat(s.target.value);
+    e(Number.isFinite(r) ? r : 0);
   }} />
   </div>`;
 }
-function Y(i, t, e, n) {
-  return x`<div class="ume-field">
+function Z(i, t, e, n) {
+  return $`<div class="ume-field">
     <label>${i}</label>
-    <select @change=${(r) => n(r.target.value)}>
-      ${e.map((r) => x`<option value=${r.value} ?selected=${r.value === t}>${r.label}</option>`)}
+    <select @change=${(s) => n(s.target.value)}>
+      ${e.map((s) => $`<option value=${s.value} ?selected=${s.value === t}>${s.label}</option>`)}
     </select>
   </div>`;
 }
-function ke(i, t, e) {
-  return x`<div class="ume-checkbox">
+function we(i, t, e) {
+  return $`<div class="ume-checkbox">
     <input type="checkbox" ?checked=${t}
       @change=${(n) => e(n.target.checked)} />
     <span>${i}</span>
   </div>`;
 }
 function wt(i, t, e, n = !1) {
-  return x`<div class="ume-field wide">
+  return $`<div class="ume-field wide">
     <label>${i}</label>
     <textarea style=${n ? "font-family:Consolas,monospace" : ""}
-      @change=${(r) => e(r.target.value)}>${t ?? ""}</textarea>
+      @change=${(s) => e(s.target.value)}>${t ?? ""}</textarea>
   </div>`;
 }
-function Ie(i, t, e = "text/plain") {
-  const n = new Blob([t], { type: `${e};charset=utf-8` }), r = document.createElement("a");
-  r.href = URL.createObjectURL(n), r.download = i, r.click(), setTimeout(() => URL.revokeObjectURL(r.href), 5e3);
+function ke(i, t, e = "text/plain") {
+  const n = new Blob([t], { type: `${e};charset=utf-8` }), s = document.createElement("a");
+  s.href = URL.createObjectURL(n), s.download = i, s.click(), setTimeout(() => URL.revokeObjectURL(s.href), 5e3);
 }
-let xe = null;
-const Ke = {
+let ve = null;
+const De = {
   uint8: "uint8",
   uint16: "uint16",
   uint32: "uint32",
@@ -1835,56 +1837,56 @@ const Ke = {
   float: "float",
   double: "double"
 };
-function $e(i, t, e, n) {
-  const r = [
+function xe(i, t, e, n) {
+  const s = [
     { value: "", label: "（未绑定）" },
-    ...e.map((a) => ({ value: a.id, label: `${a.name} : ${Ke[a.type] ?? a.type}` }))
-  ], s = t ? e.some((a) => a.id === t) : !1;
-  return x`
-    ${Y(i, t ?? "", r, (a) => n(a || null))}
-    ${t && !s ? x`<div class="ume-warn">绑定的变量已被删除，请重新选择</div>` : D}
-    ${e.length === 0 ? x`<div class="ume-hint">还没有变量——点下方"新建变量"创建一个</div>` : D}
+    ...e.map((a) => ({ value: a.id, label: `${a.name} : ${De[a.type] ?? a.type}` }))
+  ], r = t ? e.some((a) => a.id === t) : !1;
+  return $`
+    ${Z(i, t ?? "", s, (a) => n(a || null))}
+    ${t && !r ? $`<div class="ume-warn">绑定的变量已被删除，请重新选择</div>` : D}
+    ${e.length === 0 ? $`<div class="ume-hint">还没有变量——点下方"新建变量"创建一个</div>` : D}
   `;
 }
-function _e(i, t) {
-  return x`<div class="ume-field"><label></label>
+function $e(i, t) {
+  return $`<div class="ume-field"><label></label>
     <button class="ume-btn sm" @click=${() => {
     const e = i.getState().addVariable();
     t(e);
   }}>＋ 新建变量并绑定</button>
   </div>`;
 }
-function ye(i) {
-  return i ? x`<div class="ume-hint">
-    ${i.name} : ${Ke[i.type] ?? i.type}，范围 ${i.min}~${i.max}，步长 ${i.step}，初值 ${i.initialValue}
+function _e(i) {
+  return i ? $`<div class="ume-hint">
+    ${i.name} : ${De[i.type] ?? i.type}，范围 ${i.min}~${i.max}，步长 ${i.step}，初值 ${i.initialValue}
     （在「资源」页修改变量）
-  </div>` : x`${D}`;
+  </div>` : $`${D}`;
 }
 function kt(i, t, e) {
-  const { project: n, selection: r } = t.getState(), s = n.pages.find((m) => m.id === r.pageId) ?? null, a = (s == null ? void 0 : s.items.find((m) => m.id === r.itemId)) ?? null, o = n.variables ?? [], u = n.chartBuffers ?? [], c = (m, v) => t.getState().updateItem(s.id, a.id, m, v), l = (m) => c({ bind: m });
-  let p = x`<div class="ume-empty-hint">在左侧选择页面或条目</div>`, $ = "";
-  if (s && !a)
-    $ = "页面属性", p = x`
-      ${q("名称", s.name, (m) => t.getState().updatePage(s.id, { name: m }))}
-      ${q("C 函数名", s.fnName, (m) => t.getState().updatePage(s.id, { fnName: m }), "留空自动 page_N")}
+  const { project: n, selection: s } = t.getState(), r = n.pages.find((h) => h.id === s.pageId) ?? null, a = (r == null ? void 0 : r.items.find((h) => h.id === s.itemId)) ?? null, o = n.variables ?? [], u = n.chartBuffers ?? [], l = (h, g) => t.getState().updateItem(r.id, a.id, h, g), d = (h) => l({ bind: h });
+  let m = $`<div class="ume-empty-hint">在左侧选择页面或条目</div>`, x = "";
+  if (r && !a)
+    x = "页面属性", m = $`
+      ${q("名称", r.name, (h) => t.getState().updatePage(r.id, { name: h }))}
+      ${q("C 函数名", r.fnName, (h) => t.getState().updatePage(r.id, { fnName: h }), "留空自动 page_N")}
       <div class="ume-hint">页面内的手写 C 代码请到生成的 menu_pages.c 的 USER CODE 区填写（重新生成时保留），编辑器不提供代码编辑</div>
     `;
-  else if (s && a) {
-    (a.bind.type === "value" || a.bind.type === "switch") && a.bind.varId && (xe = a.bind.varId), $ = `${fe[a.kind]}${a.bind.type !== "none" ? ` + ${pe[a.bind.type]}` : ""}`;
-    let m = x``;
+  else if (r && a) {
+    (a.bind.type === "value" || a.bind.type === "switch") && a.bind.varId && (ve = a.bind.varId), x = `${pe[a.kind]}${a.bind.type !== "none" ? ` + ${me[a.bind.type]}` : ""}`;
+    let h = $``;
     switch (a.kind) {
       case "text": {
-        const g = a, f = o.find((S) => S.id === g.displayVarId);
-        m = x`
-          ${q("文本/格式", g.text, (S) => c({ text: S }, `text-${g.id}`))}
-          ${Y("大小", String(g.scale), [
+        const v = a, f = o.find((E) => E.id === v.displayVarId);
+        h = $`
+          ${q("文本/格式", v.text, (E) => l({ text: E }, `text-${v.id}`))}
+          ${Z("大小", String(v.scale), [
           { value: "1", label: "正常" },
           { value: "2", label: "二倍大" }
-        ], (S) => c({ scale: Number(S) }))}
-          ${a.bind.type === "none" ? x`
-            ${$e("显示变量", g.displayVarId, o, (S) => c({ displayVarId: S }))}
-            ${f ? D : _e(t, (S) => c({ displayVarId: S.id }))}
-            ${ye(f)}
+        ], (E) => l({ scale: Number(E) }))}
+          ${a.bind.type === "none" ? $`
+            ${xe("显示变量", v.displayVarId, o, (E) => l({ displayVarId: E }))}
+            ${f ? D : $e(t, (E) => l({ displayVarId: E.id }))}
+            ${_e(f)}
             <div class="ume-hint">只读展示变量值（如传感器数据）；有附加值时直接显示被绑定的值</div>` : D}
           <div class="ume-hint">支持 printf 占位符与 \n 多行</div>
         `;
@@ -1892,53 +1894,53 @@ function kt(i, t, e) {
       }
       case "slider":
       case "progress": {
-        const g = a;
-        m = x`
-          ${a.bind.type === "none" ? x`
-            ${B("静态位置(%)", g.position, (f) => c({ position: Math.min(100, Math.max(0, Math.trunc(f))) }))}
+        const v = a;
+        h = $`
+          ${a.bind.type === "none" ? $`
+            ${B("静态位置(%)", v.position, (f) => l({ position: Math.min(100, Math.max(0, Math.trunc(f))) }))}
             <div class="ume-hint">无附加值时显示静态位置；绑定数值变量后由变量值驱动</div>` : D}
         `;
         break;
       }
       case "chart": {
-        const g = a, f = (C) => c({ sources: C }), S = (C, z) => {
-          const R = u.find((A) => A.id === C.bufferId), G = C.min === void 0 || C.max === void 0;
-          return x`<div class="ume-var-item">
+        const v = a, f = (P) => l({ sources: P }), E = (P, z) => {
+          const R = u.find((A) => A.id === P.bufferId), Y = P.min === void 0 || P.max === void 0;
+          return $`<div class="ume-var-item">
             <div class="ume-var-row">
               <span class="ume-var-name">${(R == null ? void 0 : R.name) ?? "(无效)"}</span>
-              <span class="ume-var-meta">${{ line: "折线", point: "散点", bar: "柱状" }[C.chartKind] ?? C.chartKind}${G ? " · 自动量程" : ` · ${C.min}~${C.max}`}</span>
-              <button class="ume-mini" title="移除该数据源" @click=${() => f(g.sources.filter((A, V) => V !== z))}>✕</button>
+              <span class="ume-var-meta">${{ line: "折线", point: "散点", bar: "柱状" }[P.chartKind] ?? P.chartKind}${Y ? " · 自动量程" : ` · ${P.min}~${P.max}`}</span>
+              <button class="ume-mini" title="移除该数据源" @click=${() => f(v.sources.filter((A, N) => N !== z))}>✕</button>
             </div>
             <div class="ume-var-edit">
-              ${Y("缓冲区", C.bufferId, u.map((A) => ({ value: A.id, label: `${A.name} (${A.dataLen}点)` })), (A) => f(g.sources.map((V, k) => k === z ? { ...V, bufferId: A } : V)))}
-              ${Y("绘制", C.chartKind, [
+              ${Z("缓冲区", P.bufferId, u.map((A) => ({ value: A.id, label: `${A.name} (${A.dataLen}点)` })), (A) => f(v.sources.map((N, k) => k === z ? { ...N, bufferId: A } : N)))}
+              ${Z("绘制", P.chartKind, [
             { value: "line", label: "折线" },
             { value: "point", label: "散点" },
             { value: "bar", label: "柱状" }
-          ], (A) => f(g.sources.map((V, k) => k === z ? { ...V, chartKind: A } : V)))}
-              ${ke("自动量程", G, (A) => f(g.sources.map((V, k) => k === z ? { ...V, min: A ? void 0 : 0, max: A ? void 0 : 100 } : V)))}
-              ${G ? D : x`
-                ${B("量程上限", C.max ?? 100, (A) => f(g.sources.map((V, k) => k === z ? { ...V, max: A } : V)), "any")}
-                ${B("量程下限", C.min ?? 0, (A) => f(g.sources.map((V, k) => k === z ? { ...V, min: A } : V)), "any")}`}
+          ], (A) => f(v.sources.map((N, k) => k === z ? { ...N, chartKind: A } : N)))}
+              ${we("自动量程", Y, (A) => f(v.sources.map((N, k) => k === z ? { ...N, min: A ? void 0 : 0, max: A ? void 0 : 100 } : N)))}
+              ${Y ? D : $`
+                ${B("量程上限", P.max ?? 100, (A) => f(v.sources.map((N, k) => k === z ? { ...N, max: A } : N)), "any")}
+                ${B("量程下限", P.min ?? 0, (A) => f(v.sources.map((N, k) => k === z ? { ...N, min: A } : N)), "any")}`}
             </div>
           </div>`;
         };
-        m = x`
-          ${B("高度(px)", g.height, (C) => c({ height: Math.max(4, Math.trunc(C)) }))}
+        h = $`
+          ${B("高度(px)", v.height, (P) => l({ height: Math.max(4, Math.trunc(P)) }))}
           <div class="ume-field wide"><label>数据源</label>
             <div style="flex:1">
-              ${(g.sources ?? []).map(S)}
-              ${(g.sources ?? []).length === 0 ? x`<div class="ume-hint">尚未绑定数据源——点下方按钮创建并绑定</div>` : D}
-              <button class="ume-btn sm" style="margin-top:4px" ?disabled=${(g.sources ?? []).length >= 4}
+              ${(v.sources ?? []).map(E)}
+              ${(v.sources ?? []).length === 0 ? $`<div class="ume-hint">尚未绑定数据源——点下方按钮创建并绑定</div>` : D}
+              <button class="ume-btn sm" style="margin-top:4px" ?disabled=${(v.sources ?? []).length >= 4}
                 @click=${() => {
           if (!u.length) {
-            const C = t.getState().addChartBuffer();
-            f([...g.sources ?? [], { bufferId: C.id, chartKind: "line" }]);
+            const P = t.getState().addChartBuffer();
+            f([...v.sources ?? [], { bufferId: P.id, chartKind: "line" }]);
             return;
           }
-          f([...g.sources ?? [], { bufferId: u[0].id, chartKind: "line" }]);
-        }}>＋ 添加数据源${(g.sources ?? []).length > 0 ? "（叠加）" : ""}</button>
-              ${u.length ? D : x`<div class="ume-hint">将自动新建数据源缓冲区（在「资源」页可改点名/点数/示例）</div>`}
+          f([...v.sources ?? [], { bufferId: u[0].id, chartKind: "line" }]);
+        }}>＋ 添加数据源${(v.sources ?? []).length > 0 ? "（叠加）" : ""}</button>
+              ${u.length ? D : $`<div class="ume-hint">将自动新建数据源缓冲区（在「资源」页可改点名/点数/示例）</div>`}
             </div>
           </div>
           <div class="ume-hint">多个数据源在同一区域叠加绘制（最多 4 个）；示例/真实数据在生成的 buf_xxx_fill 里填充</div>
@@ -1946,105 +1948,105 @@ function kt(i, t, e) {
         break;
       }
       case "xbm": {
-        const g = a;
-        m = x`
-          ${q("数组名", g.name, (f) => c({ name: f }))}
-          ${B("宽(px)", g.w, (f) => c({ w: Math.min(128, Math.max(1, Math.trunc(f))) }))}
-          ${B("高(px)", g.h, (f) => c({ h: Math.min(64, Math.max(1, Math.trunc(f))) }))}
+        const v = a;
+        h = $`
+          ${q("数组名", v.name, (f) => l({ name: f }))}
+          ${B("宽(px)", v.w, (f) => l({ w: Math.min(128, Math.max(1, Math.trunc(f))) }))}
+          ${B("高(px)", v.h, (f) => l({ h: Math.min(64, Math.max(1, Math.trunc(f))) }))}
           <div class="ume-field"><label></label>
-            <button class="ume-btn sm" @click=${() => e.openXbmEditor(s.id, g.id)}>编辑位图…</button>
+            <button class="ume-btn sm" @click=${() => e.openXbmEditor(r.id, v.id)}>编辑位图…</button>
           </div>
-          <div class="ume-hint">${g.bits.length} 字节，XBM 行序 LSB</div>
+          <div class="ume-hint">${v.bits.length} 字节，XBM 行序 LSB</div>
         `;
         break;
       }
       case "textarea": {
-        const g = a;
-        m = x`
-          ${wt("文本内容", g.content, (f) => c({ content: f }))}
-          ${B("高度(px)", g.height, (f) => c({ height: Math.max(10, Math.trunc(f)) }))}
-          ${B("行间距", g.lineSpacing, (f) => c({ lineSpacing: Math.max(0, Math.trunc(f)) }))}
-          ${ke("上下键滚动 (bind)", g.bindScroll, (f) => c({ bindScroll: f }))}
+        const v = a;
+        h = $`
+          ${wt("文本内容", v.content, (f) => l({ content: f }))}
+          ${B("高度(px)", v.height, (f) => l({ height: Math.max(10, Math.trunc(f)) }))}
+          ${B("行间距", v.lineSpacing, (f) => l({ lineSpacing: Math.max(0, Math.trunc(f)) }))}
+          ${we("上下键滚动 (bind)", v.bindScroll, (f) => l({ bindScroll: f }))}
         `;
         break;
       }
       case "board": {
-        const g = a;
-        m = x`
-          ${B("宽(px)", g.w, (f) => c({ w: Math.max(1, Math.trunc(f)) }))}
-          ${B("高(px)", g.h, (f) => c({ h: Math.max(1, Math.trunc(f)) }))}
-          ${q("回调函数名", g.cbName, (f) => c({ cbName: f }))}
+        const v = a;
+        h = $`
+          ${B("宽(px)", v.w, (f) => l({ w: Math.max(1, Math.trunc(f)) }))}
+          ${B("高(px)", v.h, (f) => l({ h: Math.max(1, Math.trunc(f)) }))}
+          ${q("回调函数名", v.cbName, (f) => l({ cbName: f }))}
           <div class="ume-hint">预览中显示占位框；实际内容由回调函数绘制（USER CODE 区）</div>
         `;
         break;
       }
     }
-    const v = a.bind;
-    let w = x``;
-    switch (v.type) {
+    const g = a.bind;
+    let y = $``;
+    switch (g.type) {
       case "none":
-        w = x`<div class="ume-hint">纯显示行。附加值是绘制前附加的绑定（数值编辑/开关/按钮/子页面跳转/返回），可与任意绘制类型组合。</div>`;
+        y = $`<div class="ume-hint">纯显示行。附加值是绘制前附加的绑定（数值编辑/开关/按钮/子页面跳转/返回），可与任意绘制类型组合。</div>`;
         break;
       case "value": {
-        const g = o.find((f) => f.id === v.varId);
-        w = x`
-          ${$e("变量", v.varId, o, (f) => l({ type: "value", varId: f }))}
-          ${g ? D : _e(t, (f) => l({ type: "value", varId: f.id }))}
-          ${ye(g)}
-          ${a.kind === "text" ? x`<div class="ume-hint">显示文本即 printf 格式串（如 音量:%d），确认后用 ＋/－ 键编辑</div>` : D}
+        const v = o.find((f) => f.id === g.varId);
+        y = $`
+          ${xe("变量", g.varId, o, (f) => d({ type: "value", varId: f }))}
+          ${v ? D : $e(t, (f) => d({ type: "value", varId: f.id }))}
+          ${_e(v)}
+          ${a.kind === "text" ? $`<div class="ume-hint">显示文本即 printf 格式串（如 音量:%d），确认后用 ＋/－ 键编辑</div>` : D}
         `;
         break;
       }
       case "switch": {
-        const g = o.filter((f) => f.type === "uint8").find((f) => f.id === v.varId) ?? o.find((f) => f.id === v.varId);
-        w = x`
-          ${$e("变量 (uint8)", v.varId, o.filter((f) => f.type === "uint8"), (f) => l({ type: "switch", varId: f, openValue: v.openValue, onText: v.onText, offText: v.offText }))}
-          ${g ? D : _e(t, (f) => l({ type: "switch", varId: f.id, openValue: v.openValue, onText: v.onText, offText: v.offText }))}
-          ${ye(g)}
-          ${B("openValue", v.openValue, (f) => l({ type: "switch", varId: v.varId, openValue: Math.max(0, Math.trunc(f)), onText: v.onText, offText: v.offText }))}
-          ${q('"开"文本', v.onText, (f) => l({ type: "switch", varId: v.varId, openValue: v.openValue, onText: f, offText: v.offText }))}
-          ${q('"关"文本', v.offText, (f) => l({ type: "switch", varId: v.varId, openValue: v.openValue, onText: v.onText, offText: f }))}
+        const v = o.filter((f) => f.type === "uint8").find((f) => f.id === g.varId) ?? o.find((f) => f.id === g.varId);
+        y = $`
+          ${xe("变量 (uint8)", g.varId, o.filter((f) => f.type === "uint8"), (f) => d({ type: "switch", varId: f, openValue: g.openValue, onText: g.onText, offText: g.offText }))}
+          ${v ? D : $e(t, (f) => d({ type: "switch", varId: f.id, openValue: g.openValue, onText: g.onText, offText: g.offText }))}
+          ${_e(v)}
+          ${B("openValue", g.openValue, (f) => d({ type: "switch", varId: g.varId, openValue: Math.max(0, Math.trunc(f)), onText: g.onText, offText: g.offText }))}
+          ${q('"开"文本', g.onText, (f) => d({ type: "switch", varId: g.varId, openValue: g.openValue, onText: f, offText: g.offText }))}
+          ${q('"关"文本', g.offText, (f) => d({ type: "switch", varId: g.varId, openValue: g.openValue, onText: g.onText, offText: f }))}
           <div class="ume-hint">开关需要 uint8 类型变量；显示文本含 %s 用于显示开/关</div>
         `;
         break;
       }
       case "button":
-        w = x`
-          ${q("回调函数名", v.cbName, (g) => l({ type: "button", cbName: g, buttonId: v.buttonId }))}
-          ${B("ID", v.buttonId, (g) => l({ type: "button", cbName: v.cbName, buttonId: Math.trunc(g) }))}
+        y = $`
+          ${q("回调函数名", g.cbName, (v) => d({ type: "button", cbName: v, buttonId: g.buttonId }))}
+          ${B("ID", g.buttonId, (v) => d({ type: "button", cbName: g.cbName, buttonId: Math.trunc(v) }))}
           <div class="ume-hint">确认键触发回调（骨架生成到 USER CODE 区，逻辑在 IDE 里写）</div>
         `;
         break;
       case "submenu":
-        w = x`
-          ${Y("目标页面", v.targetPageId ?? "", [
+        y = $`
+          ${Z("目标页面", g.targetPageId ?? "", [
           { value: "", label: "（未设置）" },
-          ...n.pages.filter((g) => g.id !== s.id).map((g) => ({ value: g.id, label: g.name }))
-        ], (g) => l({ type: "submenu", targetPageId: g || null }))}
+          ...n.pages.filter((v) => v.id !== r.id).map((v) => ({ value: v.id, label: v.name }))
+        ], (v) => d({ type: "submenu", targetPageId: v || null }))}
           <div class="ume-hint">确认键进入目标页面；子页面内加一个「附加值=返回」的条目用于返回</div>
         `;
         break;
       case "back":
-        w = x`<div class="ume-hint">确认键返回上级页面（u8g2_MenuItem_menu_back）</div>`;
+        y = $`<div class="ume-hint">确认键返回上级页面（u8g2_MenuItem_menu_back）</div>`;
         break;
     }
-    p = x`
+    m = $`
       <div class="ume-panel-title">绘制</div>
-      ${m}
+      ${h}
       <div class="ume-panel-title">附加值</div>
-      ${Y("类型", v.type, Object.keys(pe).map((g) => ({ value: g, label: pe[g] })), (g) => {
+      ${Z("类型", g.type, Object.keys(me).map((v) => ({ value: v, label: me[v] })), (v) => {
       const f = a.bind;
-      l(g === "value" ? { type: "value", varId: f.type === "value" || f.type === "switch" ? f.varId : xe } : g === "switch" ? { type: "switch", varId: f.type === "value" || f.type === "switch" ? f.varId : xe, openValue: 1, onText: "on", offText: "off" } : g === "button" ? { type: "button", cbName: "btn_action_cb", buttonId: 1 } : g === "submenu" ? { type: "submenu", targetPageId: f.type === "submenu" ? f.targetPageId : null } : { type: "none" });
+      d(v === "value" ? { type: "value", varId: f.type === "value" || f.type === "switch" ? f.varId : ve } : v === "switch" ? { type: "switch", varId: f.type === "value" || f.type === "switch" ? f.varId : ve, openValue: 1, onText: "on", offText: "off" } : v === "button" ? { type: "button", cbName: "btn_action_cb", buttonId: 1 } : v === "submenu" ? { type: "submenu", targetPageId: f.type === "submenu" ? f.targetPageId : null } : { type: "none" });
     })}
-      ${w}
+      ${y}
     `;
   }
-  ae(x`
-    ${$ ? x`<div class="ume-panel-title"><span class="ume-kind-badge">${$}</span></div>` : D}
-    ${p}
+  ae($`
+    ${x ? $`<div class="ume-panel-title"><span class="ume-kind-badge">${x}</span></div>` : D}
+    ${m}
   `, i);
 }
-let de = null, we = null;
+let ce = null, ye = null;
 const It = [
   { value: "uint8", label: "uint8 (0~255)" },
   { value: "int8", label: "int8 (-128~127)" },
@@ -2057,41 +2059,41 @@ const It = [
   { value: "double", label: "double (小数)" }
 ];
 function St(i, t) {
-  const e = t.variables ?? [], n = (s) => {
-    de = de === s ? null : s;
-  }, r = (s) => {
-    const a = de === s.id, o = (p, $) => i.getState().updateVariable(s.id, p, $), u = s.name && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(s.name), c = e.filter((p) => p.name === s.name).length > 1, l = Et(t, s.id);
-    return x`<div class="ume-var-item ${a ? "editing" : ""}">
-      <div class="ume-var-row" @click=${() => n(s.id)}>
-        <span class="ume-var-name" title=${s.name}>${s.name || "(未命名)"}</span>
-        <span class="ume-var-meta">${s.type} · ${s.min}~${s.max} · 步${s.step}${l ? ` · ${l} 处引用` : ""}</span>
-        <button class="ume-mini" title="删除变量" @click=${(p) => {
-      p.stopPropagation();
-      const $ = i.getState().removeVariable(s.id);
-      $ > 0 && alert(`该变量被 ${$} 个条目绑定，请先在条目里解绑（改为"未绑定"）再删除`);
+  const e = t.variables ?? [], n = (r) => {
+    ce = ce === r ? null : r;
+  }, s = (r) => {
+    const a = ce === r.id, o = (m, x) => i.getState().updateVariable(r.id, m, x), u = r.name && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(r.name), l = e.filter((m) => m.name === r.name).length > 1, d = Et(t, r.id);
+    return $`<div class="ume-var-item ${a ? "editing" : ""}">
+      <div class="ume-var-row" @click=${() => n(r.id)}>
+        <span class="ume-var-name" title=${r.name}>${r.name || "(未命名)"}</span>
+        <span class="ume-var-meta">${r.type} · ${r.min}~${r.max} · 步${r.step}${d ? ` · ${d} 处引用` : ""}</span>
+        <button class="ume-mini" title="删除变量" @click=${(m) => {
+      m.stopPropagation();
+      const x = i.getState().removeVariable(r.id);
+      x > 0 && alert(`该变量被 ${x} 个条目绑定，请先在条目里解绑（改为"未绑定"）再删除`);
     }}>✕</button>
       </div>
-      ${a ? x`<div class="ume-var-edit">
-        ${q("变量名", s.name, (p) => o({ name: p.trim() }, `vn-${s.id}`))}
-        ${u ? x`<div class="ume-warn">变量名不是合法的 C 标识符（字母/数字/下划线，不能以数字开头），生成时会自动清洗</div>` : D}
-        ${c ? x`<div class="ume-warn">变量名重复，生成时以第一个为准</div>` : D}
-        ${Y("类型", s.type, It, (p) => o({ type: p }))}
-        ${B("初始值", s.initialValue, (p) => o({ initialValue: p }, `vi-${s.id}`), "any")}
-        ${B("最小值", s.min, (p) => o({ min: p }, `vmin-${s.id}`), "any")}
-        ${B("最大值", s.max, (p) => o({ max: p }, `vmax-${s.id}`), "any")}
-        ${B("步长", s.step, (p) => o({ step: p }, `vs-${s.id}`), "any")}
+      ${a ? $`<div class="ume-var-edit">
+        ${q("变量名", r.name, (m) => o({ name: m.trim() }, `vn-${r.id}`))}
+        ${u ? $`<div class="ume-warn">变量名不是合法的 C 标识符（字母/数字/下划线，不能以数字开头），生成时会自动清洗</div>` : D}
+        ${l ? $`<div class="ume-warn">变量名重复，生成时以第一个为准</div>` : D}
+        ${Z("类型", r.type, It, (m) => o({ type: m }))}
+        ${B("初始值", r.initialValue, (m) => o({ initialValue: m }, `vi-${r.id}`), "any")}
+        ${B("最小值", r.min, (m) => o({ min: m }, `vmin-${r.id}`), "any")}
+        ${B("最大值", r.max, (m) => o({ max: m }, `vmax-${r.id}`), "any")}
+        ${B("步长", r.step, (m) => o({ step: m }, `vs-${r.id}`), "any")}
         <div class="ume-hint">条目引用按 id 跟随：修改变量名后，所有绑定它的条目自动同步</div>
       </div>` : D}
     </div>`;
   };
-  return x`
+  return $`
     <div class="ume-panel-title">
       变量 (${e.length})
       <button class="ume-mini" title="新建变量" @click=${() => {
-    de = i.getState().addVariable().id;
+    ce = i.getState().addVariable().id;
   }}>＋ 新建</button>
     </div>
-    ${e.length ? e.map(r) : x`<div class="ume-empty-hint">
+    ${e.length ? e.map(s) : $`<div class="ume-empty-hint">
       先在这里创建变量，再在数值/开关/滑块条目的属性里绑定。
       变量保存类型、范围、步长与初始值，可被多个条目共用。
     </div>`}
@@ -2100,53 +2102,53 @@ function St(i, t) {
 function Et(i, t) {
   let e = 0;
   for (const n of i.pages)
-    for (const r of n.items)
-      "varId" in r && r.varId === t && e++;
+    for (const s of n.items)
+      "varId" in s && s.varId === t && e++;
   return e;
 }
 function Mt(i, t) {
-  const e = t.chartBuffers ?? [], n = (s) => {
+  const e = t.chartBuffers ?? [], n = (r) => {
     let a = 0;
     for (const o of t.pages)
       for (const u of o.items)
-        u.kind === "chart" && u.sources.some((c) => c.bufferId === s) && a++;
+        u.kind === "chart" && u.sources.some((l) => l.bufferId === r) && a++;
     return a;
-  }, r = (s) => {
-    const a = we === s.id, o = (l, p) => i.getState().updateChartBuffer(s.id, l, p), u = s.name && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(s.name), c = n(s.id);
-    return x`<div class="ume-var-item ${a ? "editing" : ""}">
+  }, s = (r) => {
+    const a = ye === r.id, o = (d, m) => i.getState().updateChartBuffer(r.id, d, m), u = r.name && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(r.name), l = n(r.id);
+    return $`<div class="ume-var-item ${a ? "editing" : ""}">
       <div class="ume-var-row" @click=${() => {
-      we = a ? null : s.id;
+      ye = a ? null : r.id;
     }}>
-        <span class="ume-var-name" title=${s.name}>${s.name || "(未命名)"}</span>
-        <span class="ume-var-meta">${s.dataLen} 点 · ${{ sine: "正弦", ramp: "斜坡", noise: "伪随机", none: "手动填充" }[s.sample]}${c ? ` · ${c} 处引用` : ""}</span>
-        <button class="ume-mini" title="删除缓冲区" @click=${(l) => {
-      l.stopPropagation();
-      const p = i.getState().removeChartBuffer(s.id);
-      p > 0 && alert(`该缓冲区被 ${p} 个图表条目的数据源引用，请先在条目里移除数据源再删除`);
+        <span class="ume-var-name" title=${r.name}>${r.name || "(未命名)"}</span>
+        <span class="ume-var-meta">${r.dataLen} 点 · ${{ sine: "正弦", ramp: "斜坡", noise: "伪随机", none: "手动填充" }[r.sample]}${l ? ` · ${l} 处引用` : ""}</span>
+        <button class="ume-mini" title="删除缓冲区" @click=${(d) => {
+      d.stopPropagation();
+      const m = i.getState().removeChartBuffer(r.id);
+      m > 0 && alert(`该缓冲区被 ${m} 个图表条目的数据源引用，请先在条目里移除数据源再删除`);
     }}>✕</button>
       </div>
-      ${a ? x`<div class="ume-var-edit">
-        ${q("数组名", s.name, (l) => o({ name: l.trim() }, `bn-${s.id}`))}
-        ${u ? x`<div class="ume-warn">数组名不是合法的 C 标识符，生成时会自动清洗</div>` : D}
-        ${B("点数", s.dataLen, (l) => o({ dataLen: Math.min(512, Math.max(2, Math.trunc(l))) }, `bl-${s.id}`))}
-        ${Y("示例填充", s.sample, [
+      ${a ? $`<div class="ume-var-edit">
+        ${q("数组名", r.name, (d) => o({ name: d.trim() }, `bn-${r.id}`))}
+        ${u ? $`<div class="ume-warn">数组名不是合法的 C 标识符，生成时会自动清洗</div>` : D}
+        ${B("点数", r.dataLen, (d) => o({ dataLen: Math.min(512, Math.max(2, Math.trunc(d))) }, `bl-${r.id}`))}
+        ${Z("示例填充", r.sample, [
       { value: "sine", label: "正弦（演示）" },
       { value: "ramp", label: "斜坡（演示）" },
       { value: "noise", label: "伪随机（演示）" },
       { value: "none", label: "不填充（全部手写）" }
-    ], (l) => o({ sample: l }))}
+    ], (d) => o({ sample: d }))}
         <div class="ume-hint">真实数据在生成的 buf_xxx_fill() 或主循环里写 buf_xxx[i]；dis 显示缓冲由生成器自动分配</div>
       </div>` : D}
     </div>`;
   };
-  return x`
+  return $`
     <div class="ume-panel-title">
       数据源缓冲区 (${e.length})
       <button class="ume-mini" title="新建缓冲区" @click=${() => {
-    we = i.getState().addChartBuffer().id;
+    ye = i.getState().addChartBuffer().id;
   }}>＋ 新建</button>
     </div>
-    ${e.length ? e.map(r) : x`<div class="ume-empty-hint">
+    ${e.length ? e.map(s) : $`<div class="ume-empty-hint">
       图表的数据源缓冲区（float 数组）。手动创建后，在图表条目的属性里绑定——
       多个图表条目可共用同一缓冲区，多个缓冲区可叠加显示。
     </div>`}
@@ -2154,32 +2156,32 @@ function Mt(i, t) {
 }
 function Ct(i, t) {
   const { project: e } = t.getState();
-  ae(x`
+  ae($`
     ${St(t, e)}
     ${Mt(t, e)}
   `, i);
 }
 function Tt(i, t) {
-  const { project: e } = t.getState(), n = (o, u) => t.getState().update((c) => {
-    Object.assign(c, o);
-  }, u), r = e.weakHooks ?? [], s = (o, u) => {
-    t.getState().update((c) => {
-      const l = c.weakHooks ?? [];
-      c.weakHooks = u ? [.../* @__PURE__ */ new Set([...l, o])] : l.filter((p) => p !== o);
+  const { project: e } = t.getState(), n = (o, u) => t.getState().update((l) => {
+    Object.assign(l, o);
+  }, u), s = e.weakHooks ?? [], r = (o, u) => {
+    t.getState().update((l) => {
+      const d = l.weakHooks ?? [];
+      l.weakHooks = u ? [.../* @__PURE__ */ new Set([...d, o])] : d.filter((m) => m !== o);
     });
-  }, a = x`
+  }, a = $`
     <details class="ume-details">
-      <summary>弱定义函数重写（已选 ${r.length}/${ie.length}）</summary>
+      <summary>弱定义函数重写（已选 ${s.length}/${ie.length}）</summary>
       <div class="ume-weak-list">
         <div class="ume-hint">
           勾选后，生成的 menu_pages.c 会出现同名函数骨架，链接时替换库的默认行为；
           取消勾选即恢复库默认（手写内容会以 #if 0 保留）。鼠标悬停函数名可看参数说明。
         </div>
-        ${ie.map((o) => x`
+        ${ie.map((o) => $`
           <div class="ume-weak-item">
             <div class="ume-weak-name" title=${`${o.fn}${o.retNote ? "（返回 1 = 事件已处理 / 0 = 交给库）" : ""}`}>
-              <input type="checkbox" ?checked=${r.includes(o.fn)}
-                @change=${(u) => s(o.fn, u.target.checked)} />
+              <input type="checkbox" ?checked=${s.includes(o.fn)}
+                @change=${(u) => r(o.fn, u.target.checked)} />
               <span>${o.label}</span>
             </div>
             <div class="ume-weak-desc">${o.desc}</div>
@@ -2188,7 +2190,7 @@ function Tt(i, t) {
       </div>
     </details>
   `;
-  ae(x`
+  ae($`
     <div class="ume-panel-title">工程</div>
     ${q("工程名", e.name, (o) => n({ name: o }))}
     <div class="ume-field">
@@ -2200,21 +2202,21 @@ function Tt(i, t) {
     </div>
 
     <div class="ume-panel-title">样式</div>
-    ${Y(
+    ${Z(
     "字体",
     e.font,
-    Ge.map((o) => ({ value: o.id, label: o.label })),
+    Ze.map((o) => ({ value: o.id, label: o.label })),
     (o) => n({ font: o })
   )}
-    ${ke("中文现场取模（仅包含用到的字形）", e.fontSubset, (o) => n({ fontSubset: o }))}
-    ${e.fontSubset ? x`
+    ${we("中文现场取模（仅包含用到的字形）", e.fontSubset, (o) => n({ fontSubset: o }))}
+    ${e.fontSubset ? $`
       ${q("额外包含字符", e.fontExtra, (o) => n({ fontExtra: o }))}
       ${(() => {
-    const o = De(oe(e, e.fontExtra));
-    return x`<div class="ume-hint">当前收录 ${o.total} 个字符（ASCII ${o.ascii} + 中文等扩展 ${o.cjk}）；
+    const o = Be(Ie(e, e.fontExtra));
+    return $`<div class="ume-hint">当前收录 ${o.total} 个字符（ASCII ${o.ascii} + 中文等扩展 ${o.cjk}）；
         运行时输出超出字符集的中文将无法显示，可在上面补充额外字符后重新生成</div>`;
   })()}` : D}
-    ${Y("选择器", e.selector, [
+    ${Z("选择器", e.selector, [
     { value: "default", label: "默认 (反色行)" },
     { value: "rotundity", label: "圆形" },
     { value: "square", label: "方形" }
@@ -2230,26 +2232,26 @@ function Tt(i, t) {
     ${a}
   `, i);
 }
-function Nt(i, t) {
-  const e = (r) => {
-    let s;
+function At(i, t) {
+  const e = (s) => {
+    let r;
     const a = () => {
-      s && (clearInterval(s), s = void 0);
+      r && (clearInterval(r), r = void 0);
     };
     return {
       down: (o) => {
-        o.preventDefault(), t.key(r), a(), s = window.setInterval(() => t.key(r), 180);
+        o.preventDefault(), t.key(s), a(), r = window.setInterval(() => t.key(s), 180);
       },
       up: a
     };
-  }, n = (r, s, a) => {
-    const o = e(r);
-    return x`<button class="ume-key" title=${a}
-      @pointerdown=${o.down} @pointerup=${o.up} @pointerleave=${o.up}>${s}</button>`;
+  }, n = (s, r, a) => {
+    const o = e(s);
+    return $`<button class="ume-key" title=${a}
+      @pointerdown=${o.down} @pointerup=${o.up} @pointerleave=${o.up}>${r}</button>`;
   };
-  ae(x`
+  ae($`
     <div class="ume-preview-wrap" tabindex="0"
-      @keydown=${(r) => {
+      @keydown=${(s) => {
     const a = {
       ArrowUp: F.Up,
       ArrowDown: F.Down,
@@ -2260,8 +2262,8 @@ function Nt(i, t) {
       "-": F.Sub,
       "=": F.Add,
       _: F.Sub
-    }[r.key];
-    a !== void 0 && (r.preventDefault(), t.key(a));
+    }[s.key];
+    a !== void 0 && (s.preventDefault(), t.key(a));
   }}>
       ${t.canvas}
     </div>
@@ -2281,24 +2283,24 @@ function Nt(i, t) {
   `, i);
 }
 let te = null;
-function At(i, t) {
+function Nt(i, t) {
   te = t, i.querySelectorAll(":scope > .ume-modal-mask").forEach((e) => e.remove()), Vt(i);
 }
 function Vt(i) {
   if (!te) return;
   const t = document.createElement("div");
   t.className = "ume-modal-mask", t.addEventListener("click", (e) => {
-    e.target === t && Ce(t);
-  }), ae(x`
+    e.target === t && Me(t);
+  }), ae($`
     <div class="ume-modal wide">
       <div class="ume-modal-head">
         <span>生成 C 代码（单文件 menu_pages.c）</span>
-        <button class="ume-mini" @click=${() => Ce(t)}>✕</button>
+        <button class="ume-mini" @click=${() => Me(t)}>✕</button>
       </div>
       <div class="ume-modal-body">
-        ${te.warnings.length ? x`
+        ${te.warnings.length ? $`
           <div style="margin-bottom:8px">
-            ${te.warnings.map((e) => x`<div class="ume-warn">⚠ ${e}</div>`)}
+            ${te.warnings.map((e) => $`<div class="ume-warn">⚠ ${e}</div>`)}
           </div>` : D}
         <div class="ume-code-view">${te.c}</div>
       </div>
@@ -2307,13 +2309,13 @@ function Vt(i) {
     navigator.clipboard.writeText(te.c).then(() => Pt(t, "已复制到剪贴板"));
   }}>复制</button>
         <button class="ume-btn primary" @click=${() => {
-    Ie("menu_pages.c", te.c);
+    ke("menu_pages.c", te.c);
   }}>下载 menu_pages.c</button>
       </div>
     </div>
   `, t), i.appendChild(t);
 }
-function Ce(i) {
+function Me(i) {
   i.remove();
 }
 function Pt(i, t) {
@@ -2322,52 +2324,52 @@ function Pt(i, t) {
   n || (n = document.createElement("div"), n.className = "ume-toast", e.appendChild(n)), n.textContent = t, n.classList.add("show"), setTimeout(() => n.classList.remove("show"), 1600);
 }
 function Lt(i, t, e, n) {
-  const s = t.getState().project.pages.find((k) => k.id === e), a = s == null ? void 0 : s.items.find((k) => k.id === n);
+  const r = t.getState().project.pages.find((k) => k.id === e), a = r == null ? void 0 : r.items.find((k) => k.id === n);
   if (!a || a.kind !== "xbm") return;
   const o = a;
-  let u = o.w, c = o.h, l = [...o.bits];
-  const p = () => Math.ceil(u / 8), $ = document.createElement("div");
-  $.className = "ume-modal-mask", $.addEventListener("click", (k) => {
-    k.target === $ && V();
+  let u = o.w, l = o.h, d = [...o.bits];
+  const m = () => Math.ceil(u / 8), x = document.createElement("div");
+  x.className = "ume-modal-mask", x.addEventListener("click", (k) => {
+    k.target === x && N();
   });
-  const m = (k, h) => {
-    const U = h * p() + (k >> 3);
-    return U < l.length ? !!(l[U] >> (k & 7) & 1) : !1;
-  }, v = (k, h, U) => {
-    const ee = h * p() + (k >> 3);
-    l[ee] = U ? l[ee] | 1 << (k & 7) : l[ee] & ~(1 << (k & 7));
-  }, w = (k, h) => {
-    const U = Math.ceil(u / 8), ee = Math.ceil(k / 8), d = new Array(ee * h).fill(0);
-    for (let y = 0; y < Math.min(c, h); y++)
+  const h = (k, p) => {
+    const U = p * m() + (k >> 3);
+    return U < d.length ? !!(d[U] >> (k & 7) & 1) : !1;
+  }, g = (k, p, U) => {
+    const ee = p * m() + (k >> 3);
+    d[ee] = U ? d[ee] | 1 << (k & 7) : d[ee] & ~(1 << (k & 7));
+  }, y = (k, p) => {
+    const U = Math.ceil(u / 8), ee = Math.ceil(k / 8), c = new Array(ee * p).fill(0);
+    for (let w = 0; w < Math.min(l, p); w++)
       for (let b = 0; b < Math.min(u, k); b++) {
-        const I = y * U + (b >> 3);
-        I < l.length && l[I] >> (b & 7) & 1 && (d[y * ee + (b >> 3)] |= 1 << (b & 7));
+        const I = w * U + (b >> 3);
+        I < d.length && d[I] >> (b & 7) & 1 && (c[w * ee + (b >> 3)] |= 1 << (b & 7));
       }
-    u = k, c = h, l = d;
+    u = k, l = p, d = c;
   };
-  let g = !1, f = !0;
-  const S = (k, h) => (U) => {
-    U.preventDefault(), g = !0, f = !m(k, h), v(k, h, f), R();
-  }, C = (k, h) => () => {
-    g && (v(k, h, f), R());
+  let v = !1, f = !0;
+  const E = (k, p) => (U) => {
+    U.preventDefault(), v = !0, f = !h(k, p), g(k, p, f), R();
+  }, P = (k, p) => () => {
+    v && (g(k, p, f), R());
   }, z = () => {
-    g = !1;
+    v = !1;
   }, R = () => {
-    ae(A(), $);
-  }, G = () => {
+    ae(A(), x);
+  }, Y = () => {
     const k = [];
-    for (let h = 0; h < c; h++)
+    for (let p = 0; p < l; p++)
       for (let U = 0; U < u; U++)
-        k.push(x`<button class="ume-xbm-cell ${m(U, h) ? "on" : ""}"
-          data-x=${U} data-y=${h}
-          @pointerdown=${S(U, h)}
-          @pointerenter=${C(U, h)}></button>`);
+        k.push($`<button class="ume-xbm-cell ${h(U, p) ? "on" : ""}"
+          data-x=${U} data-y=${p}
+          @pointerdown=${E(U, p)}
+          @pointerenter=${P(U, p)}></button>`);
     return k;
-  }, A = () => x`
+  }, A = () => $`
     <div class="ume-modal">
       <div class="ume-modal-head">
-        <span>位图编辑器 <span class="ume-kind-badge">${u}×${c}</span></span>
-        <button class="ume-mini" @click=${V}>✕</button>
+        <span>位图编辑器 <span class="ume-kind-badge">${u}×${l}</span></span>
+        <button class="ume-mini" @click=${N}>✕</button>
       </div>
       <div class="ume-modal-body"
         @pointerup=${z}
@@ -2376,56 +2378,56 @@ function Lt(i, t, e, n) {
           <label>宽/高</label>
           <input type="number" style="width:64px" .value=${String(u)} min="1" max="128"
             @change=${(k) => {
-    w(Te(+k.target.value, 1, 128), c), R();
+    y(Ce(+k.target.value, 1, 128), l), R();
   }} />
-          <input type="number" style="width:64px" .value=${String(c)} min="1" max="64"
+          <input type="number" style="width:64px" .value=${String(l)} min="1" max="64"
             @change=${(k) => {
-    w(u, Te(+k.target.value, 1, 64)), R();
+    y(u, Ce(+k.target.value, 1, 64)), R();
   }} />
           <button class="ume-btn sm" @click=${() => {
-    l = l.map(() => 0), R();
+    d = d.map(() => 0), R();
   }}>清空</button>
           <button class="ume-btn sm" @click=${() => {
-    l = l.map((k) => ~k & 255), R();
+    d = d.map((k) => ~k & 255), R();
   }}>反相</button>
         </div>
-        <div class="ume-xbm-grid" style="grid-template-columns:repeat(${u}, 14px)">${G()}</div>
+        <div class="ume-xbm-grid" style="grid-template-columns:repeat(${u}, 14px)">${Y()}</div>
         <div class="ume-hint">拖拽绘制；生成数组名 menu_xbm_${o.name}（XBM 行序 LSB）</div>
       </div>
       <div class="ume-modal-foot">
-        <button class="ume-btn" @click=${V}>取消</button>
+        <button class="ume-btn" @click=${N}>取消</button>
         <button class="ume-btn primary" @click=${() => {
-    t.getState().updateItem(e, n, { w: u, h: c, bits: [...l] }), V();
+    t.getState().updateItem(e, n, { w: u, h: l, bits: [...d] }), N();
   }}>应用</button>
       </div>
     </div>
   `;
-  function V() {
-    $.remove(), document.removeEventListener("pointerup", z);
+  function N() {
+    x.remove(), document.removeEventListener("pointerup", z);
   }
-  document.addEventListener("pointerup", z), R(), i.appendChild($);
+  document.addEventListener("pointerup", z), R(), i.appendChild(x);
 }
-function Te(i, t, e) {
+function Ce(i, t, e) {
   return Number.isFinite(i) ? Math.min(e, Math.max(t, Math.trunc(i))) : t;
 }
 const Bt = "prebuilt/u8g2-menu-preview.js";
 class Ut {
   constructor(t, e = {}) {
-    var $;
+    var x;
     if (this.store = Ae(), this.renderScheduled = !1, this.lastExport = null, this.destroyed = !1, this.activateRightTab = () => {
     }, this.container = t, this.opts = { persistKey: "default", ...e }, t.classList.add("ume"), !document.getElementById("ume-style")) {
-      const m = document.createElement("style");
-      m.id = "ume-style", m.textContent = Fe, document.head.appendChild(m);
+      const h = document.createElement("style");
+      h.id = "ume-style", h.textContent = je, document.head.appendChild(h);
     }
-    const n = this.opts.persistKey ? localStorage.getItem(`ume_autosave_${this.opts.persistKey}`) : null, r = this.opts.data ?? n ?? void 0;
-    if (r !== void 0)
+    const n = this.opts.persistKey ? localStorage.getItem(`ume_autosave_${this.opts.persistKey}`) : null, s = this.opts.data ?? n ?? void 0;
+    if (s !== void 0)
       try {
-        this.store.setState({ project: ve(r) });
-      } catch (m) {
-        console.warn("[u8g2-menu-editor] 初始数据无效，使用示例工程:", m);
+        this.store.setState({ project: ge(s) });
+      } catch (h) {
+        console.warn("[u8g2-menu-editor] 初始数据无效，使用示例工程:", h);
       }
-    const s = this.opts.persistKey ? localStorage.getItem(`ume_last_c_${this.opts.persistKey}`) : null;
-    s && (this.lastExport = { c: s }), t.innerHTML = `
+    const r = this.opts.persistKey ? localStorage.getItem(`ume_last_c_${this.opts.persistKey}`) : null;
+    r && (this.lastExport = { c: r }), t.innerHTML = `
       <div class="ume-toolbar">
         <span class="ume-title">⬒ u8g2_menu 编辑器</span>
         <button class="ume-btn sm" data-act="add-page">＋页面</button>
@@ -2453,7 +2455,7 @@ class Ut {
       </div>
       <input type="file" accept=".json,application/json" style="display:none" data-role="file">
     `;
-    const a = (m) => t.querySelector(m);
+    const a = (h) => t.querySelector(h);
     this.els = {
       left: a(".ume-left"),
       center: a(".ume-center"),
@@ -2466,51 +2468,51 @@ class Ut {
     };
     const o = document.createElement("div");
     o.style.display = "flex", o.style.flexDirection = "column", o.style.alignItems = "center", o.style.gap = "10px", this.els.center.appendChild(o), this.preview = new gt(o, {
-      onPageChanged: (m) => this.onPreviewPageChanged(m)
+      onPageChanged: (h) => this.onPreviewPageChanged(h)
     });
     const u = document.createElement("div");
-    this.els.center.appendChild(u), Nt(u, this.preview), this.preview.load(this.opts.wasmUrl ?? Bt).then(() => {
+    this.els.center.appendChild(u), At(u, this.preview), this.preview.load(this.opts.wasmUrl ?? Bt).then(() => {
       this.preview.sync(this.store.getState().project), this.scheduleRender();
-    }).catch((m) => {
-      console.error(m);
-      const v = document.createElement("div");
-      v.className = "ume-warn", v.textContent = `预览引擎加载失败: ${m.message}。编辑功能不受影响。`, this.els.center.prepend(v);
+    }).catch((h) => {
+      console.error(h);
+      const g = document.createElement("div");
+      g.className = "ume-warn", g.textContent = `预览引擎加载失败: ${h.message}。编辑功能不受影响。`, this.els.center.prepend(g);
     }), t.querySelector('[data-act="add-page"]').addEventListener("click", () => {
-      const m = prompt("页面名称:", `页面${this.store.getState().project.pages.length + 1}`);
-      m !== null && this.store.getState().addPage(m || void 0);
+      const h = prompt("页面名称:", `页面${this.store.getState().project.pages.length + 1}`);
+      h !== null && this.store.getState().addPage(h || void 0);
     }), this.els.toolbarUndo.addEventListener("click", () => this.store.getState().undo()), this.els.toolbarRedo.addEventListener("click", () => this.store.getState().redo()), t.querySelector('[data-act="export-json"]').addEventListener("click", () => {
-      Ie(
+      ke(
         `${this.store.getState().project.name || "menu-project"}.json`,
         Ee(this.store.getState().project),
         "application/json"
       );
     }), t.querySelector('[data-act="import"]').addEventListener("click", () => {
       a('[data-role="file"]').click();
-    }), a('[data-role="file"]').addEventListener("change", (m) => {
-      var w;
-      const v = (w = m.target.files) == null ? void 0 : w[0];
-      v && (v.text().then((g) => {
+    }), a('[data-role="file"]').addEventListener("change", (h) => {
+      var y;
+      const g = (y = h.target.files) == null ? void 0 : y[0];
+      g && (g.text().then((v) => {
         try {
-          const f = ve(g);
-          this.store.getState().update((S) => {
-            Object.assign(S, f);
+          const f = ge(v);
+          this.store.getState().update((E) => {
+            Object.assign(E, f);
           }), this.scheduleRender();
         } catch (f) {
           alert(`导入失败: ${f.message}`);
         }
-      }), m.target.value = "");
+      }), h.target.value = "");
     }), t.querySelector('[data-act="generate"]').addEventListener("click", () => this.generate());
-    const c = t.querySelectorAll(".ume-tabs button"), l = (m) => {
-      c.forEach((v) => v.classList.toggle("active", v.dataset.tab === m)), this.els.propEl.style.display = m === "prop" ? "" : "none", this.els.resEl.style.display = m === "res" ? "" : "none", this.els.setEl.style.display = m === "set" ? "" : "none";
+    const l = t.querySelectorAll(".ume-tabs button"), d = (h) => {
+      l.forEach((g) => g.classList.toggle("active", g.dataset.tab === h)), this.els.propEl.style.display = h === "prop" ? "" : "none", this.els.resEl.style.display = h === "res" ? "" : "none", this.els.setEl.style.display = h === "set" ? "" : "none";
     };
-    c.forEach((m) => {
-      m.addEventListener("click", () => l(m.dataset.tab ?? "prop"));
-    }), this.activateRightTab = l, this.onKeyDown = this.onKeyDown.bind(this), document.addEventListener("keydown", this.onKeyDown), this.store.getState().select((($ = this.store.getState().project.pages[0]) == null ? void 0 : $.id) ?? null, null);
-    let p = null;
+    l.forEach((h) => {
+      h.addEventListener("click", () => d(h.dataset.tab ?? "prop"));
+    }), this.activateRightTab = d, this.onKeyDown = this.onKeyDown.bind(this), document.addEventListener("keydown", this.onKeyDown), this.store.getState().select(((x = this.store.getState().project.pages[0]) == null ? void 0 : x.id) ?? null, null);
+    let m = null;
     this.store.subscribe(() => {
       this.preview.sync(this.store.getState().project), this.persist(), this.scheduleRender(), this.notifyChange();
-      const m = this.store.getState().selection.itemId;
-      m && m !== p && this.activateRightTab("prop"), p = m;
+      const h = this.store.getState().selection.itemId;
+      h && h !== m && this.activateRightTab("prop"), m = h;
     }), this.scheduleRender(), this.persist(), window.setInterval(() => {
       this.destroyed || this.updateLiveInfo();
     }, 300);
@@ -2521,39 +2523,54 @@ class Ut {
   }
   loadData(t) {
     var n;
-    const e = ve(t);
-    this.store.getState().update((r) => {
-      Object.assign(r, e);
+    const e = ge(t);
+    this.store.getState().update((s) => {
+      Object.assign(s, e);
     }), this.store.getState().select(((n = e.pages[0]) == null ? void 0 : n.id) ?? null, null);
   }
   /** 生成 C 代码（保留 USER CODE），返回结果并弹出对话框 */
   generate() {
-    var a, o;
-    const t = this.lastExport, e = this.store.getState().project;
-    let n, r = 0;
-    if (e.fontSubset && this.preview.ready) {
-      const u = oe(e, e.fontExtra), c = this.buildFontSubset(e, u);
-      c ? (n = c, r = c.length, this.preview.useCustomFont(c)) : console.warn("[u8g2-menu-editor] 现场取模失败：字符集未命中任何字形");
-    }
-    const s = Me(e, t ?? void 0, n);
-    if (n) {
-      const u = De(oe(e, e.fontExtra));
-      s.warnings.unshift(`现场取模：收录 ${u.total} 个字符（ASCII ${u.ascii} + 扩展 ${u.cjk}），字体数组 ${r} 字节。运行时若输出超出字符集的中文，请在设置里补充额外字符`);
-    }
-    return this.lastExport = { c: s.c }, this.opts.persistKey && localStorage.setItem(`ume_last_c_${this.opts.persistKey}`, s.c), At(this.container, s), (o = (a = this.opts).onExport) == null || o.call(a, s), s;
+    var e, n;
+    const t = this.produceCode();
+    return Nt(this.container, t), (n = (e = this.opts).onExport) == null || n.call(e, t), t;
   }
   downloadC() {
-    const t = this.store.getState().project;
-    let e;
-    t.fontSubset && this.preview.ready && (e = this.buildFontSubset(t, oe(t, t.fontExtra)), e && this.preview.useCustomFont(e));
-    const n = Me(t, this.lastExport ?? void 0, e);
-    this.lastExport = { c: n.c }, Ie("menu_pages.c", n.c);
+    const t = this.produceCode();
+    ke("menu_pages.c", t.c);
+  }
+  /** 生成路径（generate/downloadC 共用）：现场取模 + 警告收口 + 保留 USER CODE */
+  produceCode() {
+    const t = this.lastExport, e = this.store.getState().project;
+    let n;
+    const s = [];
+    if (e.fontSubset) {
+      if (!this.preview.ready)
+        s.push("现场取模需要预览引擎，当前引擎不可用：本次未生成 menu_font，代码将引用内置字体");
+      else {
+        const o = Ie(e, e.fontExtra), u = this.buildFontSubset(e, o);
+        if ("error" in u)
+          s.push(`${u.error}，本次按内置字体生成`);
+        else {
+          n = u.result.font;
+          const l = Be(o);
+          if (s.push(`现场取模：收录 ${l.total} 个字符（ASCII ${l.ascii} + 扩展 ${l.cjk}），字体数组 ${u.result.font.length} 字节。运行时若输出超出字符集的中文，请在设置里补充额外字符`), u.result.included > 255 && s.push(`子集字形数 ${u.result.included} 超过 255：字体头 glyph_cnt 字段将回绕（记录为 ${u.result.included & 255}），如遇渲染异常请在"额外包含字符"里精简`), u.result.missing.length) {
+            const d = u.result.missing.slice(0, 5).map((m) => String.fromCodePoint(m)).join(" ");
+            s.push(`字符集中 ${u.result.missing.length} 个字符未在源字体中找到（如 ${d}），运行时这些字符无法显示`);
+          }
+        }
+      }
+      const a = this.preview.fontApplyWarning;
+      a && s.push(a);
+    }
+    const r = dt(e, t ?? void 0, n);
+    return r.warnings.unshift(...s), this.lastExport = { c: r.c }, this.opts.persistKey && localStorage.setItem(`ume_last_c_${this.opts.persistKey}`, r.c), r;
   }
   /** 现场取模：从 WASM 真库逐字拉取字形，生成子集字体 */
   buildFontSubset(t, e) {
-    const n = this.preview.fontIndex(t.font), r = this.preview.getFontBytes(n), s = this.preview.glyphFetcher(n);
-    if (!(!r || !s))
-      return Be(r, e, s) ?? void 0;
+    const n = this.preview.fontIndex(t.font), s = this.preview.getFontBytes(n), r = this.preview.glyphFetcher(n);
+    if (!s || !r) return { error: "现场取模失败：无法读取源字体数据" };
+    const a = Le(s, e, r);
+    return a ? { result: a } : { error: "现场取模失败：字符集未命中任何字形" };
   }
   destroy() {
     this.destroyed = !0, document.removeEventListener("keydown", this.onKeyDown), this.preview.destroy(), this.container.innerHTML = "";
@@ -2593,25 +2610,25 @@ class Ut {
     }));
   }
   updateLiveInfo() {
-    var s;
-    const t = document.getElementById("ume-live-value"), e = document.getElementById("ume-page-jump"), n = this.store.getState(), r = this.store.getState().project.pages.findIndex((a) => a.id === n.selection.pageId);
+    var r;
+    const t = document.getElementById("ume-live-value"), e = document.getElementById("ume-page-jump"), n = this.store.getState(), s = this.store.getState().project.pages.findIndex((a) => a.id === n.selection.pageId);
     if (e) {
-      const a = n.project.pages, o = a.map((c) => c.name).join("|");
-      e.dataset.sig !== o && (e.dataset.sig = o, e.innerHTML = "", a.forEach((c, l) => {
-        const p = document.createElement("option");
-        p.value = String(l), p.textContent = `${l + 1}. ${c.name}`, e.appendChild(p);
+      const a = n.project.pages, o = a.map((l) => l.name).join("|");
+      e.dataset.sig !== o && (e.dataset.sig = o, e.innerHTML = "", a.forEach((l, d) => {
+        const m = document.createElement("option");
+        m.value = String(d), m.textContent = `${d + 1}. ${l.name}`, e.appendChild(m);
       }), e.onchange = () => {
-        const c = parseInt(e.value, 10);
-        Number.isFinite(c) && this.preview.navTo(c);
+        const l = parseInt(e.value, 10);
+        Number.isFinite(l) && this.preview.navTo(l);
       });
       const u = this.preview.currentPage;
       document.activeElement !== e && e.value !== String(u) && (e.value = String(u));
     }
-    if (t && r >= 0 && n.selection.itemId) {
-      const a = n.project.pages[r], o = a.items.findIndex((m) => m.id === n.selection.itemId), u = a.items[o], c = u == null ? void 0 : u.bind, l = (c == null ? void 0 : c.type) === "value" || (c == null ? void 0 : c.type) === "switch" ? c.varId : null, p = (u == null ? void 0 : u.kind) === "text" && (c == null ? void 0 : c.type) === "none" ? u.displayVarId : null, $ = l ?? p;
-      if (u && $) {
-        const m = (n.project.variables ?? []).findIndex((S) => S.id === $), v = m >= 0 ? m : r * 64 + o, g = (c == null ? void 0 : c.type) === "switch" ? this.preview.getSwitch(v) : this.preview.getInt(v), f = (s = (n.project.variables ?? []).find((S) => S.id === $)) == null ? void 0 : s.name;
-        t.textContent = `${f ?? u.kind} = ${g}`;
+    if (t && s >= 0 && n.selection.itemId) {
+      const a = n.project.pages[s], o = a.items.findIndex((h) => h.id === n.selection.itemId), u = a.items[o], l = u == null ? void 0 : u.bind, d = (l == null ? void 0 : l.type) === "value" || (l == null ? void 0 : l.type) === "switch" ? l.varId : null, m = (u == null ? void 0 : u.kind) === "text" && (l == null ? void 0 : l.type) === "none" ? u.displayVarId : null, x = d ?? m;
+      if (u && x) {
+        const h = (n.project.variables ?? []).findIndex((E) => E.id === x), g = h >= 0 ? h : s * 64 + o, v = (l == null ? void 0 : l.type) === "switch" ? this.preview.getSwitch(g) : this.preview.getInt(g), f = (r = (n.project.variables ?? []).find((E) => E.id === x)) == null ? void 0 : r.name;
+        t.textContent = `${f ?? u.kind} = ${v}`;
       } else
         t.textContent = "";
     }
