@@ -504,7 +504,15 @@ void em_item_text(int page, int idx, const char *text)
     em_item_t *it = &em_pages[page][idx];
     snprintf(it->text, sizeof(it->text), "%s", text);
 
-    /* 文本区内容写入池缓冲 */
+    /* 文本区内容写入池缓冲（首次访问时分配并 init） */
+    if (it->kind == EM_TextArea && !em_tas[page][idx].text
+        && em_ta_used + 256 <= EM_TA_POOL_BYTES) {
+        char *p = &em_ta_pool[em_ta_used];
+        em_ta_used += 256;
+        p[0] = '\0';
+        u8g2_textArea_init(&em_tas[page][idx], p);
+        /* 行间距预览暂用库默认值（自定义 lineSpacing 仅体现在生成代码） */
+    }
     if (it->kind == EM_TextArea && em_tas[page][idx].text) {
         char *p = (char *)(uintptr_t)em_tas[page][idx].text;
         snprintf(p, 256, "%s", text);

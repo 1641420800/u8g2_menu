@@ -1266,13 +1266,14 @@ function _t(s, a, n) {
             `static char ta${x}_text[] = "${ue(w.content)}";`,
             `static u8g2_menu_textArea_t ta${x};`,
             `static uint8_t ta${x}_inited = 0;`
-          ), z.push(
+          ), z.push([
             `    if (!ta${x}_inited) {`,
             `        ta${x}_inited = 1;`,
             `        u8g2_textArea_init(&ta${x}, ta${x}_text);`,
             `        u8g2_textArea_setLineSpacing(&ta${x}, ${Math.max(0, Math.trunc(w.lineSpacing))});`,
             "    }"
-          );
+          ].join(`
+`));
           break;
         }
       }
@@ -1376,8 +1377,7 @@ function _t(s, a, n) {
         break;
       case "textarea": {
         const _ = ee++;
-        x.push(...z[_].split(`
-`));
+        x.push(z[_]);
         const S = c.bindScroll ? "u8g2_MenuDrawTextArea_bind" : "u8g2_MenuDrawTextArea";
         x.push(`    ${S}(&ta${_}, ${Math.max(10, Math.trunc(c.height))});`);
         break;

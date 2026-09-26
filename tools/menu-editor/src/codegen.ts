@@ -326,13 +326,13 @@ export function generateCode(
             `static u8g2_menu_textArea_t ta${idx};`,
             `static uint8_t ta${idx}_inited = 0;`,
           );
-          taInits.push(
+          taInits.push([
             `    if (!ta${idx}_inited) {`,
             `        ta${idx}_inited = 1;`,
             `        u8g2_textArea_init(&ta${idx}, ta${idx}_text);`,
             `        u8g2_textArea_setLineSpacing(&ta${idx}, ${Math.max(0, Math.trunc(it.lineSpacing))});`,
             `    }`,
-          );
+          ].join('\n'));
           break;
         }
         default:
@@ -491,7 +491,7 @@ export function generateCode(
         break;
       case 'textarea': {
         const idx = taCursor++;
-        lines.push(...taInits[idx].split('\n'));
+        lines.push(taInits[idx]);
         const call = it.bindScroll ? 'u8g2_MenuDrawTextArea_bind' : 'u8g2_MenuDrawTextArea';
         lines.push(`    ${call}(&ta${idx}, ${Math.max(10, Math.trunc(it.height))});`);
         break;
