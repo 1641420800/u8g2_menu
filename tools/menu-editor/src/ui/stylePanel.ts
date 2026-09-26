@@ -2,13 +2,17 @@ import { html, render, nothing, type TemplateResult } from 'lit-html';
 import type { EditorStoreApi } from '../store';
 import type { Project, Variable, ChartBuffer } from '../types';
 import { FONTS, WEAK_HOOKS } from '../types';
-import { isCIdentifier } from '../codegen';
+import { isCIdentifier, toCIdent } from '../codegen';
 import { scanCharset, charsetStats } from '../fonts/charset';
+import { collectCallbacks, type CallbackResource } from '../model';
 import { numField, selectField, textField, checkField } from './common';
 
-/** 当前展开编辑的变量/缓冲区 id（跨渲染保持） */
+/** 当前展开编辑的变量/缓冲区/回调 id 或名（跨渲染保持） */
 let expandedVarId: string | null = null;
 let expandedBufId: string | null = null;
+let expandedCbName: string | null = null;
+/** 本次展开会话的改名合并键（展开时的名字，改名过程中保持不变） */
+let cbEditSessionKey = '';
 
 const TYPE_OPTIONS: { value: Variable['type']; label: string }[] = [
   { value: 'uint8', label: 'uint8 (0~255)' },
@@ -22,9 +26,15 @@ const TYPE_OPTIONS: { value: Variable['type']; label: string }[] = [
   { value: 'double', label: 'double (小数)' },
 ];
 
-function renderVarManager(store: EditorStoreApi, project: Project): TemplateResult {
+/** 展开状态变化后立即重渲染本面板（模块级状态不会触发 store 订阅） */
+type Rerender = () => void;
+
+function renderVarManager(store: EditorStoreApi, project: Project, rerender: Rerender): TemplateResult {
   const vars = project.variables ?? [];
-  const toggleExpand = (id: string) => { expandedVarId = expandedVarId === id ? null : id; };
+  const toggleExpand = (id: string) => {
+    expandedVarId = expandedVarId === id ? null : id;
+    rerender();
+  };
 
   const varRow = (v: Variable): TemplateResult => {
     const editing = expandedVarId === v.id;
@@ -86,7 +96,7 @@ function countRefs(project: Project, varId: string): number {
 }
 
 /** 图表数据源缓冲区管理区（多个图表条目可共用，data_dis 由生成器自动分配） */
-function renderBufManager(store: EditorStoreApi, project: Project): TemplateResult {
+function renderBufManager(store: EditorStoreApi, project: Project, rerender: Rerender): TemplateResult {
   const bufs = project.chartBuffers ?? [];
   const refsOf = (bufId: string): number => {
     let n = 0;
@@ -106,7 +116,7 @@ function renderBufManager(store: EditorStoreApi, project: Project): TemplateResu
     const nameKeyword = b.name && !nameBad && !isCIdentifier(b.name);
     const refs = refsOf(b.id);
     return html`<div class="ume-var-item ${editing ? 'editing' : ''}">
-      <div class="ume-var-row" @click=${() => { expandedBufId = editing ? null : b.id; }}>
+      <div class="ume-var-row" @click=${() => { expandedBufId = editing ? null : b.id; rerender(); }}>
         <span class="ume-var-name" title=${b.name}>${b.name || '(未命名)'}</span>
         <span class="ume-var-meta">${b.dataLen} 点 · ${({ sine: '正弦', ramp: '斜坡', noise: '伪随机', none: '手动填充' } as Record<string, string>)[b.sample]}${refs ? ` · ${refs} 处引用` : ''}</span>
         <button class="ume-mini" title="删除缓冲区" @click=${(e: Event) => {
@@ -146,12 +156,68 @@ function renderBufManager(store: EditorStoreApi, project: Project): TemplateResu
   `;
 }
 
-/** 「资源」页：变量 + 数据源缓冲区 */
+/** 回调函数管理区（按钮附加值回调 + 画板回调自动收集，改名同步全部引用处） */
+function renderCbManager(store: EditorStoreApi, project: Project, rerender: Rerender): TemplateResult {
+  const cbs = collectCallbacks(project);
+  const renameCb = (oldName: string, newName: string) => {
+    const v = newName.trim();
+    if (!v || v === oldName) return;
+    store.getState().update((p) => {
+      for (const pg of p.pages) {
+        for (const it of pg.items) {
+          if (it.bind.type === 'button' && it.bind.cbName === oldName) it.bind.cbName = v;
+          if (it.kind === 'board' && it.cbName === oldName) it.cbName = v;
+        }
+      }
+    }, `cbname-${cbEditSessionKey}`);
+    expandedCbName = v; // 改名后保持展开
+  };
+
+  const cbRow = (cb: CallbackResource): TemplateResult => {
+    const editing = expandedCbName === cb.name;
+    const kindLabel = cb.asButton && cb.asBoard ? '按钮+画板' : cb.asButton ? '按钮' : '画板';
+    const nameBad = cb.name && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(cb.name);
+    const nameKeyword = cb.name && !nameBad && !isCIdentifier(cb.name);
+    return html`<div class="ume-var-item ${editing ? 'editing' : ''}">
+      <div class="ume-var-row" @click=${() => {
+        expandedCbName = editing ? null : cb.name;
+        cbEditSessionKey = cb.name;
+        rerender();
+      }}>
+        <span class="ume-var-name" title=${cb.name}>${cb.name || '(未命名)'}</span>
+        <span class="ume-var-meta">${kindLabel} · ${cb.refs.length} 处引用</span>
+      </div>
+      ${editing ? html`<div class="ume-var-edit">
+        ${textField('回调函数名', cb.name, (val) => renameCb(cb.name, val))}
+        ${nameBad ? html`<div class="ume-warn">回调名不是合法的 C 标识符，生成时会自动清洗</div>` : nothing}
+        ${nameKeyword ? html`<div class="ume-warn">回调名是 C 关键字，生成的代码会自动改名（如 ${cb.name}_），建议换个名字</div>` : nothing}
+        ${cb.asButton ? html`<div class="ume-hint">按钮签名：void ${cb.name}(u8g2_menu_t *menu, uint8_t ID) —— 选中该条目时任意按键触发</div>` : nothing}
+        ${cb.asBoard ? html`<div class="ume-hint">画板签名：void ${cb.name}(u8g2_t *u8g2) —— 在指定宽高内用 u8g2 画图</div>` : nothing}
+        <div class="ume-hint">回调逻辑写在生成的 menu_pages.c 的 cb_${toCIdent(cb.name)} USER CODE 区内（重新生成保留）</div>
+        <div class="ume-hint">引用此回调的条目（点击定位到属性面板）：</div>
+        ${cb.refs.map((r) => html`<div class="ume-cb-ref" title="点击定位"
+          @click=${() => store.getState().select(r.pageId, r.itemId)}>${r.pageName} / ${r.label}</div>`)}
+      </div>` : nothing}
+    </div>`;
+  };
+
+  return html`
+    <div class="ume-panel-title">回调函数 (${cbs.length})</div>
+    ${cbs.length ? cbs.map(cbRow) : html`<div class="ume-empty-hint">
+      按钮附加值与画板条目的回调函数会自动收集到这里：
+      统一改名、查看 C 签名、点击引用定位到条目。
+    </div>`}
+  `;
+}
+
+/** 「资源」页：变量 + 数据源缓冲区 + 回调函数 */
 export function renderResources(el: HTMLElement, store: EditorStoreApi): void {
   const { project } = store.getState();
+  const rerender = () => renderResources(el, store);
   render(html`
-    ${renderVarManager(store, project)}
-    ${renderBufManager(store, project)}
+    ${renderVarManager(store, project, rerender)}
+    ${renderBufManager(store, project, rerender)}
+    ${renderCbManager(store, project, rerender)}
   `, el);
 }
 

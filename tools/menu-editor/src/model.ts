@@ -2,6 +2,7 @@ import type {
   Item, ItemKind, Page, Project, XbmItem, TextItem, SliderItem, ProgressItem,
   ChartItem, BoardItem, Variable, ChartBuffer,
 } from './types';
+import { KIND_LABELS } from './types';
 
 let idSeq = 0;
 export function genId(prefix: string): string {
@@ -157,4 +158,50 @@ export function createProject(): Project {
 
 export function cloneProject(p: Project): Project {
   return structuredClone(p);
+}
+
+/* ===================== 回调函数资源 ===================== */
+
+export interface CallbackRef {
+  pageId: string;
+  itemId: string;
+  /** 引用处的显示名：页面名 / 条目名 */
+  pageName: string;
+  label: string;
+}
+
+export interface CallbackResource {
+  /** 回调函数名（同时作为聚合键） */
+  name: string;
+  /** 被按钮附加值使用 */
+  asButton: boolean;
+  /** 被画板条目使用 */
+  asBoard: boolean;
+  refs: CallbackRef[];
+}
+
+/** 收集工程内所有回调函数资源（按钮附加值回调 + 画板回调），按名字聚合 */
+export function collectCallbacks(project: Project): CallbackResource[] {
+  const map = new Map<string, CallbackResource>();
+  const push = (name: string, kind: 'button' | 'board', pg: Page, it: Item) => {
+    if (!name) return;
+    let cb = map.get(name);
+    if (!cb) {
+      cb = { name, asButton: false, asBoard: false, refs: [] };
+      map.set(name, cb);
+    }
+    if (kind === 'button') cb.asButton = true;
+    else cb.asBoard = true;
+    cb.refs.push({
+      pageId: pg.id, itemId: it.id, pageName: pg.name,
+      label: it.label || ('text' in it ? it.text : '') || KIND_LABELS[it.kind],
+    });
+  };
+  for (const pg of project.pages) {
+    for (const it of pg.items) {
+      if (it.bind.type === 'button') push(it.bind.cbName, 'button', pg, it);
+      if (it.kind === 'board') push(it.cbName, 'board', pg, it);
+    }
+  }
+  return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
