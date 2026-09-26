@@ -71,8 +71,7 @@ export function renderProperty(
     body = html`
       ${textField('名称', page.name, (v) => store.getState().updatePage(page.id, { name: v }))}
       ${textField('C 函数名', page.fnName, (v) => store.getState().updatePage(page.id, { fnName: v }), '留空自动 page_N')}
-      ${areaField('用户代码', page.userCodePre, (v) => store.getState().updatePage(page.id, { userCodePre: v }), true)}
-      <div class="ume-hint">生成于页面函数开头（USER CODE 保留区）</div>
+      <div class="ume-hint">页面内的手写 C 代码请到生成的 menu_pages.c 的 USER CODE 区填写（重新生成时保留），编辑器不提供代码编辑</div>
     `;
   } else if (page && item) {
     title = `${KIND_LABELS[item.kind]}`;

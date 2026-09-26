@@ -2,8 +2,8 @@ import type { Item, NumberItem, Page, Project, SwitchItem, NumVarType, ChartBuff
 import { WEAK_HOOKS } from './types';
 
 export interface CodegenResult {
+  /** 单文件 menu_pages.c（含页面/变量/回调的 extern 速查注释） */
   c: string;
-  h: string;
   warnings: string[];
 }
 
@@ -428,17 +428,25 @@ export function generateCode(
     return lines;
   };
 
-  // ---------- 组装 .c ----------
+  // ---------- 组装单文件 .c（无 .h） ----------
   const cParts: string[] = [];
   cParts.push(`/**`);
   cParts.push(` * 由 u8g2-menu-editor 自动生成，工程: ${project.name}`);
   cParts.push(` * 重新生成时，USER CODE 区域内的手写内容会被保留。`);
+  cParts.push(` *`);
+  cParts.push(` * main.c 里使用以下符号时，直接 extern（或复制下面声明）：`);
+  pageFns.forEach((fn, i) => cParts.push(` *   void ${fn}(void);   /* 页面: ${project.pages[i].name} */`));
+  for (const v of vars.values()) cParts.push(` *   extern ${v.type} ${v.name};`);
+  for (const [cb] of buttonCbs) cParts.push(` *   void ${cb}(u8g2_menu_t *menu, uint8_t ID);`);
+  for (const cb of boardCbs) cParts.push(` *   void ${cb}(u8g2_t *u8g2);`);
   cParts.push(` */`);
-  cParts.push(`#include "menu_pages.h"`);
   cParts.push(`#include "u8g2_menu.h"`);
   if ((project.chartBuffers ?? []).some((b) => b.sample === 'sine')) cParts.push(`#include <math.h>`);
   cParts.push('');
   cParts.push(userBlock('includes', cBlocks, ''));
+  cParts.push('');
+  // 页面函数前置声明（子页面相互跳转需要）
+  pageFns.forEach((fn) => cParts.push(`void ${fn}(void);`));
   cParts.push('');
 
   // 变量
@@ -522,31 +530,6 @@ export function generateCode(
     cParts.push('');
   });
 
-  // ---------- 组装 .h ----------
-  const hParts: string[] = [];
-  hParts.push(`#ifndef MENU_PAGES_H`);
-  hParts.push(`#define MENU_PAGES_H`);
-  hParts.push('');
-  hParts.push(`#include "u8g2_menu.h"`);
-  hParts.push('');
-  hParts.push(`/* 页面入口。首个页面作为 u8g2_CreateMenu 的初始页面。 */`);
-  pageFns.forEach((fn, i) => hParts.push(`void ${fn}(void);   /* ${project.pages[i].name} */`));
-  hParts.push('');
-  if (vars.size) {
-    hParts.push(`/* 可编辑变量（在条目绑定中使用） */`);
-    for (const v of vars.values()) hParts.push(`extern ${v.type} ${v.name};`);
-    hParts.push('');
-  }
-  if (buttonCbs.size || boardCbs.size) {
-    hParts.push(`/* 用户回调 */`);
-    for (const [cb] of buttonCbs) hParts.push(`void ${cb}(u8g2_menu_t *menu, uint8_t ID);`);
-    for (const cb of boardCbs) hParts.push(`void ${cb}(u8g2_t *u8g2);`);
-    hParts.push('');
-  }
-  hParts.push(`#endif /* MENU_PAGES_H */`);
-
-  const header = cParts.join('\n').replace(/\n{3,}/g, '\n\n\n');
-  const hText = hParts.join('\n');
-
-  return { c: `${header}\n`, h: `${hText}\n`, warnings };
+  const code = cParts.join('\n').replace(/\n{3,}/g, '\n\n\n');
+  return { c: `${code}\n`, warnings };
 }

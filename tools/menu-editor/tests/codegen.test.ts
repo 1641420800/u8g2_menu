@@ -7,7 +7,7 @@ import { parseProject, serializeProject } from '../src/schema';
 describe('codegen', () => {
   it('为默认示例工程生成两个页面函数与变量', () => {
     const proj = createProject();
-    const { c, h, warnings } = generateCode(proj);
+    const { c, warnings } = generateCode(proj);
     expect(c).toContain('void page_0(void)');
     expect(c).toContain('void page_1(void)');
     expect(c).toContain('u8g2_MenuUTF8Printf("u8g2_menu");');
@@ -25,9 +25,9 @@ describe('codegen', () => {
     // 回调骨架 + USER CODE
     expect(c).toContain('void btn_about_cb(u8g2_menu_t *menu, uint8_t ID)');
     expect(c).toContain('/* USER CODE BEGIN cb_btn_about_cb */');
-    // 头文件
-    expect(h).toContain('void page_0(void);');
-    expect(h).toContain('extern int32_t var_value;');
+    // 单文件：页面原型前置声明 + main.c extern 速查注释
+    expect(c).toMatch(/void page_0\(void\);[\s\S]*void page_0\(void\)/);
+    expect(c).toContain(' *   extern int32_t var_value;');
     expect(warnings).toEqual([]);
   });
 

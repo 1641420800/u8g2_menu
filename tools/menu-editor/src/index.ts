@@ -40,7 +40,7 @@ export class MenuEditor {
   private renderScheduled = false;
   private saveTimer: number | undefined;
   private changeTimer: number | undefined;
-  private lastExport: { c: string; h: string } | null = null;
+  private lastExport: { c: string } | null = null;
   private destroyed = false;
 
   constructor(container: HTMLElement, opts: MenuEditorOptions = {}) {
@@ -69,9 +69,7 @@ export class MenuEditor {
     }
     const lastC = this.opts.persistKey
       ? localStorage.getItem(`ume_last_c_${this.opts.persistKey}`) : null;
-    const lastH = this.opts.persistKey
-      ? localStorage.getItem(`ume_last_h_${this.opts.persistKey}`) : null;
-    if (lastC && lastH) this.lastExport = { c: lastC, h: lastH };
+    if (lastC) this.lastExport = { c: lastC };
 
     // 布局
     container.innerHTML = `
@@ -196,10 +194,9 @@ export class MenuEditor {
   generate(): CodegenResult {
     const prev = this.lastExport;
     const result = generateCode(this.store.getState().project, prev ?? undefined);
-    this.lastExport = { c: result.c, h: result.h };
+    this.lastExport = { c: result.c };
     if (this.opts.persistKey) {
       localStorage.setItem(`ume_last_c_${this.opts.persistKey}`, result.c);
-      localStorage.setItem(`ume_last_h_${this.opts.persistKey}`, result.h);
     }
     showExportDialog(this.container, result);
     this.opts.onExport?.(result);
@@ -208,9 +205,8 @@ export class MenuEditor {
 
   downloadC(): void {
     const r = generateCode(this.store.getState().project, this.lastExport ?? undefined);
-    this.lastExport = { c: r.c, h: r.h };
+    this.lastExport = { c: r.c };
     download('menu_pages.c', r.c);
-    download('menu_pages.h', r.h);
   }
 
   destroy(): void {

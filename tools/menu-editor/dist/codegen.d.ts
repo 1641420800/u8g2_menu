@@ -1,7 +1,7 @@
 import type { Project } from './types';
 export interface CodegenResult {
+    /** 单文件 menu_pages.c（含页面/变量/回调的 extern 速查注释） */
     c: string;
-    h: string;
     warnings: string[];
 }
 export declare function toCIdent(s: string, fallback?: string): string;
