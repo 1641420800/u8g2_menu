@@ -5,16 +5,24 @@
  * u8g2_menu 真实 API 的调用，与代码生成器产出的 C 代码走完全相同的库函数路径，
  * 保证预览 = 真机行为（像素级一致）。
  *
+ * 条目模型（与编辑器一致）：绘制类型 + 可选附加值（绑定）
+ *   绘制：文本/滑块条/进度条/图表/位图/文本区/自绘板
+ *   附加值：无/数值/开关/按钮/子页面/返回（绘制前附加，可与任意绘制组合）
+ *
  * JS 侧通过 emscripten ccall 调用以下导出：
  *   em_init(w, h)                       初始化 u8g2 + menu（当前固定 ssd1306 128x64 驱动）
  *   em_set_style(font, sel, l, t, sp, spe, header)
+ *   em_var_define(slot, type, init, step, min, max)   定义变量（值池按变量共享）
  *   em_page_begin(page)                 开始设置某页
- *   em_page_item(page, idx, kind, ...)  逐条设置条目（数值字段）
+ *   em_page_item(page, idx, kind, scale, area_h, xbm_w, xbm_h, dispSlot, poolSlot)
+ *   em_page_bind(page, idx, bindType, varType, swOpen, buttonId, target, poolSlot)
  *   em_item_text(page, idx, text)       条目文本/格式串
- *   em_item_swtext(page, idx, on, off)  开关条目 on/off 文本
  *   em_item_bits(page, idx, ptr, len)   XBM 位图数据（ptr 指向 JS 已写入的 scratch）
+ *   em_buf_define(slot, len, sample)    定义图表数据源缓冲区（示例填充）
+ *   em_item_chart_add(page, idx, bufSlot, kind, fixed, fmax, fmin)  图表叠加数据源
  *   em_page_end(page, count)            结束某页
- *   em_pages_commit(count)              提交全部页面并回到第 0 页
+ *   em_pages_commit(count)              提交全部页面并保持当前预览页
+ *   em_nav(page)                        预览跳转到指定页
  *   em_reset_dynamic()                  重置值池/资源池游标（结构变化时调用）
  *   em_frame(ms) -> ptr                 一帧：Clear + DrawMenu + Send + Time_ISR，返回显存
  *   em_key(key)                         注入按键 (u8g2_MenuKeys)
@@ -37,31 +45,31 @@
 
 /* ===================== 条目表 ===================== */
 
+/* 绘制类型（与编辑器 DrawKind 一致） */
 typedef enum {
-    EM_Text = 0, EM_Number, EM_Switch, EM_Button, EM_Submenu, EM_Back,
-    EM_Slider, EM_Progress, EM_Chart, EM_XBM, EM_TextArea, EM_Board
+    EM_Text = 0, EM_Slider, EM_Progress, EM_Chart, EM_XBM, EM_TextArea, EM_Board
 } em_kind_t;
+
+/* 附加值类型（与编辑器 Bind 一致） */
+typedef enum {
+    EM_BindNone = 0, EM_BindValue, EM_BindSwitch, EM_BindButton, EM_BindSubmenu, EM_BindBack
+} em_bind_t;
 
 typedef struct {
     uint8_t  kind;
     uint8_t  scale;        /* 1|2 */
-    uint8_t  varType;      /* MENU_V_type_t（number 用） */
-    uint8_t  chartKind;    /* 0 line 1 point 2 bar */
-    uint8_t  bindScroll;   /* textarea */
+    uint8_t  bindType;     /* em_bind_t */
+    uint8_t  varType;      /* MENU_V_type_t（value 附加值用） */
     uint8_t  swOpen;
     uint8_t  buttonId;
-    uint8_t  chartFixed;   /* chart: 1=固定量程 */
-    int32_t  i_value;      /* number/slider 初值 */
-    int32_t  i_step;
-    int32_t  i_min;
-    int32_t  i_max;        /* chart 固定量程时复用为 max */
     int16_t  target;       /* submenu 目标页 */
+    int16_t  poolSlot;     /* 值池槽位（绑定变量共享；-1 = 按条目独立） */
+    int16_t  dispSlot;     /* 文本只读显示变量槽位（-1 = 无） */
+    int16_t  position;     /* 无绑定滑条/进度条的静态位置 0~100 */
     uint16_t xbm_w;        /* xbm 宽 / board 宽 */
     uint16_t xbm_h;        /* xbm 高 / board 高 */
     uint16_t area_h;       /* textarea/chart 高度 */
-    uint16_t chart_len;
-    uint16_t lineSpacing;
-    int16_t  poolSlot;     /* 值池槽位（绑定变量共享；-1 = 按条目独立） */
+    uint8_t  bindScroll;   /* textarea */
     char     text[96];
     char     onText[12];
     char     offText[12];
@@ -72,14 +80,28 @@ static uint16_t  em_page_len[EM_MAX_PAGES];
 static uint8_t   em_page_count = 0;
 static uint8_t   em_current_page = 0;
 
-/* ===================== 值池（槽位 = page*EM_MAX_ITEMS+idx，跨帧持久） ===================== */
+/* ===================== 变量与值池（槽位 = 变量在池中的下标） ===================== */
 
+typedef struct {
+    uint8_t type;          /* MENU_V_type_t */
+    int32_t step;
+    int32_t min;
+    int32_t max;
+    uint8_t defined;
+} em_var_meta_t;
+
+static em_var_meta_t em_vars[EM_SLOTS];
 static int32_t em_ipool[EM_SLOTS];
 static float   em_fpool[EM_SLOTS];
 static double  em_dpool[EM_SLOTS];
 static uint8_t em_upool[EM_SLOTS];
 
 /* ===================== 资源池 ===================== */
+
+/* 图表结构池（每个条目-数据源对一个，dis 缓冲从 float 池分配） */
+#define EM_CHART_STRUCTS 128
+static u8g2_chart_t em_chart_structs[EM_CHART_STRUCTS];
+static uint32_t em_chart_structs_used = 0;
 
 #define EM_CHART_POOL_FLOATS 32768
 static float    em_chart_pool[EM_CHART_POOL_FLOATS];
@@ -97,11 +119,6 @@ typedef struct {
 static em_buf_t  em_bufs[EM_MAX_BUFS];
 static float     em_buf_pool[EM_BUF_POOL_FLOATS];
 static uint32_t  em_buf_used = 0;
-
-/* 图表结构池（每个条目-数据源对一个，dis 缓冲从 float 池分配） */
-#define EM_CHART_STRUCTS 128
-static u8g2_chart_t em_chart_structs[EM_CHART_STRUCTS];
-static uint32_t em_chart_structs_used = 0;
 
 /* 图表叠加层：一个条目最多 4 个数据源，同区域依次绘制 */
 #define EM_MAX_CHART_SRC 4
@@ -194,11 +211,69 @@ static void em_draw_text_buf(em_item_t *it, char *buf)
         u8g2_MenuDrawUTF8(buf);
 }
 
-static void em_draw_raw(em_item_t *it)
+/* 附加值附着（绘制前调用；与生成代码的绑定行同路径） */
+static void em_apply_bind(const em_item_t *it, uint32_t slot)
 {
-    char buf[128];
-    snprintf(buf, sizeof(buf), "%s", it->text);
-    em_draw_text_buf(it, buf);
+    switch (it->bindType) {
+    case EM_BindValue:
+        switch (em_vars[slot].type) {
+        case MENU_V_float:
+            u8g2_MenuItemValue_float(&em_fpool[slot], (float)em_vars[slot].step,
+                                     (float)em_vars[slot].min, (float)em_vars[slot].max);
+            break;
+        case MENU_V_double:
+            u8g2_MenuItemValue_double(&em_dpool[slot], (double)em_vars[slot].step,
+                                      (double)em_vars[slot].min, (double)em_vars[slot].max);
+            break;
+        default: /* 整数族统一用 int32 路径，视觉行为一致 */
+            u8g2_MenuItemValue_int32(&em_ipool[slot], em_vars[slot].step,
+                                     em_vars[slot].min, em_vars[slot].max);
+            break;
+        }
+        break;
+    case EM_BindSwitch:
+        u8g2_MenuItemValue_switch(&em_upool[slot], it->swOpen);
+        break;
+    case EM_BindButton:
+        u8g2_MenuItem_button(em_button_cb, it->buttonId);
+        break;
+    case EM_BindSubmenu:
+        if (it->target >= 0 && it->target < EM_MAX_PAGES && em_page_len[it->target] > 0)
+            u8g2_MenuItem_menu_enter(em_page_stubs[it->target]);
+        break;
+    case EM_BindBack:
+        u8g2_MenuItem_menu_back();
+        break;
+    default:
+        break;
+    }
+}
+
+/* 文本行的实际显示内容：附加值/显示变量决定 printf 参数 */
+static void em_format_text(const em_item_t *it, uint32_t slot, char *buf, size_t bufsize)
+{
+    if (it->bindType == EM_BindValue) {
+        switch (em_vars[slot].type) {
+        case MENU_V_float:  snprintf(buf, bufsize, it->text, (double)em_fpool[slot]); return;
+        case MENU_V_double: snprintf(buf, bufsize, it->text, em_dpool[slot]); return;
+        default:            snprintf(buf, bufsize, it->text, (int)em_ipool[slot]); return;
+        }
+    }
+    if (it->bindType == EM_BindSwitch) {
+        snprintf(buf, bufsize, it->text,
+                 em_upool[slot] == it->swOpen ? it->onText : it->offText);
+        return;
+    }
+    if (it->bindType == EM_BindNone && it->dispSlot >= 0 && it->dispSlot < EM_SLOTS
+        && em_vars[it->dispSlot].defined) {
+        /* 只读显示变量 */
+        switch (em_vars[it->dispSlot].type) {
+        case MENU_V_float:  snprintf(buf, bufsize, it->text, (double)em_fpool[it->dispSlot]); return;
+        case MENU_V_double: snprintf(buf, bufsize, it->text, em_dpool[it->dispSlot]); return;
+        default:            snprintf(buf, bufsize, it->text, (int)em_ipool[it->dispSlot]); return;
+        }
+    }
+    snprintf(buf, bufsize, "%s", it->text);
 }
 
 /* ===================== 条目分发（与生成代码同路径） ===================== */
@@ -218,87 +293,49 @@ static void em_dispatch(uint8_t page)
 
         switch (it->kind) {
         case EM_Text:
-            em_draw_raw(it);
-            break;
-
-        case EM_Number:
-            /* bindScroll 槽位复用为 noBind：1 = 只显示不绑定附加值 */
-            if (!it->bindScroll) {
-                switch (it->varType) {
-                case MENU_V_float:
-                    u8g2_MenuItemValue_float(&em_fpool[slot], (float)it->i_step,
-                                             (float)it->i_min, (float)it->i_max);
-                    break;
-                case MENU_V_double:
-                    u8g2_MenuItemValue_double(&em_dpool[slot], (double)it->i_step,
-                                              (double)it->i_min, (double)it->i_max);
-                    break;
-                default: /* 整数族统一用 int32 路径，视觉行为一致 */
-                    u8g2_MenuItemValue_int32(&em_ipool[slot], it->i_step, it->i_min, it->i_max);
-                    break;
-                }
-            }
-            switch (it->varType) {
-            case MENU_V_float:
-                snprintf(buf, sizeof(buf), it->text, (double)em_fpool[slot]);
-                break;
-            case MENU_V_double:
-                snprintf(buf, sizeof(buf), it->text, em_dpool[slot]);
-                break;
-            default:
-                snprintf(buf, sizeof(buf), it->text, (int)em_ipool[slot]);
-                break;
-            }
+            em_apply_bind(it, slot);
+            em_format_text(it, slot, buf, sizeof(buf));
             em_draw_text_buf(it, buf);
-            break;
-
-        case EM_Switch:
-            u8g2_MenuItemValue_switch(&em_upool[slot], it->swOpen);
-            snprintf(buf, sizeof(buf), it->text,
-                     em_upool[slot] == it->swOpen ? it->onText : it->offText);
-            em_draw_text_buf(it, buf);
-            break;
-
-        case EM_Button:
-            u8g2_MenuItem_button(em_button_cb, it->buttonId);
-            em_draw_raw(it);
-            break;
-
-        case EM_Submenu:
-            /* menu_enter 压入调用链，配合 EM_Back 的 menu_back 实现层级往返 */
-            if (it->target >= 0 && it->target < EM_MAX_PAGES && em_page_len[it->target] > 0)
-                u8g2_MenuItem_menu_enter(em_page_stubs[it->target]);
-            em_draw_raw(it);
-            break;
-
-        case EM_Back:
-            u8g2_MenuItem_menu_back();
-            em_draw_raw(it);
             break;
 
         case EM_Slider:
-            u8g2_MenuDrawItemSlider_bind((int *)&em_ipool[slot], (int)it->i_step,
-                                         (int)it->i_min, (int)it->i_max);
+            em_apply_bind(it, slot);
+            if (it->bindType == EM_BindValue) {
+                if (em_vars[slot].type == MENU_V_float || em_vars[slot].type == MENU_V_double) break;
+                u8g2_MenuDrawItemSlider_bind((int *)&em_ipool[slot], (int)em_vars[slot].step,
+                                             (int)em_vars[slot].min, (int)em_vars[slot].max);
+            } else {
+                u8g2_MenuDrawItemSlider((float)it->position / 100.0f);
+            }
             break;
 
         case EM_Progress:
-            u8g2_MenuDrawItemProgressBar_bind((int *)&em_ipool[slot], (int)it->i_step,
-                                              (int)it->i_min, (int)it->i_max);
+            em_apply_bind(it, slot);
+            if (it->bindType == EM_BindValue) {
+                if (em_vars[slot].type == MENU_V_float || em_vars[slot].type == MENU_V_double) break;
+                u8g2_MenuDrawItemProgressBar_bind((int *)&em_ipool[slot], (int)em_vars[slot].step,
+                                                  (int)em_vars[slot].min, (int)em_vars[slot].max);
+            } else {
+                u8g2_MenuDrawItemProgressBar((float)it->position / 100.0f);
+            }
             break;
 
         case EM_Chart: {
             em_chart_layers_t *L = &em_chart_layers[page][i];
             if (L->n == 0) break;
+            em_apply_bind(it, slot);
             u8g2_MenuDrawItemChart(L->src, L->n, it->area_h);
             break;
         }
 
         case EM_XBM:
-            if (it->xbm_w && it->xbm_h && it->i_value >= 0)
-                u8g2_MenuDrawItemXBMP(it->xbm_w, it->xbm_h, (const uint8_t *)(uintptr_t)it->i_value);
+            em_apply_bind(it, slot);
+            if (it->xbm_w && it->xbm_h && it->target >= 0)
+                u8g2_MenuDrawItemXBMP(it->xbm_w, it->xbm_h, (const uint8_t *)(uintptr_t)it->target);
             break;
 
         case EM_TextArea: {
+            em_apply_bind(it, slot);
             u8g2_menu_textArea_t *ta = &em_tas[page][i];
             if (!ta->text) break;
             if (it->bindScroll)
@@ -349,8 +386,8 @@ int em_init(int width, int height)
 
 void em_reset_dynamic(void)
 {
-    em_chart_used = 0;
     em_chart_structs_used = 0;
+    em_chart_used = 0;
     em_bits_used = 0;
     em_ta_used = 0;
     em_buf_used = 0;
@@ -358,9 +395,10 @@ void em_reset_dynamic(void)
     memset(em_chart_layers, 0, sizeof(em_chart_layers));
     memset(em_bufs, 0, sizeof(em_bufs));
     memset(em_page_len, 0, sizeof(em_page_len));
+    memset(em_vars, 0, sizeof(em_vars));
     em_btn_count = 0;
     em_btn_last = 0;
-    /* 值池填哨兵值：让 em_page_item 的范围检查必然失败，从而回种初始值
+    /* 值池填哨兵值：让变量定义的范围检查必然失败，从而回种初始值
        （清零会让初值 0~min 之间的合法值看起来"已初始化"） */
     memset(em_ipool, 0x7F, sizeof(em_ipool));        /* INT32_MAX */
     memset(em_fpool, 0x7F, sizeof(em_fpool));        /* 巨型 float */
@@ -384,88 +422,72 @@ void em_set_style(int font_idx, int selector, int left, int top, int spacing,
     u8g2_MenuSetPositionOffsetStrHeaderLen(&em_menu, header);
 }
 
+/* 定义变量（值池槽位 = slot；初值仅在哨兵状态下回种，保留预览中的编辑值） */
+void em_var_define(int slot, int type, int initial, int step, int min, int max)
+{
+    if (slot < 0 || slot >= EM_SLOTS) return;
+    em_var_meta_t *m = &em_vars[slot];
+    m->type = (uint8_t)type;
+    m->step = step;
+    m->min = min;
+    m->max = max;
+    m->defined = 1;
+    if (type == MENU_V_float) {
+        if (em_fpool[slot] < (float)min || em_fpool[slot] > (float)max)
+            em_fpool[slot] = (float)initial;
+    } else if (type == MENU_V_double) {
+        if (em_dpool[slot] < (double)min || em_dpool[slot] > (double)max)
+            em_dpool[slot] = (double)initial;
+    } else {
+        if (em_ipool[slot] < min || em_ipool[slot] > max)
+            em_ipool[slot] = initial;
+    }
+}
+
 void em_page_begin(int page)
 {
     if (page < 0 || page >= EM_MAX_PAGES) return;
-    /* 重新设置该页时丢弃旧图表/文本区资源指针（由 em_page_item 重建） */
+    /* 重新设置该页时丢弃旧文本区资源指针（由 em_page_item 重建） */
     memset(&em_tas[page], 0, sizeof(em_tas[page]));
     em_page_len[page] = 0;
 }
 
-/* 数值字段一次性设置（poolSlot >= 0 时值池按变量共享，-1 则按条目独立） */
-void em_page_item(int page, int idx, int kind, int varType, int scale,
-                  int chartKind, int bindScroll, int swOpen, int buttonId, int chartFixed,
-                  int i_value, int i_step, int i_min, int i_max,
-                  int target, int xbm_w, int xbm_h, int area_h, int chart_len, int lineSpacing,
-                  int poolSlot)
+/* 设置条目绘制参数（附加值由 em_page_bind 单独设置） */
+void em_page_item(int page, int idx, int kind, int scale,
+                  int area_h, int xbm_w, int xbm_h, int dispSlot, int poolSlot)
 {
     if (page < 0 || page >= EM_MAX_PAGES || idx < 0 || idx >= EM_MAX_ITEMS) return;
     em_item_t *it = &em_pages[page][idx];
     memset(it, 0, sizeof(*it));
     it->kind = (uint8_t)kind;
-    it->varType = (uint8_t)varType;
     it->scale = (uint8_t)scale;
-    it->chartKind = (uint8_t)chartKind;
-    it->bindScroll = (uint8_t)bindScroll;
-    it->swOpen = (uint8_t)swOpen;
-    it->buttonId = (uint8_t)buttonId;
-    it->chartFixed = (uint8_t)chartFixed;
-    it->i_value = i_value;
-    it->i_step = i_step;
-    it->i_min = i_min;
-    it->i_max = i_max;
-    it->target = (int16_t)target;
+    it->area_h = (uint16_t)area_h;
     it->xbm_w = (uint16_t)xbm_w;
     it->xbm_h = (uint16_t)xbm_h;
-    it->area_h = (uint16_t)area_h;
-    it->chart_len = (uint16_t)chart_len;
-    it->lineSpacing = (uint16_t)lineSpacing;
+    it->dispSlot = (int16_t)dispSlot;
+    it->poolSlot = (int16_t)poolSlot;
+    it->bindType = EM_BindNone;
+    it->target = -1;
+}
 
-    uint32_t slot = (poolSlot >= 0 && poolSlot < EM_SLOTS)
-        ? (uint32_t)poolSlot
-        : (uint32_t)page * EM_MAX_ITEMS + idx;
-    it->poolSlot = (int16_t)slot;
+/* 设置条目附加值 */
+void em_page_bind(int page, int idx, int bindType, int varType, int swOpen,
+                  int buttonId, int target, int poolSlot)
+{
+    if (page < 0 || page >= EM_MAX_PAGES || idx < 0 || idx >= EM_MAX_ITEMS) return;
+    em_item_t *it = &em_pages[page][idx];
+    it->bindType = (uint8_t)bindType;
+    it->varType = (uint8_t)varType;
+    it->swOpen = (uint8_t)swOpen;
+    it->buttonId = (uint8_t)buttonId;
+    it->target = (int16_t)target;
+    if (poolSlot >= 0 && poolSlot < EM_SLOTS) it->poolSlot = (int16_t)poolSlot;
 
-    switch (kind) {
-    case EM_Number:
-        if (varType == MENU_V_float) {
-            if (em_fpool[slot] < (float)i_min || em_fpool[slot] > (float)i_max)
-                em_fpool[slot] = (float)i_value;
-        } else if (varType == MENU_V_double) {
-            if (em_dpool[slot] < (double)i_min || em_dpool[slot] > (double)i_max)
-                em_dpool[slot] = (double)i_value;
-        } else {
-            if (em_ipool[slot] < i_min || em_ipool[slot] > i_max)
-                em_ipool[slot] = i_value;
-        }
+    switch (bindType) {
+    case EM_BindSwitch:
+        if (em_upool[it->poolSlot] == 0xFF)
+            em_upool[it->poolSlot] = it->swOpen ? 1 : 0;
         break;
-    case EM_Switch:
-        if (em_upool[slot] == 0xFF)
-            em_upool[slot] = (uint8_t)((i_value == swOpen) ? swOpen : !swOpen);
-        break;
-    case EM_Slider:
-    case EM_Progress:
-        if (em_ipool[slot] < i_min || em_ipool[slot] > i_max)
-            em_ipool[slot] = i_value;
-        break;
-    case EM_Chart:
-        /* 数据源/叠加层由 em_item_chart_add 逐个添加；此处仅复位层数 */
-        em_chart_layers[page][idx].n = 0;
-        break;
-    case EM_XBM:
-        /* 位图数据由 em_item_bits 二次调用写入 */
-        it->i_value = -1;
-        break;
-    case EM_TextArea: {
-        if (em_ta_used + 256 <= EM_TA_POOL_BYTES) {
-            char *p = &em_ta_pool[em_ta_used];
-            em_ta_used += 256;
-            p[0] = '\0';
-            u8g2_textArea_init(&em_tas[page][idx], p);
-            u8g2_textArea_setLineSpacing(&em_tas[page][idx], (uint16_t)lineSpacing);
-        }
-        break;
-    }
     default:
         break;
     }
@@ -485,14 +507,6 @@ void em_item_text(int page, int idx, const char *text)
     }
 }
 
-void em_item_swtext(int page, int idx, const char *onText, const char *offText)
-{
-    if (page < 0 || page >= EM_MAX_PAGES || idx < 0 || idx >= EM_MAX_ITEMS) return;
-    em_item_t *it = &em_pages[page][idx];
-    snprintf(it->onText, sizeof(it->onText), "%s", onText ? onText : "on");
-    snprintf(it->offText, sizeof(it->offText), "%s", offText ? offText : "off");
-}
-
 void em_item_bits(int page, int idx, const uint8_t *ptr, int len)
 {
     if (page < 0 || page >= EM_MAX_PAGES || idx < 0 || idx >= EM_MAX_ITEMS) return;
@@ -502,7 +516,7 @@ void em_item_bits(int page, int idx, const uint8_t *ptr, int len)
     uint8_t *dst = &em_bits_pool[em_bits_used];
     memcpy(dst, ptr, (size_t)len);
     em_bits_used += (uint32_t)len;
-    it->i_value = (int32_t)(uintptr_t)dst;
+    it->target = (int16_t)(uintptr_t)dst;
 }
 
 void em_page_end(int page, int count)

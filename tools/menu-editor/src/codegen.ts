@@ -1,4 +1,4 @@
-import type { Item, NumberItem, Page, Project, SwitchItem, NumVarType, ChartBuffer, ChartSource } from './types';
+import type { Item, Page, Project, NumVarType, ChartBuffer, ChartSource } from './types';
 import { WEAK_HOOKS } from './types';
 
 export interface CodegenResult {
@@ -237,12 +237,12 @@ export function generateCode(
 
   for (const pg of project.pages) {
     for (const it of pg.items) {
+      // 按钮附加值 → 回调收集
+      if (it.bind.type === 'button') {
+        const cb = toCIdent(it.bind.cbName, 'btn_cb');
+        if (!buttonCbs.has(cb)) buttonCbs.set(cb, it.bind.buttonId);
+      }
       switch (it.kind) {
-        case 'button': {
-          const cb = toCIdent(it.cbName, 'btn_cb');
-          if (!buttonCbs.has(cb)) buttonCbs.set(cb, it.buttonId);
-          break;
-        }
         case 'board':
           boardCbs.add(toCIdent(it.cbName, 'board_cb'));
           break;
@@ -278,7 +278,7 @@ export function generateCode(
     }
   }
 
-  // ---------- 单条目代码生成 ----------
+  // ---------- 单条目代码生成（附加值绑定行 + 绘制行分离） ----------
   const drawText = (text: string, scale: 1 | 2): string => {
     if (!text) return '';
     const lit = `"${cstr(text)}"`;
@@ -299,106 +299,113 @@ export function generateCode(
   const genItem = (it: Item, pg: Page): string[] => {
     const lines: string[] = [];
     const pgLabel = `${pg.name}`;
-    const resolveVar = (varId: string | null): VarDef | null => {
+    const resolveVar = (varId: string | null | undefined): VarDef | null => {
       if (!varId) return null;
       const v = varById.get(varId);
       if (!v) warnings.push(`页面 ${pgLabel} 的条目引用了已删除的变量，已按普通文本生成`);
       return v ?? null;
     };
-    switch (it.kind) {
-      case 'text': {
-        const code = drawText(it.text, it.scale);
-        if (code) lines.push(`    ${code}`);
-        break;
-      }
-      case 'number': {
-        const n = it as NumberItem;
-        const v = resolveVar(n.varId);
-        if (v && n.editable !== false) {
-          const bind = v.isFloat
+    const bind = it.bind;
+
+    // ---- 附加值绑定行（绘制前调用）----
+    let bindValueVar: VarDef | null = null;
+    let bindSwitchVar: VarDef | null = null;
+    let switchOn = 'on';
+    let switchOff = 'off';
+    switch (bind.type) {
+      case 'value': {
+        const v = resolveVar(bind.varId);
+        if (v) {
+          bindValueVar = v;
+          const bindLine = v.isFloat
             ? `u8g2_MenuItemValue_${v.srcType}(&${v.name}, ${floatLit(v.step)}, ${floatLit(v.min)}, ${floatLit(v.max)});`
             : `u8g2_MenuItemValue_${v.srcType}(&${v.name}, ${Math.trunc(v.step)}, ${Math.trunc(v.min)}, ${Math.trunc(v.max)});`;
-          lines.push(`    ${bind}`);
-        }
-        if (v) {
-          lines.push(`    ${drawTextWithArg(n.text, n.scale, v.name)}`);
-          if (n.editable !== false && !/%[-+ #0]*[a-zA-Z]/.test(n.text)) {
-            warnings.push(`数值条目 "${pgLabel}" 的显示文本不含格式化占位符（如 %d）`);
-          }
-        } else if (/%[-+ #0]*[a-zA-Z]/.test(n.text)) {
-          warnings.push(`页面 ${pgLabel} 的数值条目未绑定变量但文本含占位符，已按普通文本生成`);
-          const code = drawText(n.text.replace(/%[-+ #0]*[a-zA-Z]/g, ''), n.scale);
-          if (code) lines.push(`    ${code}`);
-        } else {
-          const code = drawText(n.text, n.scale);
-          if (code) lines.push(`    ${code}`);
+          lines.push(`    ${bindLine}`);
         }
         break;
       }
       case 'switch': {
-        const s = it as SwitchItem;
-        const v = resolveVar(s.varId);
-        if (v) {
-          if (v.srcType !== 'uint8') {
-            warnings.push(`开关条目绑定的变量 "${v.name}" 应为 uint8 类型（当前 ${v.srcType}），已跳过绑定`);
-            const code = drawText(s.text, s.scale);
-            if (code) lines.push(`    ${code}`);
-            break;
-          }
-          lines.push(`    u8g2_MenuItemValue_switch(&${v.name}, ${Math.trunc(s.openValue)});`);
-          lines.push(`    ${drawTextWithArg(s.text, s.scale, `${v.name} ? "${cstr(s.onText)}" : "${cstr(s.offText)}"`)}`);
-          if (!/%[-+ #0]*s/.test(s.text)) {
-            warnings.push(`开关条目 "${v.name}" 的显示文本建议包含 %s 用于显示 on/off`);
-          }
-        } else {
-          const code = drawText(s.text, s.scale);
-          if (code) lines.push(`    ${code}`);
+        const v = resolveVar(bind.varId);
+        if (v && v.srcType !== 'uint8') {
+          warnings.push(`开关附加值绑定的变量 "${v.name}" 应为 uint8 类型（当前 ${v.srcType}），已跳过绑定`);
+        } else if (v) {
+          bindSwitchVar = v;
+          switchOn = bind.onText;
+          switchOff = bind.offText;
+          lines.push(`    u8g2_MenuItemValue_switch(&${v.name}, ${Math.trunc(bind.openValue)});`);
         }
         break;
       }
       case 'button': {
-        const cb = toCIdent(it.cbName, 'btn_cb');
-        lines.push(`    u8g2_MenuItem_button(${cb}, ${Math.trunc(it.buttonId)});`);
-        const code = drawText(it.text, it.scale);
-        if (code) lines.push(`    ${code}`);
+        const cb = toCIdent(bind.cbName, 'btn_cb');
+        lines.push(`    u8g2_MenuItem_button(${cb}, ${Math.trunc(bind.buttonId)});`);
         break;
       }
       case 'submenu': {
-        if (!it.targetPageId) {
-          warnings.push(`页面 ${pgLabel} 的子页面条目 "${it.text || it.label || it.id}" 未指定目标页面，已按普通文本生成`);
-          const code = drawText(it.text, it.scale);
-          if (code) lines.push(`    ${code}`);
-          break;
+        const tIdx = project.pages.findIndex((p) => p.id === bind.targetPageId);
+        if (!bind.targetPageId || tIdx < 0) {
+          warnings.push(`页面 ${pgLabel} 的条目 "${it.label || '未命名'}" 附加值目标页面无效，已按普通文本生成`);
+        } else {
+          lines.push(`    u8g2_MenuItem_menu_enter(${pageFns[tIdx]});`);
         }
-        const tIdx = project.pages.findIndex((p) => p.id === it.targetPageId);
-        if (tIdx < 0) {
-          warnings.push(`页面 ${pgLabel} 的子页面条目目标无效`);
-          break;
-        }
-        lines.push(`    u8g2_MenuItem_menu_enter(${pageFns[tIdx]});`);
-        const code = drawText(it.text, it.scale);
-        if (code) lines.push(`    ${code}`);
         break;
       }
-      case 'back': {
+      case 'back':
         lines.push(`    u8g2_MenuItem_menu_back();`);
-        const code = drawText(it.text, it.scale);
-        if (code) lines.push(`    ${code}`);
+        break;
+      default:
+        break;
+    }
+
+    // ---- 绘制行 ----
+    switch (it.kind) {
+      case 'text': {
+        if (bindValueVar) {
+          lines.push(`    ${drawTextWithArg(it.text, it.scale, bindValueVar.name)}`);
+          if (!/%[-+ #0]*[a-zA-Z]/.test(it.text)) {
+            warnings.push(`页面 ${pgLabel} 的数值附加值条目显示文本不含格式化占位符（如 %d）`);
+          }
+        } else if (bindSwitchVar) {
+          lines.push(`    ${drawTextWithArg(it.text, it.scale, `${bindSwitchVar.name} ? "${cstr(switchOn)}" : "${cstr(switchOff)}"`)}`);
+          if (!/%[-+ #0]*s/.test(it.text)) {
+            warnings.push(`开关附加值条目的显示文本建议包含 %s 用于显示 on/off`);
+          }
+        } else if (bind.type === 'none' && it.displayVarId) {
+          const v = resolveVar(it.displayVarId);
+          if (v) {
+            lines.push(`    ${drawTextWithArg(it.text, it.scale, v.name)}`);
+            if (!/%[-+ #0]*[a-zA-Z]/.test(it.text)) {
+              warnings.push(`页面 ${pgLabel} 的显示条目文本不含格式化占位符（如 %d）`);
+            }
+          } else {
+            warnings.push(`页面 ${pgLabel} 的显示条目引用了已删除的变量，已按普通文本生成`);
+            const code = drawText(it.text, it.scale);
+            if (code) lines.push(`    ${code}`);
+          }
+        } else if (/%[-+ #0]*[a-zA-Z]/.test(it.text)) {
+          warnings.push(`页面 ${pgLabel} 的文本条目含占位符但未绑定变量/显示变量，占位符已移除`);
+          const code = drawText(it.text.replace(/%[-+ #0]*[a-zA-Z]/g, ''), it.scale);
+          if (code) lines.push(`    ${code}`);
+        } else {
+          const code = drawText(it.text, it.scale);
+          if (code) lines.push(`    ${code}`);
+        }
         break;
       }
       case 'slider':
       case 'progress': {
-        const v = resolveVar(it.varId);
-        if (!v) {
-          warnings.push(`页面 ${pgLabel} 的${it.kind === 'slider' ? '滑块' : '进度'}条目未绑定变量，已跳过`);
-          break;
-        }
-        if (!INT_TYPES.has(v.srcType)) {
-          warnings.push(`滑块/进度条绑定的变量 "${v.name}" 须为整型（当前 ${v.srcType}），已跳过`);
-          break;
-        }
         const fn = it.kind === 'slider' ? 'Slider' : 'ProgressBar';
-        lines.push(`    u8g2_MenuDrawItem${fn}_bind(&${v.name}, ${Math.trunc(v.step)}, ${Math.trunc(v.min)}, ${Math.trunc(v.max)});`);
+        if (bindValueVar) {
+          if (!INT_TYPES.has(bindValueVar.srcType)) {
+            warnings.push(`滑块/进度条附加值的变量 "${bindValueVar.name}" 须为整型（当前 ${bindValueVar.srcType}），已按静态显示生成`);
+            lines.push(`    u8g2_MenuDrawItem${fn}(${(it.position / 100).toFixed(2)}f);`);
+            break;
+          }
+          lines.push(`    u8g2_MenuDrawItem${fn}_bind(&${bindValueVar.name}, ${Math.trunc(bindValueVar.step)}, ${Math.trunc(bindValueVar.min)}, ${Math.trunc(bindValueVar.max)});`);
+        } else {
+          const pos = Math.min(100, Math.max(0, it.position));
+          lines.push(`    u8g2_MenuDrawItem${fn}(${(pos / 100).toFixed(2)}f);`);
+        }
         break;
       }
       case 'chart': {

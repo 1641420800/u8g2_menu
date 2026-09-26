@@ -1,13 +1,14 @@
 import { html, render, nothing, type TemplateResult } from 'lit-html';
 import type { EditorStoreApi } from '../store';
 import type { Item, Page } from '../types';
-import { KIND_ICON, KIND_LABELS, type ItemKind } from '../types';
+import { KIND_ICON, KIND_LABELS, BIND_LABELS, type ItemKind } from '../types';
 
 const ALL_KINDS = Object.keys(KIND_LABELS) as ItemKind[];
 
 function itemRow(store: EditorStoreApi, page: Page, item: Item, selected: boolean): TemplateResult {
   const s = store.getState();
   const name = item.label || ('text' in item && item.text) || KIND_LABELS[item.kind];
+  const bindSuffix = item.bind.type !== 'none' ? ` · ${BIND_LABELS[item.bind.type]}` : '';
   const move = (dir: -1 | 1) => (e: Event) => {
     e.stopPropagation();
     store.getState().moveItem(page.id, item.id, dir);
@@ -15,7 +16,7 @@ function itemRow(store: EditorStoreApi, page: Page, item: Item, selected: boolea
   return html`<div class="ume-item-row ${selected ? 'selected' : ''}"
     @click=${() => store.getState().select(page.id, item.id)}>
     <span class="ume-item-icon">${KIND_ICON[item.kind]}</span>
-    <span class="ume-item-name" title=${name}>${name}</span>
+    <span class="ume-item-name" title=${name + bindSuffix}>${name}${bindSuffix}</span>
     <button class="ume-mini" title="上移" @click=${move(-1)}>↑</button>
     <button class="ume-mini" title="下移" @click=${move(1)}>↓</button>
     <button class="ume-mini" title="复制" @click=${(e: Event) => { e.stopPropagation(); s.duplicateItem(page.id, item.id); }}>⧉</button>

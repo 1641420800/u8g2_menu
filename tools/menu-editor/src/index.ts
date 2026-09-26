@@ -6,7 +6,7 @@ import { WasmPreview, MenuKey } from './preview/preview';
 import type { Project } from './types';
 import { renderTree } from './ui/tree';
 import { renderProperty } from './ui/property';
-import { renderStyle } from './ui/stylePanel';
+import { renderSettings, renderResources } from './ui/stylePanel';
 import { renderPreviewPane } from './ui/previewPane';
 import { showExportDialog } from './ui/exportDialog';
 import { openXbmEditor } from './ui/xbmEditor';
@@ -34,7 +34,7 @@ export class MenuEditor {
   private preview: WasmPreview;
   private els: {
     left: HTMLElement; center: HTMLElement; right: HTMLElement;
-    styleEl: HTMLElement; propEl: HTMLElement;
+    propEl: HTMLElement; resEl: HTMLElement; setEl: HTMLElement;
     toolbarUndo: HTMLButtonElement; toolbarRedo: HTMLButtonElement;
   };
   private renderScheduled = false;
@@ -88,8 +88,14 @@ export class MenuEditor {
         <div class="ume-left"></div>
         <div class="ume-center"></div>
         <div class="ume-right">
-          <div data-role="style"></div>
+          <div class="ume-tabs">
+            <button data-tab="prop" class="active">属性</button>
+            <button data-tab="res">资源</button>
+            <button data-tab="set">设置</button>
+          </div>
           <div data-role="prop"></div>
+          <div data-role="res" style="display:none"></div>
+          <div data-role="set" style="display:none"></div>
         </div>
       </div>
       <input type="file" accept=".json,application/json" style="display:none" data-role="file">
@@ -100,8 +106,9 @@ export class MenuEditor {
       left: $('.ume-left'),
       center: $('.ume-center'),
       right: $('.ume-right'),
-      styleEl: $('[data-role="style"]'),
       propEl: $('[data-role="prop"]'),
+      resEl: $('[data-role="res"]'),
+      setEl: $('[data-role="set"]'),
       toolbarUndo: $('[data-act="undo"]'),
       toolbarRedo: $('[data-act="redo"]'),
     };
@@ -262,7 +269,8 @@ export class MenuEditor {
       if (this.destroyed) return;
       const st = this.store.getState();
       renderTree(this.els.left, this.store);
-      renderStyle(this.els.styleEl, this.store);
+      renderSettings(this.els.setEl, this.store);
+      renderResources(this.els.resEl, this.store);
       renderProperty(this.els.propEl, this.store, {
         openXbmEditor: (pageId, itemId) => openXbmEditor(this.container, this.store, pageId, itemId),
       });
@@ -308,16 +316,17 @@ export class MenuEditor {
       const page = st.project.pages[pageIdx];
       const idx = page.items.findIndex((i) => i.id === st.selection.itemId);
       const item = page.items[idx];
-      if (item && ('varId' in item)) {
-        // 值池槽位与 preview.sync 一致：绑定变量按变量下标，未绑定按条目
-        const varSlot = item.varId
-          ? (st.project.variables ?? []).findIndex((v) => v.id === item.varId)
-          : -1;
+      // 值池槽位与 preview.sync 一致：绑定变量按变量下标，未绑定按条目
+      const bind = item?.bind;
+      const boundVarId = bind?.type === 'value' || bind?.type === 'switch' ? bind.varId : null;
+      const dispVarId = item?.kind === 'text' && bind?.type === 'none' ? item.displayVarId : null;
+      const vid = boundVarId ?? dispVarId;
+      if (item && vid) {
+        const varSlot = (st.project.variables ?? []).findIndex((v) => v.id === vid);
         const slot = varSlot >= 0 ? varSlot : pageIdx * 64 + idx;
-        const v = item.kind === 'switch'
-          ? this.preview.getSwitch(slot)
-          : this.preview.getInt(slot);
-        const name = (st.project.variables ?? []).find((x) => x.id === item.varId)?.name;
+        const isSwitch = bind?.type === 'switch';
+        const v = isSwitch ? this.preview.getSwitch(slot) : this.preview.getInt(slot);
+        const name = (st.project.variables ?? []).find((x) => x.id === vid)?.name;
         valEl.textContent = `${name ?? item.kind} = ${v}`;
       } else {
         valEl.textContent = '';

@@ -140,7 +140,17 @@ function renderBufManager(store: EditorStoreApi, project: Project): TemplateResu
   `;
 }
 
-export function renderStyle(el: HTMLElement, store: EditorStoreApi): void {
+/** 「资源」页：变量 + 数据源缓冲区 */
+export function renderResources(el: HTMLElement, store: EditorStoreApi): void {
+  const { project } = store.getState();
+  render(html`
+    ${renderVarManager(store, project)}
+    ${renderBufManager(store, project)}
+  `, el);
+}
+
+/** 「设置」页：工程/样式/弱函数 */
+export function renderSettings(el: HTMLElement, store: EditorStoreApi): void {
   const { project } = store.getState();
   const up = (patch: Partial<Project>, key?: string) => store.getState().update((p) => { Object.assign(p, patch); }, key);
 
@@ -187,9 +197,6 @@ export function renderStyle(el: HTMLElement, store: EditorStoreApi): void {
       </span>
     </div>
 
-    ${renderVarManager(store, project)}
-    ${renderBufManager(store, project)}
-
     <div class="ume-panel-title">样式</div>
     ${selectField('字体', project.font, FONTS.map((f) => ({ value: f.id, label: f.label })),
       (v) => up({ font: v }))}
@@ -207,6 +214,5 @@ export function renderStyle(el: HTMLElement, store: EditorStoreApi): void {
 
     <div class="ume-panel-title">进阶</div>
     ${weakList}
-    ${nothing}
   `, el);
 }

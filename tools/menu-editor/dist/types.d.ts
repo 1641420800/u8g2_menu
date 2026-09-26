@@ -4,16 +4,42 @@
  * `void page_N(void)` 函数，把每个条目展开为一行绘制调用（可选的绑定调用在其上方）。
  */
 export declare const SCHEMA_VERSION = 1;
-export type ItemKind = 'text' | 'number' | 'switch' | 'button' | 'submenu' | 'back' | 'slider' | 'progress' | 'chart' | 'xbm' | 'textarea' | 'board';
 export type IntVarType = 'uint8' | 'uint16' | 'uint32' | 'int8' | 'int16' | 'int32' | 'int';
 export type NumVarType = IntVarType | 'float' | 'double';
 export type ChartKind = 'line' | 'point' | 'bar';
 export type SelectorKind = 'default' | 'rotundity' | 'square';
+/** 附加值（绘制前附加的绑定调用；none = 纯显示行） */
+export type Bind = {
+    type: 'none';
+} | {
+    type: 'value';
+    varId: string | null;
+} | {
+    type: 'switch';
+    varId: string | null;
+    openValue: number;
+    onText: string;
+    offText: string;
+} | {
+    type: 'button';
+    cbName: string;
+    buttonId: number;
+} | {
+    type: 'submenu';
+    targetPageId: string | null;
+} | {
+    type: 'back';
+};
+export type BindType = Bind['type'];
+/** 绘制类型（创建条目时选择） */
+export type ItemKind = 'text' | 'slider' | 'progress' | 'chart' | 'xbm' | 'textarea' | 'board';
 export interface ItemBase {
     id: string;
     kind: ItemKind;
     /** 编辑器内显示名（仅工具内部使用，不生成到 C 代码） */
     label: string;
+    /** 附加值：绘制前的绑定，可与任意绘制类型组合 */
+    bind: Bind;
 }
 export interface TextItem extends ItemBase {
     kind: 'text';
@@ -21,53 +47,18 @@ export interface TextItem extends ItemBase {
     text: string;
     /** 1 = 正常，2 = 二倍大 */
     scale: 1 | 2;
-}
-export interface NumberItem extends ItemBase {
-    kind: 'number';
-    text: string;
-    scale: 1 | 2;
-    /** 绑定的变量 id（Project.variables）；null = 纯显示（不绑定附加值） */
-    varId: string | null;
-    /** true = 绑定附加值可编辑；false = 只用 printf 显示变量值 */
-    editable: boolean;
-}
-export interface SwitchItem extends ItemBase {
-    kind: 'switch';
-    text: string;
-    scale: 1 | 2;
-    /** 绑定的变量 id（须为 uint8 类型） */
-    varId: string | null;
-    openValue: number;
-    onText: string;
-    offText: string;
-}
-export interface ButtonItem extends ItemBase {
-    kind: 'button';
-    text: string;
-    scale: 1 | 2;
-    cbName: string;
-    buttonId: number;
-}
-export interface SubmenuItem extends ItemBase {
-    kind: 'submenu';
-    text: string;
-    scale: 1 | 2;
-    targetPageId: string | null;
-}
-export interface BackItem extends ItemBase {
-    kind: 'back';
-    text: string;
-    scale: 1 | 2;
+    /** 无附加值时的 printf 显示变量（只读展示；有附加值时忽略此字段，直接显示被绑定的值） */
+    displayVarId: string | null;
 }
 export interface SliderItem extends ItemBase {
     kind: 'slider';
-    /** 绑定的变量 id（须为整型） */
-    varId: string | null;
+    /** 无附加值时的静态显示位置（0~100） */
+    position: number;
 }
 export interface ProgressItem extends ItemBase {
     kind: 'progress';
-    /** 绑定的变量 id（须为整型） */
-    varId: string | null;
+    /** 无附加值时的静态显示位置（0~100） */
+    position: number;
 }
 export interface ChartSource {
     /** 数据源缓冲区 id（Project.chartBuffers） */
@@ -117,7 +108,7 @@ export interface BoardItem extends ItemBase {
     h: number;
     cbName: string;
 }
-export type Item = TextItem | NumberItem | SwitchItem | ButtonItem | SubmenuItem | BackItem | SliderItem | ProgressItem | ChartItem | XbmItem | TextAreaItem | BoardItem;
+export type Item = TextItem | SliderItem | ProgressItem | ChartItem | XbmItem | TextAreaItem | BoardItem;
 export interface Page {
     id: string;
     name: string;
@@ -181,6 +172,9 @@ export interface WeakHook {
 export declare const WEAK_HOOKS: WeakHook[];
 export declare const KIND_LABELS: Record<ItemKind, string>;
 export declare const KIND_ICON: Record<ItemKind, string>;
+/** 附加值类型标签 */
+export declare const BIND_LABELS: Record<BindType, string>;
+export declare const BIND_ICON: Record<BindType, string>;
 /** 支持的 u8g2 字体（WASM 预览与代码生成共用同一份清单） */
 export declare const FONTS: {
     id: string;

@@ -1,11 +1,5 @@
-import type { Project, Variable } from '../types';
+import type { Project } from '../types';
 import { FONTS } from '../types';
-
-/** varId -> Variable（找不到返回 null，条目按未绑定处理） */
-function n_varById(map: Map<string, Variable>, varId: string | null): Variable | null {
-  if (!varId) return null;
-  return map.get(varId) ?? null;
-}
 
 /** u8g2_menu 按键枚举值（与 u8g2_menu.h 对应） */
 export enum MenuKey {
@@ -127,164 +121,111 @@ export class WasmPreview {
       })),
     });
   }
-
   /** 全量同步编辑器模型到预览引擎 */
   sync(project: Project): void {
     const mod = this.mod;
     if (!mod) return;
     const sig = this.signature(project);
     if (sig !== this.structSig) {
-      mod.ccall('em_reset_dynamic', null, [], []);
+      mod.ccall("em_reset_dynamic", null, [], []);
       this.structSig = sig;
     }
 
     const intT = (v: number) => Math.trunc(Number.isFinite(v) ? v : 0);
-    // 绑定变量的条目共享同一值池槽位（按变量在池中的下标）；未绑定按条目独立
-    const varSlot = (vid: string | null): number =>
+    const VT = { uint8: 0, uint16: 1, uint32: 2, int8: 3, int16: 4, int32: 5, int: 6, float: 7, double: 8 };
+    const KIND = { text: 0, slider: 1, progress: 2, chart: 3, xbm: 4, textarea: 5, board: 6 };
+    const BIND = { none: 0, value: 1, switch: 2, button: 3, submenu: 4, back: 5 };
+    const SAMPLE = { sine: 0, ramp: 1, noise: 2, none: 3 };
+    const varSlot = (vid: string | null | undefined): number =>
       vid ? (project.variables ?? []).findIndex((v) => v.id === vid) : -1;
-    const varById = new Map((project.variables ?? []).map((v) => [v.id, v]));
 
-    // 数据源缓冲区定义（在页面条目之前；sample: 0 sine 1 ramp 2 noise 3 none）
-    (project.chartBuffers ?? []).forEach((b, bi) => {
-      mod.ccall('em_buf_define', null, ['number', 'number', 'number'],
-        [bi, intT(b.dataLen), { sine: 0, ramp: 1, noise: 2, none: 3 }[b.sample]]);
+    // 变量定义（值池槽位 = 变量下标，多绑定共享）
+    (project.variables ?? []).forEach((v, vi) => {
+      mod.ccall("em_var_define", null, ["number", "number", "number", "number", "number", "number"],
+        [vi, VT[v.type], intT(v.initialValue), intT(v.step), intT(v.min), intT(v.max)]);
     });
-    const bufSlotOf = (bid: string): number =>
-      (project.chartBuffers ?? []).findIndex((v) => v.id === bid);
+
+    // 数据源缓冲区定义（在页面条目之前）
+    (project.chartBuffers ?? []).forEach((b, bi) => {
+      mod.ccall("em_buf_define", null, ["number", "number", "number"],
+        [bi, intT(b.dataLen), SAMPLE[b.sample]]);
+    });
+
     project.pages.forEach((pg, pi) => {
-      mod.ccall('em_page_begin', null, ['number'], [pi]);
+      mod.ccall("em_page_begin", null, ["number"], [pi]);
       pg.items.forEach((it, ii) => {
-        const slotBase = ['number', 'number'];
+        const setBind = () => {
+          const b = it.bind;
+          if (b.type === "none") return;
+          const isVar = b.type === "value" || b.type === "switch";
+          const v = isVar ? (project.variables ?? []).find((x) => x.id === (b as { varId: string | null }).varId) : undefined;
+          mod.ccall("em_page_bind", null, ["number", "number", "number", "number", "number", "number", "number", "number"],
+            [pi, ii, BIND[b.type],
+              isVar && v ? VT[v.type] : 0,
+              b.type === "switch" ? intT(b.openValue) : 0,
+              b.type === "button" ? intT(b.buttonId) : 0,
+              b.type === "submenu" ? project.pages.findIndex((p) => p.id === b.targetPageId) : -1,
+              isVar && v ? varSlot(v.id) : -1]);
+        };
         switch (it.kind) {
-          case 'text':
-            mod.ccall('em_page_item', null, [...slotBase,
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number'],
-              [pi, ii, 0, 0, it.scale, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1]);
-            mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.text]);
+          case "text":
+            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [pi, ii, KIND.text, it.scale, 0, 0, 0,
+                it.displayVarId ? varSlot(it.displayVarId) : -1, -1]);
+            mod.ccall("em_item_text", null, ["number", "number", "string"], [pi, ii, it.text]);
+            setBind();
             break;
-          case 'number': {
-            const v = n_varById(varById, it.varId);
-            // bindScroll 槽位复用为 noBind：1 = 只显示不绑定附加值
-            mod.ccall('em_page_item', null, [...slotBase,
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number'],
-              [pi, ii, 1, v ? { uint8: 0, uint16: 1, uint32: 2, int8: 3, int16: 4, int32: 5, int: 6, float: 7, double: 8 }[v.type] : 0,
-                it.scale, 0, 0, 0, 0, 0, v ? intT(v.initialValue) : 0,
-                v ? intT(v.step) : 0, v ? intT(v.min) : 0, v ? intT(v.max) : 0,
-                -1, 0, 0, 0, 0, it.editable === false ? 1 : 0, varSlot(it.varId)]);
-            mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.text]);
+          case "slider":
+          case "progress":
+            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [pi, ii, KIND[it.kind], 1, 0, 0, 0, -1, -1]);
+            setBind();
             break;
-          }
-          case 'switch': {
-            const v = n_varById(varById, it.varId);
-            mod.ccall('em_page_item', null, [...slotBase,
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number'],
-              [pi, ii, 2, 0, it.scale, 0, 0, intT(it.openValue), 0, 0,
-                v ? intT(v.initialValue) : 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, varSlot(it.varId)]);
-            mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.text]);
-            mod.ccall('em_item_swtext', null, ['number', 'number', 'string', 'string'],
-              [pi, ii, it.onText, it.offText]);
-            break;
-          }
-          case 'button':
-            mod.ccall('em_page_item', null, [...slotBase,
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number'],
-              [pi, ii, 3, 0, it.scale, 0, 0, 0, intT(it.buttonId), 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1]);
-            mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.text]);
-            break;
-          case 'submenu': {
-            const target = project.pages.findIndex((p) => p.id === it.targetPageId);
-            mod.ccall('em_page_item', null, [...slotBase,
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number'],
-              [pi, ii, 4, 0, it.scale, 0, 0, 0, 0, 0, 0, 0, 0, 0, target, 0, 0, 0, 0, 0, -1]);
-            mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.text]);
-            break;
-          }
-          case 'back':
-            mod.ccall('em_page_item', null, [...slotBase,
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number'],
-              [pi, ii, 5, 0, it.scale, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1]);
-            mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.text]);
-            break;
-          case 'slider':
-          case 'progress': {
-            const v = n_varById(varById, it.varId);
-            const kind = it.kind === 'slider' ? 5 : 6;
-            mod.ccall('em_page_item', null, [...slotBase,
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number'],
-              [pi, ii, kind, 0, 1, 0, 0, 0, 0, 0,
-                v ? intT(v.initialValue) : 0, v ? intT(v.step) : 0,
-                v ? intT(v.min) : 0, v ? intT(v.max) : 0, -1, 0, 0, 0, 0, 0, varSlot(it.varId)]);
-            break;
-          }
-          case 'chart': {
-            // 复位叠加层数，然后逐个数据源添加（kind: 0 line 1 point 2 bar）
-            mod.ccall('em_page_item', null, [...slotBase,
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number'],
-              [pi, ii, 8, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, intT(it.height), 0, 0, -1]);
+          case "chart":
+            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [pi, ii, KIND.chart, 1, intT(it.height), 0, 0, -1, -1]);
             for (const s of it.sources ?? []) {
-              const fixed = s.min !== undefined && s.max !== undefined ? 1 : 0;
-              mod.ccall('em_item_chart_add', null,
-                ['number', 'number', 'number', 'number', 'number', 'number', 'number'],
-                [pi, ii, bufSlotOf(s.bufferId),
-                  { line: 0, point: 1, bar: 2 }[s.chartKind], fixed,
-                  fixed ? (s.max ?? 0) : 0, fixed ? (s.min ?? 0) : 0]);
+              mod.ccall("em_item_chart_add", null,
+                ["number", "number", "number", "number", "number", "number", "number"],
+                [pi, ii, (project.chartBuffers ?? []).findIndex((b) => b.id === s.bufferId),
+                  { line: 0, point: 1, bar: 2 }[s.chartKind],
+                  s.min !== undefined && s.max !== undefined ? 1 : 0,
+                  s.max ?? 0, s.min ?? 0]);
             }
+            setBind();
             break;
-          }
-          case 'xbm': {
-            mod.ccall('em_page_item', null, [...slotBase,
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number'],
-              [pi, ii, 9, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, intT(it.w), intT(it.h), 0, 0, 0, -1]);
-            // 写位图数据到 scratch 再拷贝
-            const ptr = mod._em_scratch(it.bits.length);
-            if (ptr) {
-              mod.HEAPU8.set(new Uint8Array(it.bits), ptr);
-              mod._em_item_bits(pi, ii, ptr, it.bits.length);
+          case "xbm":
+            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [pi, ii, KIND.xbm, 1, 0, intT(it.w), intT(it.h), -1, -1]);
+            {
+              const ptr = mod._em_scratch(it.bits.length);
+              if (ptr) {
+                mod.HEAPU8.set(new Uint8Array(it.bits), ptr);
+                mod._em_item_bits(pi, ii, ptr, it.bits.length);
+              }
             }
+            setBind();
             break;
-          }
-          case 'textarea':
-            mod.ccall('em_page_item', null, [...slotBase,
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number'],
-              [pi, ii, 10, 0, 1, 0, it.bindScroll ? 1 : 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, intT(it.height), 0, intT(it.lineSpacing), -1]);
-            mod.ccall('em_item_text', null, ['number', 'number', 'string'], [pi, ii, it.content]);
+          case "textarea":
+            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [pi, ii, KIND.textarea, 1, intT(it.height), 0, 0, -1, -1]);
+            mod.ccall("em_item_text", null, ["number", "number", "string"], [pi, ii, it.content]);
+            setBind();
             break;
-          case 'board':
-            mod.ccall('em_page_item', null, [...slotBase,
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number', 'number', 'number', 'number', 'number', 'number',
-              'number', 'number'],
-              [pi, ii, 11, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, intT(it.w), intT(it.h), 0, 0, 0, -1]);
+          case "board":
+            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [pi, ii, KIND.board, 1, 0, intT(it.w), intT(it.h), -1, -1]);
+            setBind();
             break;
         }
       });
-      mod.ccall('em_page_end', null, ['number', 'number'], [pi, pg.items.length]);
+      mod.ccall("em_page_end", null, ["number", "number"], [pi, pg.items.length]);
     });
-    mod.ccall('em_pages_commit', null, ['number'], [project.pages.length]);
+    mod.ccall("em_pages_commit", null, ["number"], [project.pages.length]);
 
     // 样式
-    mod.ccall('em_set_style', null,
-      ['number', 'number', 'number', 'number', 'number', 'number', 'number'],
+    mod.ccall("em_set_style", null,
+      ["number", "number", "number", "number", "number", "number", "number"],
       [this.fontIndex(project.font),
         { default: 0, rotundity: 1, square: 2 }[project.selector],
         intT(project.selectorLeftMargin), intT(project.selectorTopMargin),

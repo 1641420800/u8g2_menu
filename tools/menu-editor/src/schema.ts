@@ -19,17 +19,21 @@ function num(v: unknown, fallback: number): number {
   return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
 }
 
-const KINDS = ['text', 'number', 'switch', 'button', 'submenu', 'back', 'slider', 'progress', 'chart', 'xbm', 'textarea', 'board'] as const;
+const KINDS = ['text', 'slider', 'progress', 'chart', 'xbm', 'textarea', 'board'] as const;
+/** 旧版条目类型（绘制与附加值未分离），导入时迁移 */
+const LEGACY_KINDS = ['number', 'switch', 'button', 'submenu', 'back'] as const;
+const BIND_TYPES = ['none', 'value', 'switch', 'button', 'submenu', 'back'] as const;
 
 type LooseItem = Item & { text?: string; scale?: number };
 
 function parseItem(raw: unknown): Item {
   if (!isObj(raw)) throw new SchemaError('条目格式错误');
-  const kind = raw.kind as Item['kind'];
-  if (typeof kind !== 'string' || !(KINDS as readonly string[]).includes(kind)) {
+  const kind = str(raw.kind, '');
+  if (!((KINDS as readonly string[]).includes(kind) || (LEGACY_KINDS as readonly string[]).includes(kind))) {
     throw new SchemaError(`未知条目类型: ${String(kind)}`);
   }
-  // 采用「已知字段白名单 + 类型修正」的宽容策略，未识别字段丢弃
+  // 采用「已知字段白名单 + 类型修正」的宽容策略，未识别字段丢弃；
+  // 旧版条目类型在此保留原样，由 normalizeItems 统一迁移为「绘制 + 附加值」
   const it = structuredClone(raw) as unknown as LooseItem;
   it.id = str(raw.id, '');
   if (!it.id) it.id = `it_${Math.random().toString(36).slice(2, 10)}`;
@@ -46,6 +50,79 @@ function parseItem(raw: unknown): Item {
       break;
   }
   return it;
+}
+
+/**
+ * 条目规范化：把旧版条目类型（附加值焊死在类型上）迁移为
+ * 「绘制类型 + 独立附加值(bind)」新模型；新模型条目补齐缺省 bind。
+ */
+function normalizeItems(pages: Page[]): void {
+  for (const pg of pages) {
+    for (const it of pg.items) {
+      const raw = it as unknown as Record<string, unknown>;
+      if (raw.bind && isObj(raw.bind) && (BIND_TYPES as readonly string[]).includes(str(raw.bind.type, 'none'))) {
+        continue; // 已是新模型
+      }
+      switch (raw.kind) {
+        case 'number': {
+          const varId = (raw.varId as string | undefined) ?? null;
+          if (raw.editable === false) {
+            // 只显示：文本 + 无附加值 + printf 显示变量
+            raw.kind = 'text';
+            (raw as { displayVarId?: string | null }).displayVarId = varId;
+            raw.bind = { type: 'none' };
+          } else {
+            raw.kind = 'text';
+            (raw as { displayVarId?: string | null }).displayVarId = null;
+            raw.bind = { type: 'value', varId };
+          }
+          break;
+        }
+        case 'switch':
+          raw.kind = 'text';
+          (raw as { displayVarId?: string | null }).displayVarId = null;
+          raw.bind = {
+            type: 'switch',
+            varId: (raw.varId as string | undefined) ?? null,
+            openValue: num(raw.openValue, 1),
+            onText: str(raw.onText, 'on'),
+            offText: str(raw.offText, 'off'),
+          };
+          break;
+        case 'button':
+          raw.kind = 'text';
+          (raw as { displayVarId?: string | null }).displayVarId = null;
+          raw.bind = { type: 'button', cbName: str(raw.cbName, 'btn_cb'), buttonId: num(raw.buttonId, 1) };
+          break;
+        case 'submenu':
+          raw.kind = 'text';
+          (raw as { displayVarId?: string | null }).displayVarId = null;
+          raw.bind = { type: 'submenu', targetPageId: (raw.targetPageId as string | undefined) ?? null };
+          break;
+        case 'back':
+          raw.kind = 'text';
+          (raw as { displayVarId?: string | null }).displayVarId = null;
+          raw.bind = { type: 'back' };
+          break;
+        case 'slider':
+        case 'progress':
+          raw.bind = raw.varId ? { type: 'value', varId: raw.varId } : { type: 'none' };
+          if (raw.position === undefined) raw.position = 50;
+          break;
+        default:
+          raw.bind = { type: 'none' };
+          if (raw.kind === 'text' && raw.displayVarId === undefined) {
+            (raw as { displayVarId?: string | null }).displayVarId = null;
+          }
+          break;
+      }
+      // 清理已迁移到 bind / displayVarId 的旧字段（board 的 cbName 保留）
+      delete raw.varId; delete raw.varName; delete raw.varType; delete raw.editable;
+      delete raw.step; delete raw.min; delete raw.max; delete raw.initialValue; delete raw.decimals;
+      if (raw.kind !== 'board') { delete raw.cbName; delete raw.buttonId; }
+      delete raw.openValue; delete raw.onText; delete raw.offText; delete raw.targetPageId;
+    }
+  }
 }
 
 function parsePage(raw: unknown): Page {
@@ -104,7 +181,8 @@ function migrateLegacyItems(pages: Page[]): Variable[] {
   for (const pg of pages) {
     for (const it of pg.items) {
       const raw = it as unknown as Record<string, unknown>;
-      switch (it.kind) {
+      const kindStr = it.kind as string;
+      switch (kindStr) {
         case 'number':
           if (raw.varId === undefined || raw.varId === null) {
             const name = typeof raw.varName === 'string' && raw.varName ? raw.varName : 'var_unnamed';
@@ -208,6 +286,10 @@ export function parseProject(json: string | unknown): Project {
     chartBuffers = migrateLegacyCharts(pages);
   }
 
+  // 条目规范化：旧版条目类型迁移为「绘制 + 附加值」新模型
+  normalizeItems(pages);
+  normalizeChartSources(pages, chartBuffers);
+
   return {
     version: SCHEMA_VERSION,
     name: str(r.name, '未命名工程'),
@@ -265,6 +347,28 @@ function migrateLegacyCharts(pages: Page[]): ChartBuffer[] {
   }
   return buffers;
 }
+
+/** 图表条目数据源规范化：过滤无效缓冲区引用，补齐缺省 */
+function normalizeChartSources(pages: Page[], buffers: ChartBuffer[]): void {
+  const valid = new Set(buffers.map((b) => b.id));
+  for (const pg of pages) {
+    for (const it of pg.items) {
+      if (it.kind !== 'chart') continue;
+      const raw = it as unknown as Record<string, unknown>;
+      if (!Array.isArray(raw.sources)) (raw as { sources?: unknown[] }).sources = [];
+      (it as ChartItem2).sources = (it as ChartItem2).sources
+        .filter((s) => valid.has(s.bufferId))
+        .map((s) => ({
+          bufferId: s.bufferId,
+          chartKind: CHART_KINDS.has(s.chartKind) ? s.chartKind : 'line',
+          min: s.min, max: s.max,
+        }));
+      if (typeof raw.height !== 'number') raw.height = 32;
+    }
+  }
+}
+
+type ChartItem2 = Extract<Item, { kind: 'chart' }>;
 
 /** 历史版本迁移（当前仅 v1，占位） */
 function migrate(_raw: Record<string, unknown>, _from: number): void {

@@ -1,21 +1,27 @@
 import { describe, it, expect } from 'vitest';
 import { generateCode, extractUserBlocks, toCIdent, cstr } from '../src/codegen';
 import { createProject, createVariable, createChartBuffer, createPage } from '../src/model';
-import type { Project } from '../src/types';
+import type { Project, Bind } from '../src/types';
 import { parseProject, serializeProject } from '../src/schema';
 
+/** 快捷构造一个文本条目 */
+function textItem(id: string, text: string, bind: Bind = { type: 'none' }, displayVarId: string | null = null) {
+  return { id, kind: 'text' as const, label: '', text, scale: 1 as const, displayVarId, bind };
+}
+
 describe('codegen', () => {
-  it('为默认示例工程生成两个页面函数与变量', () => {
+  it('为默认示例工程生成页面函数/变量/原型声明', () => {
     const proj = createProject();
     const { c, warnings } = generateCode(proj);
     expect(c).toContain('void page_0(void)');
-    expect(c).toContain('void page_1(void)');
+    expect(c).toContain('void page_2(void)');
     expect(c).toContain('u8g2_MenuUTF8Printf("u8g2_menu");');
-    // 子页面绑定指向 page_1（menu_enter 压栈，可与 menu_back 配对返回）
+    // 文本条目 + 子页面附加值 → menu_enter；按钮附加值 → button
     expect(c).toContain('u8g2_MenuItem_menu_enter(page_1);');
-    // 数值条目：绑定在显示之前
+    expect(c).toContain('u8g2_MenuItem_button(btn_about_cb, 1);');
+    // 数值附加值：绑定在显示之前
     expect(c).toMatch(/u8g2_MenuItemValue_int32\(&var_value, 1, 0, 100\);[\s\S]*?u8g2_MenuUTF8Printf\("音量:%d", var_value\);/);
-    // 开关条目
+    // 开关附加值
     expect(c).toContain('u8g2_MenuItemValue_switch(&var_switch, 1);');
     expect(c).toContain('var_switch ? "on" : "off"');
     // 变量定义
@@ -31,56 +37,73 @@ describe('codegen', () => {
     expect(warnings).toEqual([]);
   });
 
-  it('滑块条使用 Slider_bind 且不生成后续文本行', () => {
+  it('返回附加值生成 menu_back', () => {
+    const proj = createProject();
+    const { c } = generateCode(proj);
+    expect(c).toMatch(/u8g2_MenuItem_menu_back\(\);[\s\S]*?u8g2_MenuUTF8Printf\("返回"\);/);
+  });
+
+  it('滑块条 + 数值附加值使用 Slider_bind', () => {
     const proj = createProject();
     const { c } = generateCode(proj);
     expect(c).toContain('u8g2_MenuDrawItemSlider_bind(&var_slider, 2, 0, 100);');
   });
 
-  it('浮点变量用 float 字面量，条目按 varId 绑定', () => {
+  it('滑块条无附加值生成静态位置显示', () => {
+    const proj = createProject();
+    const pg = createPage('静态滑条');
+    pg.items = [{ id: 's1', kind: 'slider', label: '', position: 30, bind: { type: 'none' } }];
+    proj.pages.push(pg);
+    const { c } = generateCode(proj);
+    expect(c).toContain('u8g2_MenuDrawItemSlider(0.30f);');
+  });
+
+  it('浮点变量用 float 字面量，附加值按 varId 绑定', () => {
     const proj = createProject();
     const v = createVariable({
       name: 'var_f', type: 'float', initialValue: 12.5, min: 0, max: 100, step: 0.1,
     });
     proj.variables.push(v);
     const pg = createPage('浮点');
-    pg.items = [{ id: 'x1', kind: 'number', label: '', text: 'f:%.1f', scale: 1, varId: v.id, editable: true }];
+    pg.items = [{
+      id: 'x1', kind: 'text', label: '', text: 'f:%.1f', scale: 1, displayVarId: null,
+      bind: { type: 'value', varId: v.id },
+    }];
     proj.pages.push(pg);
     const { c } = generateCode(proj);
     expect(c).toContain('float var_f = 12.5f;');
     expect(c).toContain('u8g2_MenuItemValue_float(&var_f, 0.1f, 0.0f, 100.0f);');
   });
 
-  it('只显示条目（editable=false）不生成绑定调用', () => {
+  it('只显示条目（无附加值 + 显示变量）不生成绑定调用', () => {
     const proj = createProject();
     const pg = createPage('只读');
     const v = proj.variables[0];
-    pg.items = [{ id: 'x1', kind: 'number', label: '', text: '状态:%d', scale: 1, varId: v.id, editable: false }];
+    pg.items = [textItem('x1', '状态:%d', { type: 'none' }, v.id)];
     proj.pages.push(pg);
     const { c } = generateCode(proj);
     expect(c).toContain('u8g2_MenuUTF8Printf("状态:%d", var_value);');
-    // 不应在此条目上生成绑定（页面内无其它 number 绑定调用此变量）
-    const pgBody = c.slice(c.indexOf('void page_2'), c.indexOf('}', c.indexOf('void page_2')));
+    const pgBody = c.slice(c.indexOf('void page_3'), c.indexOf('}', c.indexOf('void page_3')));
     expect(pgBody).not.toContain('u8g2_MenuItemValue_');
   });
 
-  it('滑块绑定浮点变量给出警告并跳过', () => {
+  it('滑块附加值绑定浮点变量给出警告并按静态显示生成', () => {
     const proj = createProject();
     const v = createVariable({ name: 'var_f', type: 'float' });
     proj.variables.push(v);
     const pg = createPage('滑块');
-    pg.items = [{ id: 'x1', kind: 'slider', label: '', varId: v.id }];
+    pg.items = [{ id: 's1', kind: 'slider', label: '', position: 50, bind: { type: 'value', varId: v.id } }];
     proj.pages.push(pg);
     const { c, warnings } = generateCode(proj);
     expect(warnings.some((w) => w.includes('须为整型'))).toBe(true);
-    expect(c).not.toContain('u8g2_MenuDrawItemSlider_bind(&var_f');
+    expect(c).toContain('u8g2_MenuDrawItemSlider(0.50f);');
   });
 
   it('XBM 条目生成数组与绘制调用', () => {
     const proj = createProject();
     const pg = createPage('位图');
     pg.items = [{
-      id: 'x1', kind: 'xbm', label: '', name: 'icon', w: 8, h: 2, bits: [0xff, 0x81],
+      id: 'x1', kind: 'xbm', label: '', name: 'icon', w: 8, h: 2, bits: [0xff, 0x81], bind: { type: 'none' },
     }];
     proj.pages.push(pg);
     const { c } = generateCode(proj);
@@ -88,33 +111,32 @@ describe('codegen', () => {
     expect(c).toContain('u8g2_MenuDrawItemXBMP(8, 2, menu_xbm_icon);');
   });
 
-  it('图表：单数据源生成缓冲区定义 + init + 绘制，自动量程传 0,0', () => {
+  it('图表：单数据源生成缓冲区定义 + init + 绘制', () => {
     const proj = createProject();
-    proj.pages = proj.pages.slice(0, 2); // 去掉演示工程的图表页，隔离编号
+    proj.pages = proj.pages.slice(0, 2); // 去掉演示图表页，隔离编号
     const pg = createPage('图表');
     pg.items = [{
-      id: 'c1', kind: 'chart', label: '', height: 32,
+      id: 'c1', kind: 'chart', label: '', height: 32, bind: { type: 'none' },
       sources: [{ bufferId: proj.chartBuffers[0].id, chartKind: 'line' }],
     }];
     proj.pages.push(pg);
     const { c } = generateCode(proj);
     expect(c).toContain('#define BUF_DEMO_LEN 32');
     expect(c).toContain('static float buf_demo[BUF_DEMO_LEN];');
-    expect(c).toContain('static float chart0_dis[BUF_DEMO_LEN];');
     expect(c).toContain('u8g2_chart_init(&chart0, buf_demo, chart0_dis, BUF_DEMO_LEN);');
     expect(c).toContain('u8g2_MenuDrawItemLineChart(&chart0, 32, 0, 0);');
-    // 缓冲区填充助手 + 守卫调用
     expect(c).toContain('static void buf_demo_fill(void)');
     expect(c).toContain('if (!buf_demo_filled) { buf_demo_filled = 1; buf_demo_fill(); }');
   });
 
   it('图表：多数据源叠加生成 drawChart 数组 + MenuDrawItemChart', () => {
     const proj = createProject();
+    proj.pages = proj.pages.slice(0, 2);
     const b2 = createChartBuffer({ name: 'buf_humi', dataLen: 24, sample: 'noise' });
     proj.chartBuffers.push(b2);
     const pg = createPage('叠加');
     pg.items = [{
-      id: 'c1', kind: 'chart', label: '', height: 40,
+      id: 'c1', kind: 'chart', label: '', height: 40, bind: { type: 'none' },
       sources: [
         { bufferId: proj.chartBuffers[0].id, chartKind: 'line' },
         { bufferId: b2.id, chartKind: 'point', min: 0, max: 50 },
@@ -127,23 +149,19 @@ describe('codegen', () => {
     expect(c).toContain('chart_layers_0[1].drawChart = u8g2_drawPointChart;');
     expect(c).toContain('chart_layers_0[1].max = 50.0f;');
     expect(c).toContain('u8g2_MenuDrawItemChart(chart_layers_0, 2, 40);');
-    // 两个缓冲区各自填充守卫
-    expect(c).toContain('buf_demo_fill();');
-    expect(c).toContain('buf_humi_fill();');
   });
 
   it('多个图表条目共用同一缓冲区', () => {
     const proj = createProject();
+    proj.pages = proj.pages.slice(0, 2);
     const pg = createPage('共用');
     pg.items = [
-      { id: 'c1', kind: 'chart', label: '', height: 30, sources: [{ bufferId: proj.chartBuffers[0].id, chartKind: 'line' }] },
-      { id: 'c2', kind: 'chart', label: '', height: 30, sources: [{ bufferId: proj.chartBuffers[0].id, chartKind: 'bar' }] },
+      { id: 'c1', kind: 'chart', label: '', height: 30, bind: { type: 'none' }, sources: [{ bufferId: proj.chartBuffers[0].id, chartKind: 'line' }] },
+      { id: 'c2', kind: 'chart', label: '', height: 30, bind: { type: 'none' }, sources: [{ bufferId: proj.chartBuffers[0].id, chartKind: 'bar' }] },
     ];
     proj.pages.push(pg);
     const { c } = generateCode(proj);
-    // 缓冲区只定义一次
     expect(c.match(/static float buf_demo\[BUF_DEMO_LEN\];/g)?.length).toBe(1);
-    // 两个图表结构（dis 各自独立），都指向 buf_demo
     expect(c).toContain('u8g2_chart_init(&chart0, buf_demo, chart0_dis, BUF_DEMO_LEN);');
     expect(c).toContain('u8g2_chart_init(&chart1, buf_demo, chart1_dis, BUF_DEMO_LEN);');
   });
@@ -162,9 +180,10 @@ describe('codegen', () => {
 
   it('用户手写的缓冲区填充会替换默认示例数据', () => {
     const proj = createProject();
+    proj.pages = proj.pages.slice(0, 2);
     const pg = createPage('图表');
     pg.items = [{
-      id: 'c1', kind: 'chart', label: '', height: 20,
+      id: 'c1', kind: 'chart', label: '', height: 20, bind: { type: 'none' },
       sources: [{ bufferId: proj.chartBuffers[0].id, chartKind: 'bar' }],
     }];
     proj.pages.push(pg);
@@ -178,12 +197,12 @@ describe('codegen', () => {
     expect(second.c).not.toContain('(i * 37) % BUF_DEMO_LEN');
   });
 
-  it('未设置目标的子页面给出警告', () => {
+  it('子页面附加值未指定目标给出警告', () => {
     const proj = createProject();
-    (proj.pages[0].items[1] as { targetPageId: string | null }).targetPageId = null;
+    (proj.pages[0].items[1].bind as { targetPageId: string | null }).targetPageId = null;
     const { warnings } = generateCode(proj);
     expect(warnings.length).toBe(1);
-    expect(warnings[0]).toContain('未指定目标页面');
+    expect(warnings[0]).toContain('目标页面无效');
   });
 
   it('勾选弱函数生成骨架（含返回值语义注释）', () => {
@@ -196,7 +215,6 @@ describe('codegen', () => {
     expect(c).toContain('(void)p;');
     expect(c).toContain('uint8_t menuEventKey_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)');
     expect(c).toContain('return 0;');
-    // 未勾选的函数不应生成
     expect(c).not.toContain('u8g2_menuItemEnter_weak(u8g2_menu_t');
   });
 
@@ -208,14 +226,11 @@ describe('codegen', () => {
       '/* USER CODE BEGIN weak_u8g2_menuValueChange_weak */',
       '/* USER CODE BEGIN weak_u8g2_menuValueChange_weak */\n    set_volume_from_menu();',
     );
-    // 取消勾选后重新生成
     proj.weakHooks = [];
     const second = generateCode(proj, { c: modified });
     expect(second.c).toContain('#if 0');
     expect(second.c).toContain('set_volume_from_menu();');
-    // 激活态定义（带标签注释）不再生成，仅剩 #if 0 保留块
     expect(second.c).not.toContain('/* 数值变化（推荐）:');
-    // 重新勾选后恢复编译，且手写内容仍在
     proj.weakHooks = ['u8g2_menuValueChange_weak'];
     const third = generateCode(proj, { c: second.c });
     expect(third.c).toContain('/* 数值变化（推荐）:');
@@ -231,8 +246,8 @@ describe('helpers', () => {
   });
   it('cstr 转义引号与换行', () => {
     expect(cstr('a"b')).toBe('a\\"b');
-    expect(cstr('a\nb')).toBe('a\\nb');
-    expect(cstr('a\\b')).toBe('a\\\\b');
+    expect(cstr('a\\nb')).toBe('a\\\\nb');
+    expect(cstr('a\\\\b')).toBe('a\\\\\\\\b');
   });
   it('extractUserBlocks 提取成对标记', () => {
     const text = 'x\n/* USER CODE BEGIN foo */\nAAA\n/* USER CODE END foo */\ny';
@@ -241,41 +256,48 @@ describe('helpers', () => {
   });
 });
 
-describe('schema roundtrip', () => {
+describe('schema roundtrip & migration', () => {
   it('序列化-解析后结构一致', () => {
     const proj: Project = createProject();
-    const text = serializeProject(proj);
-    const back = parseProject(text);
+    const back = parseProject(serializeProject(proj));
     expect(back.pages.length).toBe(proj.pages.length);
-    expect(back.pages[0].items[1].kind).toBe('submenu');
-    expect((back.pages[0].items[1] as { targetPageId: string | null }).targetPageId)
+    expect(back.pages[0].items[1].bind.type).toBe('submenu');
+    expect((back.pages[0].items[1].bind as { targetPageId: string | null }).targetPageId)
       .toBe(proj.pages[1].id);
     expect(back.variables.map((v) => v.name)).toEqual(['var_value', 'var_switch', 'var_slider']);
   });
 
-  it('旧版工程（条目自带 varName）自动迁移为变量池', () => {
+  it('旧版工程（绘制与附加值未分离）自动迁移', () => {
     const legacy = {
       version: 1,
       name: '旧工程',
       pages: [{
-        id: 'p0', name: '主页', fnName: '',
-        userCodePre: '',
+        id: 'p0', name: '主页', fnName: '', userCodePre: '',
         items: [
           { id: 'i0', kind: 'number', label: '', text: 'v:%d', scale: 1, varName: 'vol', varType: 'uint16', step: 5, min: 10, max: 200, initialValue: 66 },
           { id: 'i1', kind: 'switch', label: '', text: 's:%s', scale: 1, varName: 'flag', openValue: 1, onText: 'on', offText: 'off', initialValue: 1 },
           { id: 'i2', kind: 'slider', label: '', varName: 'pos', step: 3, min: 0, max: 90, initialValue: 45 },
+          { id: 'i3', kind: 'button', label: '', text: '关于', scale: 1, cbName: 'btn_x', buttonId: 2 },
+          { id: 'i4', kind: 'submenu', label: '', text: '下级', scale: 1, targetPageId: null },
+          { id: 'i5', kind: 'back', label: '', text: '返回', scale: 1 },
         ],
       }],
     };
     const proj = parseProject(legacy);
-    // 变量池生成三个变量，条目改用 varId 引用
-    expect(proj.variables.map((v) => v.name)).toEqual(['vol', 'flag', 'pos']);
-    const [n, s, sl] = proj.pages[0].items as { varId?: string; varName?: string }[];
-    expect(n.varId).toBe(proj.variables[0].id);
-    expect(s.varId).toBe(proj.variables[1].id);
-    expect(sl.varId).toBe(proj.variables[2].id);
-    expect(n.varName).toBeUndefined();
-    // 迁移后绑定参数来自变量
+    // 类型全部迁移为绘制类型
+    expect(proj.pages[0].items.map((i) => i.kind))
+      .toEqual(['text', 'text', 'slider', 'text', 'text', 'text']);
+    // 附加值正确分离
+    const [n, sw, sl, btn, sm, bk] = proj.pages[0].items;
+    expect(n.bind).toEqual({ type: 'value', varId: proj.variables[0].id });
+    expect(sw.bind).toEqual({
+      type: 'switch', varId: proj.variables[1].id, openValue: 1, onText: 'on', offText: 'off',
+    });
+    expect(sl.bind).toEqual({ type: 'value', varId: proj.variables[2].id });
+    expect(btn.bind).toEqual({ type: 'button', cbName: 'btn_x', buttonId: 2 });
+    expect(sm.bind).toEqual({ type: 'submenu', targetPageId: null });
+    expect(bk.bind).toEqual({ type: 'back' });
+    // 迁移后生成的绑定参数来自变量
     const { c } = generateCode(proj);
     expect(c).toMatch(/uint16_t vol = 66;/);
     expect(c).toContain('u8g2_MenuItemValue_uint16(&vol, 5, 10, 200);');

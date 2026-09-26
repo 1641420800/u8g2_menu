@@ -1,5 +1,6 @@
 import type {
-  Item, ItemKind, Page, Project, XbmItem, NumberItem, ChartItem, BoardItem, Variable, ChartBuffer,
+  Item, ItemKind, Page, Project, XbmItem, TextItem, SliderItem, ProgressItem,
+  ChartItem, BoardItem, Variable, ChartBuffer,
 } from './types';
 
 let idSeq = 0;
@@ -50,29 +51,14 @@ export function uniqueVarName(existing: Variable[], base: string): string {
 }
 
 export function createItem(kind: ItemKind): Item {
-  const base = { id: genId('it'), label: '' };
+  const base = { id: genId('it'), label: '', bind: { type: 'none' } as Item['bind'] };
   switch (kind) {
     case 'text':
-      return { ...base, kind, text: '菜单项', scale: 1 };
-    case 'number':
-      return {
-        ...base, kind, text: 'v:%d', scale: 1, varId: null, editable: true,
-      } satisfies NumberItem;
-    case 'switch':
-      return {
-        ...base, kind, text: 's:%s', scale: 1,
-        varId: null, openValue: 1, onText: 'on', offText: 'off',
-      };
-    case 'button':
-      return { ...base, kind, text: '执行操作', scale: 1, cbName: 'btn_action_cb', buttonId: 1 };
-    case 'submenu':
-      return { ...base, kind, text: '下一级', scale: 1, targetPageId: null };
-    case 'back':
-      return { ...base, kind, text: '返回', scale: 1 };
+      return { ...base, kind, text: '菜单项', scale: 1, displayVarId: null } satisfies TextItem;
     case 'slider':
-      return { ...base, kind, varId: null };
+      return { ...base, kind, position: 50 } satisfies SliderItem;
     case 'progress':
-      return { ...base, kind, varId: null };
+      return { ...base, kind, position: 50 } satisfies ProgressItem;
     case 'chart':
       return {
         ...base, kind, sources: [], height: 32,
@@ -92,7 +78,7 @@ export function createItem(kind: ItemKind): Item {
 export function createXbm(w: number, h: number): XbmItem & { label: string } {
   const bytes = Math.ceil(w / 8);
   return {
-    id: genId('it'), kind: 'xbm', label: '',
+    id: genId('it'), kind: 'xbm', label: '', bind: { type: 'none' },
     name: 'icon', w, h, bits: new Array(bytes * h).fill(0),
   };
 }
@@ -103,6 +89,11 @@ export function createPage(name: string): Page {
 
 /** 覆盖条目的公共字段（类型收窄辅助） */
 function withFields<T extends Item>(it: Item, patch: Partial<T>): T {
+  return { ...it, ...patch } as T;
+}
+
+/** 设置条目附加值（withFields 的别名，语义区分用） */
+function withBind<T extends Item>(it: Item, patch: Partial<T>): T {
   return { ...it, ...patch } as T;
 }
 
@@ -118,16 +109,18 @@ export function createProject(): Project {
   const main = createPage('主页');
   main.items = [
     withFields(createItem('text'), { text: 'u8g2_menu' }),
-    withFields(createItem('submenu'), { text: '系统设置' }),
-    withFields(createItem('button'), { text: '关于', cbName: 'btn_about_cb' }),
+    withBind(createItem('text'), { text: '系统设置', bind: { type: 'submenu', targetPageId: null } }),
+    withBind(createItem('text'), { text: '关于', bind: { type: 'button', cbName: 'btn_about_cb', buttonId: 1 } }),
   ];
   const settings = createPage('设置');
   settings.items = [
-    withFields(createItem('number'), { text: '音量:%d', varId: variables[0].id }),
-    withFields(createItem('switch'), { text: '开关:%s', varId: variables[1].id }),
-    withFields(createItem('slider'), { varId: variables[2].id }),
-    withFields(createItem('submenu'), { text: '图表' }),
-    createItem('back'),
+    withBind(withFields(createItem('text'), { text: '音量:%d' }), { bind: { type: 'value', varId: variables[0].id } }),
+    withBind(withFields(createItem('text'), { text: '开关:%s' }), {
+      bind: { type: 'switch', varId: variables[1].id, openValue: 1, onText: 'on', offText: 'off' },
+    }),
+    withBind(createItem('slider'), { bind: { type: 'value', varId: variables[2].id } }),
+    withBind(createItem('text'), { text: '图表', bind: { type: 'submenu', targetPageId: null } }),
+    withBind(createItem('text'), { text: '返回', bind: { type: 'back' } }),
   ];
   const chartPage = createPage('图表');
   chartPage.items = [
@@ -135,7 +128,7 @@ export function createProject(): Project {
       height: 36,
       sources: [{ bufferId: chartBuffers[0].id, chartKind: 'line' }],
     }),
-    createItem('back'),
+    withBind(createItem('text'), { text: '返回', bind: { type: 'back' } }),
   ];
   const proj: Project = {
     version: 1,
@@ -155,17 +148,17 @@ export function createProject(): Project {
     pages: [main, settings, chartPage],
   };
   // 子页面指向
-  (main.items[1] as { targetPageId: string | null }).targetPageId = settings.id;
-  (settings.items[3] as { targetPageId: string | null }).targetPageId = chartPage.id;
+  (main.items[1].bind as { targetPageId: string | null }).targetPageId = settings.id;
+  (settings.items[3].bind as { targetPageId: string | null }).targetPageId = chartPage.id;
   return proj;
 }
 
-/** 递归查找所有子页面引用（用于删除页面时的保护） */
+/** 附加值引用查找（用于删除页面时的保护） */
 export function findSubmenuRefs(project: Project, pageId: string): { page: Page; item: Item }[] {
   const refs: { page: Page; item: Item }[] = [];
   for (const p of project.pages) {
     for (const it of p.items) {
-      if (it.kind === 'submenu' && it.targetPageId === pageId) refs.push({ page: p, item: it });
+      if (it.bind.type === 'submenu' && it.bind.targetPageId === pageId) refs.push({ page: p, item: it });
     }
   }
   return refs;

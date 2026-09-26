@@ -6,30 +6,32 @@
 
 export const SCHEMA_VERSION = 1;
 
-export type ItemKind =
-  | 'text'      // 文本行（可含 printf 格式化占位符，纯文本时即静态文本）
-  | 'number'    // 数值编辑项：u8g2_MenuItemValue_* + 文本显示
-  | 'switch'    // 开关项：u8g2_MenuItemValue_switch + 文本显示（%s 替换 on/off 文本）
-  | 'button'    // 按钮回调项：u8g2_MenuItem_button
-  | 'submenu'   // 子页面项：u8g2_MenuItem_menu
-  | 'back'      // 返回上级项：u8g2_MenuItem_menu_back
-  | 'slider'    // 滑块条：u8g2_MenuDrawItemSlider_bind
-  | 'progress'  // 进度条：u8g2_MenuDrawItemProgressBar_bind
-  | 'chart'     // 图表项：u8g2_MenuDrawItem{Line,Point,Bar}Chart
-  | 'xbm'       // 位图项：u8g2_MenuDrawItemXBMP
-  | 'textarea'  // 多行文本区：u8g2_MenuDrawTextArea(_bind)
-  | 'board';    // 自绘板：u8g2_MenuDrawItemBoard（用户手写回调）
-
 export type IntVarType = 'uint8' | 'uint16' | 'uint32' | 'int8' | 'int16' | 'int32' | 'int';
 export type NumVarType = IntVarType | 'float' | 'double';
 export type ChartKind = 'line' | 'point' | 'bar';
 export type SelectorKind = 'default' | 'rotundity' | 'square';
+
+/** 附加值（绘制前附加的绑定调用；none = 纯显示行） */
+export type Bind =
+  | { type: 'none' }
+  | { type: 'value'; varId: string | null }                    // 数值编辑（变量池）
+  | { type: 'switch'; varId: string | null; openValue: number; onText: string; offText: string }
+  | { type: 'button'; cbName: string; buttonId: number }
+  | { type: 'submenu'; targetPageId: string | null }
+  | { type: 'back' };
+
+export type BindType = Bind['type'];
+
+/** 绘制类型（创建条目时选择） */
+export type ItemKind = 'text' | 'slider' | 'progress' | 'chart' | 'xbm' | 'textarea' | 'board';
 
 export interface ItemBase {
   id: string;
   kind: ItemKind;
   /** 编辑器内显示名（仅工具内部使用，不生成到 C 代码） */
   label: string;
+  /** 附加值：绘制前的绑定，可与任意绘制类型组合 */
+  bind: Bind;
 }
 
 export interface TextItem extends ItemBase {
@@ -38,60 +40,20 @@ export interface TextItem extends ItemBase {
   text: string;
   /** 1 = 正常，2 = 二倍大 */
   scale: 1 | 2;
-}
-
-export interface NumberItem extends ItemBase {
-  kind: 'number';
-  text: string;            // 例："v:%d"，含一个占位符
-  scale: 1 | 2;
-  /** 绑定的变量 id（Project.variables）；null = 纯显示（不绑定附加值） */
-  varId: string | null;
-  /** true = 绑定附加值可编辑；false = 只用 printf 显示变量值 */
-  editable: boolean;
-}
-
-export interface SwitchItem extends ItemBase {
-  kind: 'switch';
-  text: string;            // 例："s:%s"
-  scale: 1 | 2;
-  /** 绑定的变量 id（须为 uint8 类型） */
-  varId: string | null;
-  openValue: number;
-  onText: string;          // 例："on"
-  offText: string;         // 例："off"
-}
-
-export interface ButtonItem extends ItemBase {
-  kind: 'button';
-  text: string;
-  scale: 1 | 2;
-  cbName: string;          // 回调函数名（生成骨架 + USER CODE 区）
-  buttonId: number;        // u8g2_MenuButton_cb 的 ID
-}
-
-export interface SubmenuItem extends ItemBase {
-  kind: 'submenu';
-  text: string;
-  scale: 1 | 2;
-  targetPageId: string | null;
-}
-
-export interface BackItem extends ItemBase {
-  kind: 'back';
-  text: string;
-  scale: 1 | 2;
+  /** 无附加值时的 printf 显示变量（只读展示；有附加值时忽略此字段，直接显示被绑定的值） */
+  displayVarId: string | null;
 }
 
 export interface SliderItem extends ItemBase {
   kind: 'slider';
-  /** 绑定的变量 id（须为整型） */
-  varId: string | null;
+  /** 无附加值时的静态显示位置（0~100） */
+  position: number;
 }
 
 export interface ProgressItem extends ItemBase {
   kind: 'progress';
-  /** 绑定的变量 id（须为整型） */
-  varId: string | null;
+  /** 无附加值时的静态显示位置（0~100） */
+  position: number;
 }
 
 export interface ChartSource {
@@ -150,8 +112,7 @@ export interface BoardItem extends ItemBase {
 }
 
 export type Item =
-  | TextItem | NumberItem | SwitchItem | ButtonItem | SubmenuItem | BackItem
-  | SliderItem | ProgressItem | ChartItem | XbmItem | TextAreaItem | BoardItem;
+  | TextItem | SliderItem | ProgressItem | ChartItem | XbmItem | TextAreaItem | BoardItem;
 
 export interface Page {
   id: string;
@@ -301,11 +262,6 @@ export const WEAK_HOOKS: WeakHook[] = [
 
 export const KIND_LABELS: Record<ItemKind, string> = {
   text: '文本',
-  number: '数值',
-  switch: '开关',
-  button: '按钮',
-  submenu: '子页面',
-  back: '返回上级',
   slider: '滑块条',
   progress: '进度条',
   chart: '图表',
@@ -316,17 +272,31 @@ export const KIND_LABELS: Record<ItemKind, string> = {
 
 export const KIND_ICON: Record<ItemKind, string> = {
   text: 'T',
-  number: '#',
-  switch: '◉',
-  button: '⏎',
-  submenu: '→',
-  back: '←',
   slider: '▭',
   progress: '▬',
   chart: '∿',
   xbm: '▦',
   textarea: '¶',
   board: '✎',
+};
+
+/** 附加值类型标签 */
+export const BIND_LABELS: Record<BindType, string> = {
+  none: '无',
+  value: '数值',
+  switch: '开关',
+  button: '按钮',
+  submenu: '子页面',
+  back: '返回',
+};
+
+export const BIND_ICON: Record<BindType, string> = {
+  none: '',
+  value: '#',
+  switch: '◉',
+  button: '⏎',
+  submenu: '→',
+  back: '←',
 };
 
 /** 支持的 u8g2 字体（WASM 预览与代码生成共用同一份清单） */

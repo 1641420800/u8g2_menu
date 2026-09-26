@@ -121,7 +121,7 @@ export function createEditorStore() {
       // 清理指向该页面的子页面引用
       for (const pg of p.pages) {
         for (const it of pg.items) {
-          if (it.kind === 'submenu' && it.targetPageId === pageId) it.targetPageId = null;
+          if (it.bind.type === 'submenu' && it.bind.targetPageId === pageId) it.bind.targetPageId = null;
         }
       }
     });

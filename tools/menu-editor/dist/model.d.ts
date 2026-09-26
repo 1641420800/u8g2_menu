@@ -12,7 +12,7 @@ export declare function createXbm(w: number, h: number): XbmItem & {
 };
 export declare function createPage(name: string): Page;
 export declare function createProject(): Project;
-/** 递归查找所有子页面引用（用于删除页面时的保护） */
+/** 附加值引用查找（用于删除页面时的保护） */
 export declare function findSubmenuRefs(project: Project, pageId: string): {
     page: Page;
     item: Item;
