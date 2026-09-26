@@ -2,6 +2,7 @@ import { html, render, nothing, type TemplateResult } from 'lit-html';
 import type { EditorStoreApi } from '../store';
 import type { Project, Variable, ChartBuffer } from '../types';
 import { FONTS, WEAK_HOOKS } from '../types';
+import { isCIdentifier } from '../codegen';
 import { scanCharset, charsetStats } from '../fonts/charset';
 import { numField, selectField, textField, checkField } from './common';
 
@@ -30,6 +31,7 @@ function renderVarManager(store: EditorStoreApi, project: Project): TemplateResu
     const up = (patch: Partial<Variable>, key?: string) =>
       store.getState().updateVariable(v.id, patch, key);
     const nameBad = v.name && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(v.name);
+    const nameKeyword = v.name && !nameBad && !isCIdentifier(v.name);
     const nameDup = vars.filter((x) => x.name === v.name).length > 1;
     const refs = countRefs(project, v.id);
 
@@ -46,6 +48,7 @@ function renderVarManager(store: EditorStoreApi, project: Project): TemplateResu
       ${editing ? html`<div class="ume-var-edit">
         ${textField('变量名', v.name, (val) => up({ name: val.trim() }, `vn-${v.id}`))}
         ${nameBad ? html`<div class="ume-warn">变量名不是合法的 C 标识符（字母/数字/下划线，不能以数字开头），生成时会自动清洗</div>` : nothing}
+        ${nameKeyword ? html`<div class="ume-warn">变量名是 C 关键字，生成的代码会自动改名（如 ${v.name}_），建议换个名字</div>` : nothing}
         ${nameDup ? html`<div class="ume-warn">变量名重复，生成时以第一个为准</div>` : nothing}
         ${selectField('类型', v.type, TYPE_OPTIONS, (t) => up({ type: t }))}
         ${numField('初始值', v.initialValue, (x) => up({ initialValue: x }, `vi-${v.id}`), 'any')}
@@ -100,6 +103,7 @@ function renderBufManager(store: EditorStoreApi, project: Project): TemplateResu
     const up = (patch: Partial<ChartBuffer>, key?: string) =>
       store.getState().updateChartBuffer(b.id, patch, key);
     const nameBad = b.name && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(b.name);
+    const nameKeyword = b.name && !nameBad && !isCIdentifier(b.name);
     const refs = refsOf(b.id);
     return html`<div class="ume-var-item ${editing ? 'editing' : ''}">
       <div class="ume-var-row" @click=${() => { expandedBufId = editing ? null : b.id; }}>
@@ -114,6 +118,7 @@ function renderBufManager(store: EditorStoreApi, project: Project): TemplateResu
       ${editing ? html`<div class="ume-var-edit">
         ${textField('数组名', b.name, (val) => up({ name: val.trim() }, `bn-${b.id}`))}
         ${nameBad ? html`<div class="ume-warn">数组名不是合法的 C 标识符，生成时会自动清洗</div>` : nothing}
+        ${nameKeyword ? html`<div class="ume-warn">数组名是 C 关键字，生成的代码会自动改名（如 ${b.name}_），建议换个名字</div>` : nothing}
         ${numField('点数', b.dataLen, (x) => up({ dataLen: Math.min(512, Math.max(2, Math.trunc(x))) }, `bl-${b.id}`))}
         ${selectField('示例填充', b.sample, [
           { value: 'sine', label: '正弦（演示）' },

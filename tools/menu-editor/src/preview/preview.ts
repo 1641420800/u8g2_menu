@@ -8,6 +8,9 @@ export enum MenuKey {
   None = 0, Up = 1, Down = 2, Enter = 3, Return = 4, Add = 5, Sub = 6,
 }
 
+/** 每页条目值池槽位上限，须与 wasm/editor_shim.c 的 EM_MAX_ITEMS 保持一致 */
+export const EM_MAX_ITEMS = 64;
+
 export const MENU_KEY_NAMES: Record<number, string> = {
   [MenuKey.Up]: '上', [MenuKey.Down]: '下', [MenuKey.Enter]: '确认',
   [MenuKey.Return]: '返回', [MenuKey.Add]: '加', [MenuKey.Sub]: '减',

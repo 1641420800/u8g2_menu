@@ -18,6 +18,44 @@ export function toCIdent(s: string, fallback = 'anon'): string {
   return out || fallback;
 }
 
+const IDENT_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+/** C89/C99 关键字与保留标识符（标识符冲突检查用） */
+export const C_KEYWORDS: ReadonlySet<string> = new Set([
+  'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do', 'double',
+  'else', 'enum', 'extern', 'float', 'for', 'goto', 'if', 'inline', 'int', 'long',
+  'register', 'restrict', 'return', 'short', 'signed', 'sizeof', 'static', 'struct',
+  'switch', 'typedef', 'union', 'unsigned', 'void', 'volatile', 'while',
+  '_Bool', '_Complex', '_Imaginary',
+]);
+
+/** 合法且非关键字的 C 标识符（UI 内联校验用） */
+export function isCIdentifier(s: string): boolean {
+  return IDENT_RE.test(s) && !C_KEYWORDS.has(s);
+}
+
+/**
+ * 取一个不与 taken 冲突的标识符：关键字追加 "_"，冲突追加 "_2"/"_3"…（均记录警告）。
+ * taken 会同时登记定稿名，供后续名称继续查重。
+ */
+function safeIdent(name: string, taken: Set<string>, warnings: string[], label: string): string {
+  let out = name;
+  if (C_KEYWORDS.has(out)) {
+    out = `${out}_`;
+    warnings.push(`${label} "${name}" 是 C 关键字，生成名改为 "${out}"`);
+  }
+  if (!taken.has(out)) {
+    taken.add(out);
+    return out;
+  }
+  let i = 2;
+  while (taken.has(`${out}_${i}`)) i++;
+  const uniq = `${out}_${i}`;
+  warnings.push(`${label} "${name}" 与其他生成符号冲突（页面函数/变量/缓冲区/字体数组），已改为 "${uniq}"`);
+  taken.add(uniq);
+  return uniq;
+}
+
 export function cstr(s: string): string {
   return s
     .replace(/\\/g, '\\\\')
@@ -79,22 +117,32 @@ export function generateCode(
   const warnings: string[] = [];
   const cBlocks = extractUserBlocks(preserve?.c ?? '');
 
+  // ---------- 名称空间登记（页面函数/变量/缓冲区/回调/字体数组共享 C 全局名） ----------
+  const takenNames = new Set<string>();
+  if (fontSubset) takenNames.add('menu_font'); // 现场取模字体数组名，用户变量/缓冲区需避让
+
   // ---------- 页面函数名 ----------
-  const pageFns = project.pages.map((pg, i) => {
-    if (pg.fnName && /^[A-Za-z_][A-Za-z0-9_]*$/.test(pg.fnName)) return pg.fnName;
-    return `page_${i}`;
+  const pageFns: string[] = [];
+  project.pages.forEach((pg, i) => {
+    let name = `page_${i}`;
+    if (pg.fnName) {
+      if (IDENT_RE.test(pg.fnName)) name = pg.fnName;
+      else warnings.push(`页面 "${pg.name}" 的函数名 "${pg.fnName}" 不是合法的 C 标识符，已回退为 page_${i}`);
+    }
+    pageFns.push(safeIdent(name, takenNames, warnings, `页面 "${pg.name}" 的函数名`));
   });
 
   // ---------- 变量池（条目按 varId 引用） ----------
-  const vars = new Map<string, VarDef>();       // name -> def（定义去重）
+  const vars = new Map<string, VarDef>();       // 定稿名 -> def（定义去重）
   const varById = new Map<string, VarDef>();    // id -> def（条目解析）
   for (const v of project.variables ?? []) {
     if (!v.name) { warnings.push('存在未命名变量，已跳过'); continue; }
-    if (vars.has(v.name)) { warnings.push(`变量名 "${v.name}" 重复，以第一个为准`); continue; }
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(v.name)) {
+    if (!IDENT_RE.test(v.name)) {
       warnings.push(`变量名 "${v.name}" 不是合法的 C 标识符，已清洗为 "${toCIdent(v.name)}"`);
     }
-    const name = toCIdent(v.name, 'var');
+    const cleaned = toCIdent(v.name, 'var');
+    if (vars.has(cleaned)) { warnings.push(`变量名 "${v.name}" 重复，以第一个为准`); continue; }
+    const name = safeIdent(cleaned, takenNames, warnings, `变量名 "${cleaned}"`);
     const isFloat = v.type === 'float' || v.type === 'double';
     const def: VarDef = {
       name,
@@ -117,17 +165,31 @@ export function generateCode(
   // ---------- 图表：数据源缓冲区（手动创建）+ 每条目叠加层（dis 自动生成） ----------
   const bufDefs: string[] = [];                  // 缓冲区数组 + 填充助手
   const bufById = new Map<string, { name: string; lenMacro: string; len: number }>();
-  for (const b of project.chartBuffers ?? []) {
-    if (!b.name) { warnings.push('存在未命名数据源缓冲区，已跳过'); continue; }
-    const name = toCIdent(b.name, 'buf');
-    if ([...bufById.values()].some((x) => x.name === name)) {
-      warnings.push(`缓冲区名 "${b.name}" 与其它缓冲区重名，已跳过`);
-      continue;
+  const bufCleaned = new Set<string>();
+  (project.chartBuffers ?? []).forEach((b, bufIdx) => {
+    if (!b.name) { warnings.push('存在未命名数据源缓冲区，已跳过'); return; }
+    if (!IDENT_RE.test(b.name)) {
+      warnings.push(`缓冲区名 "${b.name}" 不是合法的 C 标识符，已清洗为 "${toCIdent(b.name)}"`);
     }
+    const cleaned = toCIdent(b.name, 'buf');
+    if (bufCleaned.has(cleaned)) {
+      warnings.push(`缓冲区名 "${b.name}" 与其它缓冲区重名，已跳过`);
+      return;
+    }
+    bufCleaned.add(cleaned);
+    const name = safeIdent(cleaned, takenNames, warnings, `缓冲区名 "${cleaned}"`);
     const len = Math.max(2, Math.trunc(b.dataLen));
     const lenMacro = `${name.toUpperCase()}_LEN`;
     bufById.set(b.id, { name, lenMacro, len });
     const blockName = `fill_${name}`;
+    if (!(cBlocks.get(blockName) ?? '').trim()) {
+      // 旧版生成的 chart<N>_fill 区按序迁移到对应缓冲区，避免手写内容被静默丢弃
+      const legacy = cBlocks.get(`chart${bufIdx}_fill`);
+      if (legacy && legacy.trim()) {
+        cBlocks.set(blockName, legacy);
+        warnings.push(`已将旧版 chart${bufIdx}_fill 手写内容迁移至 ${blockName}（后续请直接在该区内维护）`);
+      }
+    }
     const hasUserFill = (cBlocks.get(blockName) ?? '').trim() !== '';
     bufDefs.push(
       `#define ${lenMacro} ${len}`,
@@ -141,7 +203,7 @@ export function generateCode(
         : []),
       `}`,
     );
-  }
+  });
 
   const chartRes: string[] = [];                 // dis 数组 + chart 结构 + layers
   const chartInitByItem = new Map<string, string[]>();  // itemId -> init-once 块
@@ -279,6 +341,12 @@ export function generateCode(
     }
   }
 
+  // ---------- 回调名定稿（规避关键字，且不与页面函数/变量/缓冲区重名） ----------
+  const btnFinal = new Map<string, string>();   // 收集名 -> 定稿名
+  const boardFinal = new Map<string, string>();
+  for (const cb of buttonCbs.keys()) btnFinal.set(cb, safeIdent(cb, takenNames, warnings, `按钮回调名 "${cb}"`));
+  for (const cb of boardCbs) boardFinal.set(cb, safeIdent(cb, takenNames, warnings, `自绘板回调名 "${cb}"`));
+
   // ---------- 单条目代码生成（附加值绑定行 + 绘制行分离） ----------
   const drawText = (text: string, scale: 1 | 2): string => {
     if (!text) return '';
@@ -338,7 +406,8 @@ export function generateCode(
         break;
       }
       case 'button': {
-        const cb = toCIdent(bind.cbName, 'btn_cb');
+        const key = toCIdent(bind.cbName, 'btn_cb');
+        const cb = btnFinal.get(key) ?? key;
         lines.push(`    u8g2_MenuItem_button(${cb}, ${Math.trunc(bind.buttonId)});`);
         break;
       }
@@ -428,7 +497,8 @@ export function generateCode(
         break;
       }
       case 'board': {
-        const cb = toCIdent(it.cbName, 'board_cb');
+        const key = toCIdent(it.cbName, 'board_cb');
+        const cb = boardFinal.get(key) ?? key;
         lines.push(`    u8g2_MenuDrawItemBoard(${cb}, ${Math.max(1, Math.trunc(it.w))}, ${Math.max(1, Math.trunc(it.h))});`);
         break;
       }
@@ -446,8 +516,8 @@ export function generateCode(
   cParts.push(` *   u8g2_SetFont(&u8g2, ${fontSubset ? 'menu_font' : project.font});`);
   pageFns.forEach((fn, i) => cParts.push(` *   void ${fn}(void);   /* 页面: ${project.pages[i].name} */`));
   for (const v of vars.values()) cParts.push(` *   extern ${v.type} ${v.name};`);
-  for (const [cb] of buttonCbs) cParts.push(` *   void ${cb}(u8g2_menu_t *menu, uint8_t ID);`);
-  for (const cb of boardCbs) cParts.push(` *   void ${cb}(u8g2_t *u8g2);`);
+  for (const cb of btnFinal.values()) cParts.push(` *   void ${cb}(u8g2_menu_t *menu, uint8_t ID);`);
+  for (const cb of boardFinal.values()) cParts.push(` *   void ${cb}(u8g2_t *u8g2);`);
   cParts.push(` */`);
   cParts.push(`#include "u8g2_menu.h"`);
   if ((project.chartBuffers ?? []).some((b) => b.sample === 'sine')) cParts.push(`#include <math.h>`);
@@ -491,14 +561,16 @@ export function generateCode(
   if (buttonCbs.size || boardCbs.size) {
     cParts.push(`/* ======================== 回调函数 ======================== */`);
     cParts.push(userBlock('callbacks', cBlocks, ''));
-    for (const [cb] of buttonCbs) {
+    for (const [raw] of buttonCbs) {
+      const cb = btnFinal.get(raw)!;
       cParts.push(`void ${cb}(u8g2_menu_t *menu, uint8_t ID)`);
       cParts.push(`{`);
       cParts.push(userBlock(`cb_${cb}`, cBlocks, '    '));
       cParts.push(`}`);
       cParts.push('');
     }
-    for (const cb of boardCbs) {
+    for (const raw of boardCbs) {
+      const cb = boardFinal.get(raw)!;
       cParts.push(`void ${cb}(u8g2_t *u8g2)`);
       cParts.push(`{`);
       cParts.push(userBlock(`cb_${cb}`, cBlocks, '    '));

@@ -2,7 +2,7 @@ import { UME_CSS } from './ui/styles';
 import { createEditorStore, type EditorStoreApi } from './store';
 import { parseProject, serializeProject } from './schema';
 import { generateCode, type CodegenResult } from './codegen';
-import { WasmPreview, MenuKey } from './preview/preview';
+import { WasmPreview, MenuKey, EM_MAX_ITEMS } from './preview/preview';
 import type { Project } from './types';
 import { renderTree } from './ui/tree';
 import { renderProperty } from './ui/property';
@@ -390,7 +390,7 @@ export class MenuEditor {
       const vid = boundVarId ?? dispVarId;
       if (item && vid) {
         const varSlot = (st.project.variables ?? []).findIndex((v) => v.id === vid);
-        const slot = varSlot >= 0 ? varSlot : pageIdx * 64 + idx;
+        const slot = varSlot >= 0 ? varSlot : pageIdx * EM_MAX_ITEMS + idx;
         const isSwitch = bind?.type === 'switch';
         const v = isSwitch ? this.preview.getSwitch(slot) : this.preview.getInt(slot);
         const name = (st.project.variables ?? []).find((x) => x.id === vid)?.name;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateCode, extractUserBlocks, toCIdent, cstr } from '../src/codegen';
+import { generateCode, extractUserBlocks, toCIdent, cstr, isCIdentifier } from '../src/codegen';
 import { createProject, createVariable, createChartBuffer, createPage } from '../src/model';
 import type { Project, Bind } from '../src/types';
 import { parseProject, serializeProject } from '../src/schema';
@@ -236,6 +236,84 @@ describe('codegen', () => {
     expect(third.c).toContain('/* 数值变化（推荐）:');
     expect(third.c).toContain('set_volume_from_menu();');
   });
+
+  it('变量名为 C 关键字时自动改名并警告', () => {
+    const proj = createProject();
+    const v = createVariable({ name: 'switch', type: 'int', initialValue: 1, min: 0, max: 9, step: 1 });
+    proj.variables.push(v);
+    const pg = createPage('关键字');
+    pg.items = [textItem('k1', 'k:%d', { type: 'value', varId: v.id })];
+    proj.pages.push(pg);
+    const { c, warnings } = generateCode(proj);
+    expect(c).toContain('int switch_ = 1;');
+    expect(c).toContain('u8g2_MenuItemValue_int(&switch_, 1, 0, 9);');
+    expect(c).toContain('u8g2_MenuUTF8Printf("k:%d", switch_);');
+    expect(warnings.some((w) => w.includes('C 关键字') && w.includes('switch_'))).toBe(true);
+  });
+
+  it('页面函数名非法时回退 page_N 并警告', () => {
+    const proj = createProject();
+    proj.pages[0].fnName = '9bad name';
+    const { c, warnings } = generateCode(proj);
+    expect(warnings.some((w) => w.includes('不是合法的 C 标识符') && w.includes('page_0'))).toBe(true);
+    expect(c).toContain('void page_0(void)');
+  });
+
+  it('页面函数名重复时自动去重并警告，跳转引用跟随改名', () => {
+    const proj = createProject();
+    proj.pages[0].fnName = 'same';
+    proj.pages[1].fnName = 'same';
+    const { c, warnings } = generateCode(proj);
+    expect(c).toContain('void same(void)');
+    expect(c).toContain('void same_2(void)');
+    // 主页的子页面条目跳到 pages[1]，应引用去重后的名字
+    expect(c).toContain('u8g2_MenuItem_menu_enter(same_2);');
+    expect(warnings.some((w) => w.includes('与其他生成符号冲突'))).toBe(true);
+  });
+
+  it('回调名与页面函数重名时回调自动改名', () => {
+    const proj = createProject();
+    proj.pages[2].fnName = 'btn_about_cb';
+    const { c, warnings } = generateCode(proj);
+    expect(c).toContain('void btn_about_cb(void)');
+    expect(c).toContain('void btn_about_cb_2(u8g2_menu_t *menu, uint8_t ID)');
+    expect(c).toContain('u8g2_MenuItem_button(btn_about_cb_2, 1);');
+    expect(warnings.some((w) => w.includes('btn_about_cb_2'))).toBe(true);
+  });
+
+  it('旧版 chart<N>_fill 手写内容按序迁移到缓冲区填充区', () => {
+    const proj = createProject();
+    proj.pages = proj.pages.slice(0, 2);
+    const pg = createPage('图表');
+    pg.items = [{
+      id: 'c1', kind: 'chart', label: '', height: 20, bind: { type: 'none' },
+      sources: [{ bufferId: proj.chartBuffers[0].id, chartKind: 'line' }],
+    }];
+    proj.pages.push(pg);
+    const legacyC = [
+      'static void chart0_fill(void)',
+      '{',
+      '/* USER CODE BEGIN chart0_fill */',
+      '    for (uint16_t i = 0; i < BUF_DEMO_LEN; ++i) { buf_demo[i] = sensor[i]; }',
+      '/* USER CODE END chart0_fill */',
+      '}',
+    ].join('\n');
+    const { c, warnings } = generateCode(proj, { c: legacyC });
+    expect(c).toContain('buf_demo[i] = sensor[i];');
+    expect(c).toContain('/* USER CODE BEGIN fill_buf_demo */');
+    expect(c).not.toContain('% BUF_DEMO_LEN'); // 示例填充被手写内容替换
+    expect(warnings.some((w) => w.includes('chart0_fill') && w.includes('fill_buf_demo'))).toBe(true);
+  });
+
+  it('现场取模时名为 menu_font 的变量自动避让字体数组', () => {
+    const proj = createProject();
+    proj.variables.push(createVariable({ name: 'menu_font', type: 'uint8', initialValue: 0, min: 0, max: 255, step: 1 }));
+    const fake = new Uint8Array(64).fill(0x11);
+    const { c, warnings } = generateCode(proj, undefined, fake);
+    expect(c).toContain('uint8_t menu_font_2 = 0;');
+    expect(c).toContain('const uint8_t menu_font[64]');
+    expect(warnings.some((w) => w.includes('menu_font_2'))).toBe(true);
+  });
 });
 
 describe('helpers', () => {
@@ -243,6 +321,12 @@ describe('helpers', () => {
     expect(toCIdent('my var!')).toBe('my_var_');
     expect(toCIdent('2abc')).toBe('_2abc');
     expect(toCIdent('')).toBe('_');
+  });
+  it('isCIdentifier 拒绝关键字与非法形式', () => {
+    expect(isCIdentifier('ok_name')).toBe(true);
+    expect(isCIdentifier('switch')).toBe(false);
+    expect(isCIdentifier('2x')).toBe(false);
+    expect(isCIdentifier('a-b')).toBe(false);
   });
   it('cstr 转义引号与换行', () => {
     expect(cstr('a"b')).toBe('a\\"b');

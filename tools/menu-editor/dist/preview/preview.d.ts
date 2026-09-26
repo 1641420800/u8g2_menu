@@ -10,6 +10,8 @@ export declare enum MenuKey {
     Add = 5,
     Sub = 6
 }
+/** 每页条目值池槽位上限，须与 wasm/editor_shim.c 的 EM_MAX_ITEMS 保持一致 */
+export declare const EM_MAX_ITEMS = 64;
 export declare const MENU_KEY_NAMES: Record<number, string>;
 export interface PreviewEvents {
     /** 预览内发生了子页面跳转（同步左侧树高亮） */
