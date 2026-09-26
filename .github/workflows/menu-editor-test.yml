@@ -1,0 +1,38 @@
+name: menu-editor-test
+
+# menu-editor 工具侧（TS 代码生成/字体子集/模型）单元测试
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/menu-editor/src/**'
+      - 'tools/menu-editor/tests/**'
+      - 'tools/menu-editor/package.json'
+      - 'tools/menu-editor/package-lock.json'
+  pull_request:
+    paths:
+      - 'tools/menu-editor/src/**'
+      - 'tools/menu-editor/tests/**'
+      - 'tools/menu-editor/package.json'
+      - 'tools/menu-editor/package-lock.json'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/menu-editor
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: tools/menu-editor/package-lock.json
+
+      - run: npm ci
+
+      - run: npm test
+
+      - run: npm run build

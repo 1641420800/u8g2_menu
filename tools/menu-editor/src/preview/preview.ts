@@ -174,6 +174,10 @@ export class WasmPreview {
               b.type === "button" ? intT(b.buttonId) : 0,
               b.type === "submenu" ? project.pages.findIndex((p) => p.id === b.targetPageId) : -1,
               isVar && v ? varSlot(v.id) : -1]);
+          if (b.type === "switch") {
+            mod.ccall("em_item_switch_text", null, ["number", "number", "string", "string"],
+              [pi, ii, b.onText, b.offText]);
+          }
         };
         switch (it.kind) {
           case "text":

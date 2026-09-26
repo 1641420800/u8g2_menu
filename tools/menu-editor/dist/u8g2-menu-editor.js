@@ -1585,6 +1585,11 @@ class kt {
               y.type === "submenu" ? n.pages.findIndex((C) => C.id === y.targetPageId) : -1,
               g && h ? l(h.id) : -1
             ]
+          ), y.type === "switch" && e.ccall(
+            "em_item_switch_text",
+            null,
+            ["number", "number", "string", "string"],
+            [m, f, y.onText, y.offText]
           );
         };
         switch (p.kind) {

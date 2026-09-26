@@ -70,9 +70,9 @@ typedef struct {
     uint16_t xbm_h;        /* xbm 高 / board 高 */
     uint16_t area_h;       /* textarea/chart 高度 */
     uint8_t  bindScroll;   /* textarea */
-    char     text[96];
-    char     onText[12];
-    char     offText[12];
+    char     text[257];      /* 与导出端不限长文本对齐（256 + NUL） */
+    char     onText[33];
+    char     offText[33];
 } em_item_t;
 
 static em_item_t em_pages[EM_MAX_PAGES][EM_MAX_ITEMS];
@@ -288,7 +288,7 @@ static void em_dispatch(uint8_t page)
     if (page >= em_page_count) return;
     em_item_t *items = em_pages[page];
     uint16_t n = em_page_len[page];
-    char buf[128];
+    char buf[320];
 
     for (uint16_t i = 0; i < n; i++) {
         em_item_t *it = &items[i];
@@ -510,6 +510,15 @@ void em_item_text(int page, int idx, const char *text)
         snprintf(p, 256, "%s", text);
         u8g2_textArea_setText(&em_tas[page][idx], p);
     }
+}
+
+/* 开关附加值的开/关文案（em_page_bind 不携带文本，单独设置） */
+void em_item_switch_text(int page, int idx, const char *on, const char *off)
+{
+    if (page < 0 || page >= EM_MAX_PAGES || idx < 0 || idx >= EM_MAX_ITEMS) return;
+    em_item_t *it = &em_pages[page][idx];
+    snprintf(it->onText, sizeof(it->onText), "%s", on ? on : "");
+    snprintf(it->offText, sizeof(it->offText), "%s", off ? off : "");
 }
 
 void em_item_bits(int page, int idx, const uint8_t *ptr, int len)

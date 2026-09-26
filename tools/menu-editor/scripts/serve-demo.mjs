@@ -23,12 +23,27 @@ const MIME = {
   '.ico': 'image/x-icon',
 };
 
+const CORS_HEADERS = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, HEAD, OPTIONS',
+};
+
 createServer(async (req, res) => {
   try {
+    // 预检与 HEAD 直接放行（CORS 头所有响应都带，含 403/404）
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204, CORS_HEADERS);
+      res.end();
+      return;
+    }
     let path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
     if (path === '/' || path === '/demo/') path = '/demo/index.html';
     const file = normalize(join(ROOT, path));
-    if (!file.startsWith(ROOT)) { res.writeHead(403); res.end(); return; }
+    if (!file.startsWith(ROOT)) {
+      res.writeHead(403, CORS_HEADERS);
+      res.end();
+      return;
+    }
     const data = await readFile(file);
     res.writeHead(200, {
       'content-type': MIME[extname(file).toLowerCase()] ?? 'application/octet-stream',
@@ -36,11 +51,11 @@ createServer(async (req, res) => {
       // 开发/演示服务器：禁止缓存，避免 wasm/js 更新后浏览器用旧产物；
       // 允许跨域：其他前端项目可直接 <script> / fetch 本服务器的 dist 与 prebuilt 产物
       'cache-control': 'no-store',
-      'access-control-allow-origin': '*',
+      ...CORS_HEADERS,
     });
     res.end(data);
   } catch {
-    res.writeHead(404);
+    res.writeHead(404, CORS_HEADERS);
     res.end('not found');
   }
 }).listen(PORT, () => {
