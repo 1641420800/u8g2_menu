@@ -22,6 +22,7 @@ export declare class MenuEditor {
     private renderScheduled;
     private saveTimer;
     private changeTimer;
+    private liveTimer;
     private lastExport;
     private destroyed;
     private activateRightTab;

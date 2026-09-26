@@ -42,6 +42,7 @@ export class MenuEditor {
   private renderScheduled = false;
   private saveTimer: number | undefined;
   private changeTimer: number | undefined;
+  private liveTimer: number | undefined;
   private lastExport: { c: string } | null = null;
   private destroyed = false;
   private activateRightTab: (key: string) => void = () => {};
@@ -203,7 +204,7 @@ export class MenuEditor {
     this.scheduleRender();
     this.persist();
     // 预览内编辑（+/－键）不触发 store，需轮询刷新实时数值显示
-    window.setInterval(() => { if (!this.destroyed) this.updateLiveInfo(); }, 300);
+    this.liveTimer = window.setInterval(() => { if (!this.destroyed) this.updateLiveInfo(); }, 300);
   }
 
   /* ---------------- 公共 API ---------------- */
@@ -286,6 +287,9 @@ export class MenuEditor {
   destroy(): void {
     this.destroyed = true;
     document.removeEventListener('keydown', this.onKeyDown);
+    if (this.liveTimer !== undefined) window.clearInterval(this.liveTimer);
+    clearTimeout(this.saveTimer);
+    clearTimeout(this.changeTimer);
     this.preview.destroy();
     this.container.innerHTML = '';
   }

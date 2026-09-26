@@ -6,17 +6,9 @@ export interface ExportResult {
   warnings: string[];
 }
 
-let current: ExportResult | null = null;
-
 export function showExportDialog(host: HTMLElement, result: ExportResult): void {
-  current = result;
   // 重复触发时先关闭已打开的对话框，避免蒙层叠加
   host.querySelectorAll(':scope > .ume-modal-mask').forEach((m) => m.remove());
-  openDialog(host);
-}
-
-function openDialog(host: HTMLElement): void {
-  if (!current) return;
   const mask = document.createElement('div');
   mask.className = 'ume-modal-mask';
   mask.addEventListener('click', (e) => { if (e.target === mask) close(mask); });
@@ -28,18 +20,18 @@ function openDialog(host: HTMLElement): void {
         <button class="ume-mini" @click=${() => close(mask)}>✕</button>
       </div>
       <div class="ume-modal-body">
-        ${current!.warnings.length ? html`
+        ${result.warnings.length ? html`
           <div style="margin-bottom:8px">
-            ${current!.warnings.map((w) => html`<div class="ume-warn">⚠ ${w}</div>`)}
+            ${result.warnings.map((w) => html`<div class="ume-warn">⚠ ${w}</div>`)}
           </div>` : nothing}
-        <div class="ume-code-view">${current!.c}</div>
+        <div class="ume-code-view">${result.c}</div>
       </div>
       <div class="ume-modal-foot">
         <button class="ume-btn" @click=${() => {
-          navigator.clipboard.writeText(current!.c).then(() => toast(mask, '已复制到剪贴板'));
+          navigator.clipboard.writeText(result.c).then(() => toast(mask, '已复制到剪贴板'));
         }}>复制</button>
         <button class="ume-btn primary" @click=${() => {
-          download('menu_pages.c', current!.c);
+          download('menu_pages.c', result.c);
         }}>下载 menu_pages.c</button>
       </div>
     </div>

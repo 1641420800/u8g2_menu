@@ -120,8 +120,6 @@ export interface Page {
   /** 生成的 C 函数名（如 page_main）；空则自动 page_0/1/2... */
   fnName: string;
   items: Item[];
-  /** 页面函数开头的用户代码（USER CODE BEGIN page_<fnName>） */
-  userCodePre: string;
 }
 
 /** 可绑定附加值的全局变量（菜单加减数值时读写的目标） */

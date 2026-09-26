@@ -36,7 +36,7 @@
     wasmUrl: 'prebuilt/u8g2-menu-preview.js',  // 预览引擎（.js+.wasm 需同目录）
     persistKey: 'my-app',                       // localStorage 自动保存键
     onChange: (data) => {},                     // 模型变化
-    onExport: ({ c, h, warnings }) => {},       // 生成代码
+    onExport: ({ c, warnings }) => {},       // 生成代码
   });
   // editor.getData() / loadData(json) / generate() / downloadC() / destroy()
 </script>
@@ -69,8 +69,7 @@ const editor = new MenuEditor(el, { wasmUrl: 'prebuilt/u8g2-menu-preview.js' });
       "items": [
         { "kind": "submenu", "text": "系统设置", "targetPageId": "…" },
         { "kind": "number", "text": "音量:%d", "varId": "…", "editable": true }
-      ],
-      "userCodePre": ""
+      ]
     }
   ]
 }

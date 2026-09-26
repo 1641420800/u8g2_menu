@@ -84,7 +84,7 @@ export function createXbm(w: number, h: number): XbmItem & { label: string } {
 }
 
 export function createPage(name: string): Page {
-  return { id: genId('pg'), name, fnName: '', items: [], userCodePre: '' };
+  return { id: genId('pg'), name, fnName: '', items: [] };
 }
 
 /** 覆盖条目的公共字段（类型收窄辅助） */
@@ -153,17 +153,6 @@ export function createProject(): Project {
   (main.items[1].bind as { targetPageId: string | null }).targetPageId = settings.id;
   (settings.items[3].bind as { targetPageId: string | null }).targetPageId = chartPage.id;
   return proj;
-}
-
-/** 附加值引用查找（用于删除页面时的保护） */
-export function findSubmenuRefs(project: Project, pageId: string): { page: Page; item: Item }[] {
-  const refs: { page: Page; item: Item }[] = [];
-  for (const p of project.pages) {
-    for (const it of p.items) {
-      if (it.bind.type === 'submenu' && it.bind.targetPageId === pageId) refs.push({ page: p, item: it });
-    }
-  }
-  return refs;
 }
 
 export function cloneProject(p: Project): Project {

@@ -133,7 +133,6 @@ function parsePage(raw: unknown): Page {
     name: str(raw.name, '未命名页面'),
     fnName: str(raw.fnName, ''),
     items,
-    userCodePre: str(raw.userCodePre, ''),
   };
 }
 
@@ -256,7 +255,6 @@ export function parseProject(json: string | unknown): Project {
   if (version > SCHEMA_VERSION) {
     throw new SchemaError(`工程版本 v${version} 高于当前支持的 v${SCHEMA_VERSION}，请升级编辑器`);
   }
-  if (version < SCHEMA_VERSION) migrate(r, version);
 
   const pages = Array.isArray(r.pages) ? r.pages.map(parsePage) : [];
   if (!pages.length) throw new SchemaError('工程至少需要一个页面');
@@ -371,11 +369,6 @@ function normalizeChartSources(pages: Page[], buffers: ChartBuffer[]): void {
 }
 
 type ChartItem2 = Extract<Item, { kind: 'chart' }>;
-
-/** 历史版本迁移（当前仅 v1，占位） */
-function migrate(_raw: Record<string, unknown>, _from: number): void {
-  return;
-}
 
 export function serializeProject(p: Project): string {
   return JSON.stringify(p, null, 2);

@@ -232,7 +232,7 @@ export function renderProperty(
       case 'button':
         bindBody = html`
           ${textField('回调函数名', b.cbName, (v2) => setBind({ type: 'button', cbName: v2, buttonId: b.buttonId }))}
-          ${numField('ID', b.buttonId, (v2) => setBind({ type: 'button', cbName: b.cbName, buttonId: Math.trunc(v2) }))}
+          ${numField('ID', b.buttonId, (v2) => setBind({ type: 'button', cbName: b.cbName, buttonId: Math.max(0, Math.trunc(v2)) }))}
           <div class="ume-hint">确认键触发回调（骨架生成到 USER CODE 区，逻辑在 IDE 里写）</div>
         `;
         break;

@@ -109,7 +109,7 @@ export function createEditorStore() {
   select: (pageId, itemId = null) => set({ selection: { pageId, itemId } }),
 
   addPage: (name) => {
-    const page: Page = { id: genId('pg'), name: name ?? `页面${get().project.pages.length + 1}`, fnName: '', items: [], userCodePre: '' };
+    const page: Page = { id: genId('pg'), name: name ?? `页面${get().project.pages.length + 1}`, fnName: '', items: [] };
     get().update((p) => { p.pages.push(page); });
     set({ selection: { pageId: page.id, itemId: null } });
     return page;
@@ -148,7 +148,7 @@ export function createEditorStore() {
   addItem: (kind, pageId) => {
     const target = pageId ?? get().selection.pageId ?? get().project.pages[0]?.id;
     if (!target) return null;
-    const item = newItem(kind);
+    const item = createItem(kind);
     get().update((p) => {
       const pg = p.pages.find((x) => x.id === target);
       pg?.items.push(item);
@@ -265,11 +265,4 @@ export function createEditorStore() {
   }));
 }
 
-/** 默认单例（多数集成场景只有一个编辑器实例） */
-export const store = createEditorStore();
-
 export type EditorStoreApi = StoreApi<EditorStore>;
-
-function newItem(kind: ItemKind): Item {
-  return createItem(kind);
-}

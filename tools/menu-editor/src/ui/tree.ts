@@ -79,8 +79,3 @@ function s_addPage(store: EditorStoreApi): void {
   const name = prompt('页面名称:', `页面${store.getState().project.pages.length + 1}`);
   if (name !== null) store.getState().addPage(name || undefined);
 }
-
-export function focusTreeItem(el: HTMLElement, itemId: string): void {
-  // 目前不做滚动定位，占位以便后续扩展
-  void el; void itemId;
-}

@@ -39,7 +39,5 @@ export interface EditorStore extends EditorState {
     updateChartBuffer: (bufId: string, patch: Partial<ChartBuffer>, coalesceKey?: string) => void;
 }
 export declare function createEditorStore(): StoreApi<EditorStore>;
-/** 默认单例（多数集成场景只有一个编辑器实例） */
-export declare const store: StoreApi<EditorStore>;
 export type EditorStoreApi = StoreApi<EditorStore>;
 export {};
