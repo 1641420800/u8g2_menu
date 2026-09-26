@@ -2,7 +2,8 @@ import { html, render, nothing, type TemplateResult } from 'lit-html';
 import type { EditorStoreApi } from '../store';
 import type { Project, Variable, ChartBuffer } from '../types';
 import { FONTS, WEAK_HOOKS } from '../types';
-import { numField, selectField, textField } from './common';
+import { scanCharset, charsetStats } from '../fonts/charset';
+import { numField, selectField, textField, checkField } from './common';
 
 /** 当前展开编辑的变量/缓冲区 id（跨渲染保持） */
 let expandedVarId: string | null = null;
@@ -200,6 +201,14 @@ export function renderSettings(el: HTMLElement, store: EditorStoreApi): void {
     <div class="ume-panel-title">样式</div>
     ${selectField('字体', project.font, FONTS.map((f) => ({ value: f.id, label: f.label })),
       (v) => up({ font: v }))}
+    ${checkField('中文现场取模（仅包含用到的字形）', project.fontSubset, (v) => up({ fontSubset: v }))}
+    ${project.fontSubset ? html`
+      ${textField('额外包含字符', project.fontExtra, (v) => up({ fontExtra: v }))}
+      ${(() => {
+        const stats = charsetStats(scanCharset(project, project.fontExtra));
+        return html`<div class="ume-hint">当前收录 ${stats.total} 个字符（ASCII ${stats.ascii} + 中文等扩展 ${stats.cjk}）；
+        运行时输出超出字符集的中文将无法显示，可在上面补充额外字符后重新生成</div>`;
+      })()}` : nothing}
     ${selectField('选择器', project.selector, [
       { value: 'default', label: '默认 (反色行)' },
       { value: 'rotundity', label: '圆形' },

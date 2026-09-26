@@ -148,6 +148,10 @@ export interface Project {
     marqueeHeaderLen: number;
     /** 勾选重写的弱定义函数名（见 WEAK_HOOKS）；未勾选的沿用库默认实现 */
     weakHooks: string[];
+    /** 中文字体现场取模：生成仅含用到的字形的精简字体数组 */
+    fontSubset: boolean;
+    /** 现场取模额外包含的字符（覆盖运行时动态输出的中文） */
+    fontExtra: string;
     /** 全局变量池：条目按 id 引用绑定 */
     variables: Variable[];
     /** 图表数据源缓冲区池：图表条目按 id 引用，可多图表共用 */

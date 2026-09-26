@@ -10,5 +10,6 @@ export declare function cstr(s: string): string;
 export declare function extractUserBlocks(text: string): Map<string, string>;
 export declare function generateCode(project: Project, preserve?: {
     c?: string;
-    h?: string;
-}): CodegenResult;
+}, 
+/** 现场取模：工程文本子集字体字节；提供时生成 menu_font[] 数组，否则引用所选内置字体 */
+fontSubset?: Uint8Array): CodegenResult;

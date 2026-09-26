@@ -27,6 +27,7 @@ export declare class WasmPreview {
     private running;
     private fontIndexCache;
     private structSig;
+    private fontSig;
     private events;
     private lastKnownPage;
     constructor(container: HTMLElement, events?: PreviewEvents);
@@ -46,6 +47,12 @@ export declare class WasmPreview {
     key(k: MenuKey): void;
     /** 预览跳转到指定页（不经过子页面链路） */
     navTo(pageIdx: number): void;
+    /** 读取内置字体原始字节（现场取模的源数据） */
+    getFontBytes(idx: number): Uint8Array | null;
+    /** 字形拉取器：从 WASM 真库逐字获取原始条目（与渲染同一路径） */
+    glyphFetcher(fontIdx: number): ((encoding: number) => Uint8Array | null) | null;
+    /** 加载自定义（子集）字体并切换；超出槽位容量返回 false */
+    useCustomFont(bytes: Uint8Array): boolean;
     /** 读取值池槽位的实时值（绑定变量的条目：槽位 = 变量在池中的下标） */
     getInt(slot: number): number;
     getSwitch(slot: number): number;

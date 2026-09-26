@@ -143,6 +143,8 @@ export function createProject(): Project {
     marqueeSpeed: 0.2,
     marqueeHeaderLen: 5,
     weakHooks: [],
+    fontSubset: true,
+    fontExtra: '',
     variables,
     chartBuffers,
     pages: [main, settings, chartPage],

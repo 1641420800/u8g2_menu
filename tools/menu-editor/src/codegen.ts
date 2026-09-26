@@ -6,7 +6,6 @@ export interface CodegenResult {
   c: string;
   warnings: string[];
 }
-
 const C_TYPE: Record<NumVarType, string> = {
   uint8: 'uint8_t', uint16: 'uint16_t', uint32: 'uint32_t',
   int8: 'int8_t', int16: 'int16_t', int32: 'int32_t',
@@ -73,7 +72,9 @@ const INT_TYPES: ReadonlySet<string> = new Set(['uint8', 'uint16', 'uint32', 'in
 
 export function generateCode(
   project: Project,
-  preserve?: { c?: string; h?: string },
+  preserve?: { c?: string },
+  /** 现场取模：工程文本子集字体字节；提供时生成 menu_font[] 数组，否则引用所选内置字体 */
+  fontSubset?: Uint8Array,
 ): CodegenResult {
   const warnings: string[] = [];
   const cBlocks = extractUserBlocks(preserve?.c ?? '');
@@ -442,6 +443,7 @@ export function generateCode(
   cParts.push(` * 重新生成时，USER CODE 区域内的手写内容会被保留。`);
   cParts.push(` *`);
   cParts.push(` * main.c 里使用以下符号时，直接 extern（或复制下面声明）：`);
+  cParts.push(` *   u8g2_SetFont(&u8g2, ${fontSubset ? 'menu_font' : project.font});`);
   pageFns.forEach((fn, i) => cParts.push(` *   void ${fn}(void);   /* 页面: ${project.pages[i].name} */`));
   for (const v of vars.values()) cParts.push(` *   extern ${v.type} ${v.name};`);
   for (const [cb] of buttonCbs) cParts.push(` *   void ${cb}(u8g2_menu_t *menu, uint8_t ID);`);
@@ -461,6 +463,22 @@ export function generateCode(
   cParts.push(userBlock('variables', cBlocks, ''));
   for (const v of vars.values()) cParts.push(`${v.type} ${v.name} = ${v.init};`);
   cParts.push('');
+
+  // 现场取模字体（仅包含工程用到的字形，替代整包字库）
+  if (fontSubset) {
+    cParts.push(`/* ======================== 字体（现场取模） ======================== */`);
+    cParts.push(`/* 仅包含工程文本用到的字形（含 ASCII 95 个 + 额外字符），`);
+    cParts.push(` * main.c 里 u8g2_SetFont(&u8g2, menu_font) 即可使用；`);
+    cParts.push(` * 若运行时输出超出此字符集的中文，请在编辑器"额外包含字符"里补充后重新生成。 */`);
+    const rows: string[] = [];
+    for (let i = 0; i < fontSubset.length; i += 16) {
+      rows.push('  ' + [...fontSubset.slice(i, i + 16)].map((b) => `0x${b.toString(16).padStart(2, '0')}`).join(', ') + ',');
+    }
+    cParts.push(`const uint8_t menu_font[${fontSubset.length}] U8G2_FONT_SECTION("menu_font") = {`);
+    cParts.push(...rows);
+    cParts.push(`};`);
+    cParts.push('');
+  }
 
   // 资源（数据源缓冲区/图表/文本区/XBM）
   if (bufDefs.length || chartRes.length || textAreas.length || xbmDefs.length) {

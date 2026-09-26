@@ -76,6 +76,10 @@ const char * const em_font_names[] = {
 ${fontNames.map((n) => `    "${n}",`).join('\n')}
 };
 
+const int em_font_lens[] = {
+${fontNames.map((n) => `    (int)sizeof(${n}),`).join('\n')}
+};
+
 const int em_font_count = ${fontNames.length};
 `;
 

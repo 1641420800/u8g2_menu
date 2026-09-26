@@ -303,6 +303,8 @@ export function parseProject(json: string | unknown): Project {
     marqueeSpeed: num(r.marqueeSpeed, 0.2),
     marqueeHeaderLen: num(r.marqueeHeaderLen, 5),
     weakHooks,
+    fontSubset: raw.fontSubset === true,
+    fontExtra: str(raw.fontExtra, ''),
     variables,
     chartBuffers,
     pages,

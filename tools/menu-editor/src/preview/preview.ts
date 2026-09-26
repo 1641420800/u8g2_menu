@@ -1,5 +1,7 @@
 import type { Project } from '../types';
 import { FONTS } from '../types';
+import { scanCharset } from '../fonts/charset';
+import { subsetFont } from '../fonts/u8g2font';
 
 /** u8g2_menu 按键枚举值（与 u8g2_menu.h 对应） */
 export enum MenuKey {
@@ -59,6 +61,7 @@ export class WasmPreview {
   private running = false;
   private fontIndexCache = new Map<string, number>();
   private structSig = '';
+  private fontSig: string | null = null;
   private events: PreviewEvents;
   private lastKnownPage = 0;
 
@@ -230,6 +233,30 @@ export class WasmPreview {
         { default: 0, rotundity: 1, square: 2 }[project.selector],
         intT(project.selectorLeftMargin), intT(project.selectorTopMargin),
         intT(project.selectorLineSpacing), project.marqueeSpeed, project.marqueeHeaderLen]);
+
+    // 中文字体现场取模：子集字体覆盖内置字体（在 set_style 之后）
+    if (project.fontSubset) {
+      const charset = scanCharset(project, project.fontExtra);
+      const sig = project.font + '|' + [...charset].sort((a, b) => a - b).join(',');
+      if (sig !== this.fontSig) {
+        this.fontSig = sig;
+        const fontIdx = this.fontIndex(project.font);
+        // 字形数据从 WASM 真库逐字拉取（与渲染完全同一查找路径）
+        const fetcher = (encoding: number): Uint8Array | null => {
+          const mod = this.mod!;
+          const ptr = mod.ccall('em_scratch', 'number', ['number'], [64]) as number;
+          const len = mod.ccall('em_font_glyph', 'number',
+            ['number', 'number', 'number', 'number'], [fontIdx, encoding, 64, ptr]) as number;
+          if (!len) return null;
+          return mod.HEAPU8.slice(ptr, ptr + len);
+        };
+        const srcFont = this.getFontBytes(fontIdx);
+        const sub = srcFont ? subsetFont(srcFont, charset, fetcher) : null;
+        if (sub) this.useCustomFont(sub);
+      }
+    } else if (this.fontSig !== null) {
+      this.fontSig = null; // 关闭取模：下次 sync 由 set_style 恢复内置字体
+    }
   }
 
   start(): void {
@@ -288,6 +315,41 @@ export class WasmPreview {
   /** 预览跳转到指定页（不经过子页面链路） */
   navTo(pageIdx: number): void {
     this.mod?.ccall('em_nav', null, ['number'], [pageIdx]);
+  }
+
+  /** 读取内置字体原始字节（现场取模的源数据） */
+  getFontBytes(idx: number): Uint8Array | null {
+    const mod = this.mod;
+    if (!mod) return null;
+    const ptr = mod.ccall('em_font_data', 'number', ['number'], [idx]) as number;
+    const len = mod.ccall('em_font_data_len', 'number', ['number'], [idx]) as number;
+    if (!ptr || !len) return null;
+    return mod.HEAPU8.slice(ptr, ptr + len);
+  }
+
+  /** 字形拉取器：从 WASM 真库逐字获取原始条目（与渲染同一路径） */
+  glyphFetcher(fontIdx: number): ((encoding: number) => Uint8Array | null) | null {
+    const mod = this.mod;
+    if (!mod) return null;
+    return (encoding: number): Uint8Array | null => {
+      const ptr = mod.ccall('em_scratch', 'number', ['number'], [64]) as number;
+      const len = mod.ccall('em_font_glyph', 'number',
+        ['number', 'number', 'number', 'number'], [fontIdx, encoding, 64, ptr]) as number;
+      if (!len) return null;
+      return mod.HEAPU8.slice(ptr, ptr + len);
+    };
+  }
+
+  /** 加载自定义（子集）字体并切换；超出槽位容量返回 false */
+  useCustomFont(bytes: Uint8Array): boolean {
+    const mod = this.mod;
+    if (!mod) return false;
+    const ptr = mod.ccall('em_custom_font_ptr', 'number', [], []) as number;
+    const max = mod.ccall('em_custom_font_max', 'number', [], []) as number;
+    if (bytes.length > max) return false;
+    mod.HEAPU8.set(bytes, ptr);
+    mod.ccall('em_set_custom_font', null, ['number'], [bytes.length]);
+    return true;
   }
 
   /** 读取值池槽位的实时值（绑定变量的条目：槽位 = 变量在池中的下标） */

@@ -185,7 +185,12 @@ static const menuItem_cb em_page_stubs[EM_MAX_PAGES] = {
 /* 字体表由 genfonts.c 提供 */
 extern const uint8_t * const em_fonts[];
 extern const char * const em_font_names[];
+extern const int em_font_lens[];
 extern const int em_font_count;
+
+/* 自定义字体槽（现场取模：JS 写入子集字体字节后切换） */
+static uint8_t em_custom_font[16384];
+static uint16_t em_custom_font_len = 0;
 
 /* ===================== u8g2 传输桩 ===================== */
 
@@ -646,6 +651,94 @@ const char *em_font_name(int idx)
 {
     if (idx < 0 || idx >= em_font_count) return "";
     return em_font_names[idx];
+}
+
+/* 读取内置字体原始字节（现场取模的源数据） */
+int em_font_data(int idx)
+{
+    if (idx < 0 || idx >= em_font_count) return 0;
+    return (int)(uintptr_t)em_fonts[idx];
+}
+int em_font_data_len(int idx)
+{
+    if (idx < 0 || idx >= em_font_count) return 0;
+    return em_font_lens[idx];
+}
+
+/* 切换到自定义字体（JS 已把子集字节写入 em_custom_font） */
+void em_set_custom_font(int len)
+{
+    if (!em_menu_ready) return;
+    if (len <= 0 || len > (int)sizeof(em_custom_font)) return;
+    em_custom_font_len = (uint16_t)len;
+    u8g2_SetFont(&em_u8g2, em_custom_font);
+}
+
+/* 切回内置字体（em_set_style 每次同步都会调用，取模模式在其后覆盖） */
+int em_custom_font_ptr(void) { return (int)(uintptr_t)em_custom_font; }
+int em_custom_font_max(void) { return (int)sizeof(em_custom_font); }
+
+/* 用真库的 get_glyph_data 从内置字体中取字形原始条目（子集器数据源）。
+ * 先临时 SetFont 到目标字体，读出条目后恢复。返回长度；0 = 无此字形。 */
+int em_font_glyph(int fontIdx, int encoding, int outMax, void *out)
+{
+    if (fontIdx < 0 || fontIdx >= em_font_count) return 0;
+    if (!out || outMax <= 0) return 0;
+    const uint8_t *saved = em_u8g2.font;
+    u8g2_SetFont(&em_u8g2, em_fonts[fontIdx]);
+    /* u8g2_font_get_glyph_data 未导出，但结构可从 u8g2->font 复算：
+       这里直接用库同款走查（逻辑与 u8g2_font.c 一致） */
+    const uint8_t *font = em_u8g2.font + 23; /* U8G2_FONT_DATA_STRUCT_SIZE */
+    const u8g2_font_info_t *fi = &em_u8g2.font_info;
+    int len = 0;
+    if (encoding <= 255) {
+        const uint8_t *p = font;
+        if (encoding >= 'a') p += fi->start_pos_lower_a;
+        else if (encoding >= 'A') p += fi->start_pos_upper_A;
+        for (;;) {
+            if (p[1] == 0) break;
+            if (p[0] == encoding) { len = p[1]; break; }
+            p += p[1];
+        }
+        if (len == 0) { /* 加速指针失效时全段线性 */
+            p = font;
+            for (;;) {
+                if (p[1] == 0) break;
+                if (p[0] == encoding) { len = p[1]; break; }
+                p += p[1];
+            }
+        }
+        if (len && len <= outMax) {
+            memcpy(out, p, (size_t)len);
+            u8g2_SetFont(&em_u8g2, saved);
+            return len;
+        }
+    } else {
+        const uint8_t *p = font + fi->start_pos_unicode;
+        const uint8_t *table = p;
+        uint16_t e;
+        do {
+            p += (uint16_t)((table[0] << 8) | table[1]);
+            e = (uint16_t)((table[2] << 8) | table[3]);
+            table += 4;
+        } while (e < encoding && e != 0xffff);
+        for (;;) {
+            e = (uint16_t)((p[0] << 8) | p[1]);
+            if (e == 0) break;
+            if (e == (uint16_t)encoding) {
+                len = p[2]; /* 条目总长（含 [unicode:2][size:1] 头），与走查步进一致 */
+                if (len <= outMax) {
+                    memcpy(out, p, (size_t)len);
+                    u8g2_SetFont(&em_u8g2, saved);
+                    return len;
+                }
+                break;
+            }
+            p += p[2];
+        }
+    }
+    u8g2_SetFont(&em_u8g2, saved);
+    return 0;
 }
 
 /* ---- 调试探针（预览引擎联调用） ---- */

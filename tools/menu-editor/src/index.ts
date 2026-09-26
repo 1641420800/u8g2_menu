@@ -11,6 +11,8 @@ import { renderPreviewPane } from './ui/previewPane';
 import { showExportDialog } from './ui/exportDialog';
 import { openXbmEditor } from './ui/xbmEditor';
 import { download } from './ui/common';
+import { scanCharset, charsetStats } from './fonts/charset';
+import { subsetFont } from './fonts/u8g2font';
 
 export interface MenuEditorOptions {
   /** 初始工程数据（JSON 字符串或对象）；缺省时尝试 localStorage 恢复，再缺省用内置示例 */
@@ -200,7 +202,26 @@ export class MenuEditor {
   /** 生成 C 代码（保留 USER CODE），返回结果并弹出对话框 */
   generate(): CodegenResult {
     const prev = this.lastExport;
-    const result = generateCode(this.store.getState().project, prev ?? undefined);
+    const proj = this.store.getState().project;
+    // 中文字体现场取模：按工程字符集抽取字形
+    let fontSubset: Uint8Array | undefined;
+    let subsetBytes = 0;
+    if (proj.fontSubset && this.preview.ready) {
+      const charset = scanCharset(proj, proj.fontExtra);
+      const sub = this.buildFontSubset(proj, charset);
+      if (sub) {
+        fontSubset = sub;
+        subsetBytes = sub.length;
+        this.preview.useCustomFont(sub);
+      } else {
+        console.warn('[u8g2-menu-editor] 现场取模失败：字符集未命中任何字形');
+      }
+    }
+    const result = generateCode(proj, prev ?? undefined, fontSubset);
+    if (fontSubset) {
+      const stats = charsetStats(scanCharset(proj, proj.fontExtra));
+      result.warnings.unshift(`现场取模：收录 ${stats.total} 个字符（ASCII ${stats.ascii} + 扩展 ${stats.cjk}），字体数组 ${subsetBytes} 字节。运行时若输出超出字符集的中文，请在设置里补充额外字符`);
+    }
     this.lastExport = { c: result.c };
     if (this.opts.persistKey) {
       localStorage.setItem(`ume_last_c_${this.opts.persistKey}`, result.c);
@@ -211,9 +232,24 @@ export class MenuEditor {
   }
 
   downloadC(): void {
-    const r = generateCode(this.store.getState().project, this.lastExport ?? undefined);
+    const proj = this.store.getState().project;
+    let fontSubset: Uint8Array | undefined;
+    if (proj.fontSubset && this.preview.ready) {
+      fontSubset = this.buildFontSubset(proj, scanCharset(proj, proj.fontExtra));
+      if (fontSubset) this.preview.useCustomFont(fontSubset);
+    }
+    const r = generateCode(proj, this.lastExport ?? undefined, fontSubset);
     this.lastExport = { c: r.c };
     download('menu_pages.c', r.c);
+  }
+
+  /** 现场取模：从 WASM 真库逐字拉取字形，生成子集字体 */
+  private buildFontSubset(proj: Project, charset: Set<number>): Uint8Array | undefined {
+    const fontIdx = this.preview.fontIndex(proj.font);
+    const srcFont = this.preview.getFontBytes(fontIdx);
+    const fetcher = this.preview.glyphFetcher(fontIdx);
+    if (!srcFont || !fetcher) return undefined;
+    return subsetFont(srcFont, charset, fetcher) ?? undefined;
   }
 
   destroy(): void {
