@@ -66,6 +66,7 @@ typedef struct {
     int16_t  poolSlot;     /* 值池槽位（绑定变量共享；-1 = 按条目独立） */
     int16_t  dispSlot;     /* 文本只读显示变量槽位（-1 = 无） */
     int16_t  position;     /* 无绑定滑条/进度条的静态位置 0~100 */
+    int16_t  lineSpacing;  /* 文本区行间距 */
     uint16_t xbm_w;        /* xbm 宽 / board 宽 */
     uint16_t xbm_h;        /* xbm 高 / board 高 */
     uint16_t area_h;       /* textarea/chart 高度 */
@@ -459,7 +460,8 @@ void em_page_begin(int page)
 
 /* 设置条目绘制参数（附加值由 em_page_bind 单独设置） */
 void em_page_item(int page, int idx, int kind, int scale,
-                  int area_h, int xbm_w, int xbm_h, int dispSlot, int poolSlot)
+                  int area_h, int xbm_w, int xbm_h, int dispSlot, int poolSlot,
+                  int aux)
 {
     if (page < 0 || page >= EM_MAX_PAGES || idx < 0 || idx >= EM_MAX_ITEMS) return;
     em_item_t *it = &em_pages[page][idx];
@@ -473,6 +475,9 @@ void em_page_item(int page, int idx, int kind, int scale,
     it->poolSlot = (int16_t)poolSlot;
     it->bindType = EM_BindNone;
     it->target = -1;
+    /* aux: 滑条/进度条=静态位置(%)，文本区=行间距，其余忽略 */
+    if (kind == EM_Slider || kind == EM_Progress) it->position = (int16_t)aux;
+    else if (kind == EM_TextArea) it->lineSpacing = (int16_t)aux;
 }
 
 /* 设置条目附加值 */
@@ -511,7 +516,7 @@ void em_item_text(int page, int idx, const char *text)
         em_ta_used += 256;
         p[0] = '\0';
         u8g2_textArea_init(&em_tas[page][idx], p);
-        /* 行间距预览暂用库默认值（自定义 lineSpacing 仅体现在生成代码） */
+        u8g2_textArea_setLineSpacing(&em_tas[page][idx], (uint16_t)it->lineSpacing);
     }
     if (it->kind == EM_TextArea && em_tas[page][idx].text) {
         char *p = (char *)(uintptr_t)em_tas[page][idx].text;

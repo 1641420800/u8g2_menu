@@ -102,7 +102,7 @@ export function createProject(): Project {
   const variables: Variable[] = [
     createVariable({ name: 'var_value', type: 'int32', initialValue: 50, min: 0, max: 100, step: 1 }),
     createVariable({ name: 'var_switch', type: 'uint8', initialValue: 0, min: 0, max: 1, step: 1 }),
-    createVariable({ name: 'var_slider', type: 'int32', initialValue: 50, min: 0, max: 100, step: 2 }),
+    createVariable({ name: 'var_slider', type: 'int', initialValue: 50, min: 0, max: 100, step: 2 }),
   ];
   const chartBuffers: ChartBuffer[] = [
     createChartBuffer({ name: 'buf_demo', dataLen: 32, sample: 'sine' }),

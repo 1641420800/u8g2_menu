@@ -206,11 +206,15 @@ export function renderProperty(
         bindBody = html`<div class="ume-hint">纯显示行。附加值是绘制前附加的绑定（数值编辑/开关/按钮/子页面跳转/返回），可与任意绘制类型组合。</div>`;
         break;
       case 'value': {
+        // 滑块/进度条的 _bind 形参是 int*，候选只列 int 变量
+        const needInt = item.kind === 'slider' || item.kind === 'progress';
+        const candidates = needInt ? vars.filter((x) => x.type === 'int') : vars;
         const v = vars.find((x) => x.id === b.varId);
         bindBody = html`
-          ${varSelect('变量', b.varId, vars, (vid) => setBind({ type: 'value', varId: vid }))}
+          ${varSelect('变量', b.varId, candidates, (vid) => setBind({ type: 'value', varId: vid }))}
           ${!v ? quickCreateVar(store, (nv) => setBind({ type: 'value', varId: nv.id })) : nothing}
           ${varInfo(v)}
+          ${needInt && v && v.type !== 'int' ? html`<div class="ume-warn">滑块/进度条附加值需要 int 类型变量（当前 ${v.type}），生成时将按静态显示</div>` : nothing}
           ${item.kind === 'text' ? html`<div class="ume-hint">显示文本即 printf 格式串（如 音量:%d），确认后用 ＋/－ 键编辑</div>` : nothing}
         `;
         break;

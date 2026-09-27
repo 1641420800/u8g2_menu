@@ -181,21 +181,21 @@ export class WasmPreview {
         };
         switch (it.kind) {
           case "text":
-            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
+            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
               [pi, ii, KIND.text, it.scale, 0, 0, 0,
-                it.displayVarId ? varSlot(it.displayVarId) : -1, -1]);
+                it.displayVarId ? varSlot(it.displayVarId) : -1, -1, 0]);
             mod.ccall("em_item_text", null, ["number", "number", "string"], [pi, ii, it.text]);
             setBind();
             break;
           case "slider":
           case "progress":
-            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [pi, ii, KIND[it.kind], 1, 0, 0, 0, -1, -1]);
+            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [pi, ii, KIND[it.kind], 1, 0, 0, 0, -1, -1, intT("position" in it ? it.position : 0)]);
             setBind();
             break;
           case "chart":
-            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [pi, ii, KIND.chart, 1, intT(it.height), 0, 0, -1, -1]);
+            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [pi, ii, KIND.chart, 1, intT(it.height), 0, 0, -1, -1, 0]);
             for (const s of it.sources ?? []) {
               mod.ccall("em_item_chart_add", null,
                 ["number", "number", "number", "number", "number", "number", "number"],
@@ -207,8 +207,8 @@ export class WasmPreview {
             setBind();
             break;
           case "xbm":
-            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [pi, ii, KIND.xbm, 1, 0, intT(it.w), intT(it.h), -1, -1]);
+            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [pi, ii, KIND.xbm, 1, 0, intT(it.w), intT(it.h), -1, -1, 0]);
             {
               const ptr = mod._em_scratch(it.bits.length);
               if (ptr) {
@@ -219,14 +219,14 @@ export class WasmPreview {
             setBind();
             break;
           case "textarea":
-            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [pi, ii, KIND.textarea, 1, intT(it.height), 0, 0, -1, -1]);
+            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [pi, ii, KIND.textarea, 1, intT(it.height), 0, 0, -1, -1, intT(it.lineSpacing)]);
             mod.ccall("em_item_text", null, ["number", "number", "string"], [pi, ii, it.content]);
             setBind();
             break;
           case "board":
-            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [pi, ii, KIND.board, 1, 0, intT(it.w), intT(it.h), -1, -1]);
+            mod.ccall("em_page_item", null, ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [pi, ii, KIND.board, 1, 0, intT(it.w), intT(it.h), -1, -1, 0]);
             setBind();
             break;
         }

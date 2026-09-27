@@ -93,6 +93,11 @@ function userBlock(name: string, preserved: Map<string, string>, indent: string)
   return `${indent}/* USER CODE BEGIN ${name} */${inner}${indent}/* USER CODE END ${name} */`;
 }
 
+/** 用户文本进入 C 注释前的清洗：把星号加斜杠的注释终止序列拆开，防止提前终止注释块 */
+function cComment(s: string): string {
+  return s.replace(/\*\//g, '* /');
+}
+
 interface VarDef {
   name: string;
   /** 编辑器类型（生成绑定调用用） */
@@ -106,7 +111,6 @@ interface VarDef {
   max: number;
 }
 
-const INT_TYPES: ReadonlySet<string> = new Set(['uint8', 'uint16', 'uint32', 'int8', 'int16', 'int32', 'int']);
 
 export function generateCode(
   project: Project,
@@ -435,6 +439,15 @@ export function generateCode(
           if (!/%[-+ #0]*[a-zA-Z]/.test(it.text)) {
             warnings.push(`页面 ${pgLabel} 的数值附加值条目显示文本不含格式化占位符（如 %d）`);
           }
+          // 格式符与变量类型不匹配的提示（printf 在真机上会输出错误内容）
+          const hasIntFmt = /%[-+ #0]*(l|h)*(d|i|u|x|o)/.test(it.text);
+          const hasFloatFmt = /%[-+ #0]*[0-9.]*(f|e|g)/.test(it.text);
+          if (bindValueVar.isFloat && hasIntFmt) {
+            warnings.push(`页面 ${pgLabel}：变量 "${bindValueVar.name}" 是浮点型，显示文本 "%d" 应改为 "%f"（如 %.1f）`);
+          }
+          if (!bindValueVar.isFloat && hasFloatFmt) {
+            warnings.push(`页面 ${pgLabel}：变量 "${bindValueVar.name}" 是整型，显示文本的 %f 应改为 %d`);
+          }
         } else if (bindSwitchVar) {
           lines.push(`    ${drawTextWithArg(it.text, it.scale, `${bindSwitchVar.name} ? "${cstr(switchOn)}" : "${cstr(switchOff)}"`)}`);
           if (!/%[-+ #0]*s/.test(it.text)) {
@@ -466,8 +479,8 @@ export function generateCode(
       case 'progress': {
         const fn = it.kind === 'slider' ? 'Slider' : 'ProgressBar';
         if (bindValueVar) {
-          if (!INT_TYPES.has(bindValueVar.srcType)) {
-            warnings.push(`滑块/进度条附加值的变量 "${bindValueVar.name}" 须为整型（当前 ${bindValueVar.srcType}），已按静态显示生成`);
+          if (bindValueVar.srcType !== 'int') {
+            warnings.push(`滑块/进度条附加值的变量 "${bindValueVar.name}" 须为 int 类型（当前 ${bindValueVar.srcType}，库的 _bind 形参是 int*），已按静态显示生成`);
             lines.push(`    u8g2_MenuDrawItem${fn}(${(it.position / 100).toFixed(2)}f);`);
             break;
           }
@@ -514,9 +527,9 @@ export function generateCode(
   cParts.push(` *`);
   cParts.push(` * main.c 里使用以下符号时，直接 extern（或复制下面声明）：`);
   cParts.push(` *   u8g2_SetFont(&u8g2, ${fontSubset ? 'menu_font' : project.font});`);
-  pageFns.forEach((fn, i) => cParts.push(` *   void ${fn}(void);   /* 页面: ${project.pages[i].name} */`));
+  pageFns.forEach((fn, i) => cParts.push(` *   void ${fn}(void);   [页面: ${cComment(project.pages[i].name)}]`));
   for (const v of vars.values()) cParts.push(` *   extern ${v.type} ${v.name};`);
-  for (const cb of btnFinal.values()) cParts.push(` *   void ${cb}(u8g2_menu_t *menu, uint8_t ID);`);
+  for (const cb of btnFinal.values()) cParts.push(` *   void ${cb}(u8g2_menu_t *menu, uint8_t ID, u8g2_menuKeyValue_t key);`);
   for (const cb of boardFinal.values()) cParts.push(` *   void ${cb}(u8g2_t *u8g2);`);
   cParts.push(` */`);
   cParts.push(`#include "u8g2_menu.h"`);
@@ -563,7 +576,7 @@ export function generateCode(
     cParts.push(userBlock('callbacks', cBlocks, ''));
     for (const [raw] of buttonCbs) {
       const cb = btnFinal.get(raw)!;
-      cParts.push(`void ${cb}(u8g2_menu_t *menu, uint8_t ID)`);
+      cParts.push(`void ${cb}(u8g2_menu_t *menu, uint8_t ID, u8g2_menuKeyValue_t key)`);
       cParts.push(`{`);
       cParts.push(userBlock(`cb_${cb}`, cBlocks, '    '));
       cParts.push(`}`);
@@ -618,7 +631,7 @@ export function generateCode(
   cParts.push(`/* ======================== 页面函数 ======================== */`);
   cParts.push('');
   project.pages.forEach((pg, i) => {
-    cParts.push(`/* 页面: ${pg.name} */`);
+    cParts.push(`/* 页面: ${cComment(pg.name)} */`);
     cParts.push(`void ${pageFns[i]}(void)`);
     cParts.push(`{`);
     cParts.push(userBlock(`page_${pageFns[i]}_pre`, cBlocks, '    '));

@@ -27,9 +27,9 @@ describe('codegen', () => {
     // 变量定义
     expect(c).toMatch(/int32_t var_value = 50;/);
     expect(c).toMatch(/uint8_t var_switch = 0;/);
-    expect(c).toMatch(/int32_t var_slider = 50;/);
+    expect(c).toMatch(/int var_slider = 50;/);
     // 回调骨架 + USER CODE
-    expect(c).toContain('void btn_about_cb(u8g2_menu_t *menu, uint8_t ID)');
+    expect(c).toContain('void btn_about_cb(u8g2_menu_t *menu, uint8_t ID, u8g2_menuKeyValue_t key)');
     expect(c).toContain('/* USER CODE BEGIN cb_btn_about_cb */');
     // 单文件：页面原型前置声明 + main.c extern 速查注释
     expect(c).toMatch(/void page_0\(void\);[\s\S]*void page_0\(void\)/);
@@ -95,7 +95,7 @@ describe('codegen', () => {
     pg.items = [{ id: 's1', kind: 'slider', label: '', position: 50, bind: { type: 'value', varId: v.id } }];
     proj.pages.push(pg);
     const { c, warnings } = generateCode(proj);
-    expect(warnings.some((w) => w.includes('须为整型'))).toBe(true);
+    expect(warnings.some((w) => w.includes('须为 int 类型'))).toBe(true);
     expect(c).toContain('u8g2_MenuDrawItemSlider(0.50f);');
   });
 
@@ -276,7 +276,7 @@ describe('codegen', () => {
     proj.pages[2].fnName = 'btn_about_cb';
     const { c, warnings } = generateCode(proj);
     expect(c).toContain('void btn_about_cb(void)');
-    expect(c).toContain('void btn_about_cb_2(u8g2_menu_t *menu, uint8_t ID)');
+    expect(c).toContain('void btn_about_cb_2(u8g2_menu_t *menu, uint8_t ID, u8g2_menuKeyValue_t key)');
     expect(c).toContain('u8g2_MenuItem_button(btn_about_cb_2, 1);');
     expect(warnings.some((w) => w.includes('btn_about_cb_2'))).toBe(true);
   });
