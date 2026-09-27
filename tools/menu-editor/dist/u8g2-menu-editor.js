@@ -1,5 +1,5 @@
 import { createStore as Ze } from "zustand/vanilla";
-import { render as ie, html as g, nothing as C } from "lit-html";
+import { render as ie, html as v, nothing as C } from "lit-html";
 const Ye = `/* u8g2-menu-editor 样式（前缀 ume-） */
 .ume {
   --ume-bg: #f4f6f9;
@@ -1186,12 +1186,12 @@ function _t(s, a, n) {
       "}"
     );
   });
-  const f = [], y = /* @__PURE__ */ new Map(), v = /* @__PURE__ */ new Map(), b = /* @__PURE__ */ new Map();
+  const f = [], y = /* @__PURE__ */ new Map(), b = /* @__PURE__ */ new Map(), g = /* @__PURE__ */ new Map();
   {
     let c = 0, w = 0;
     const x = (I) => {
       const T = h.get(I);
-      return T ? (b.has(I) || b.set(I, `        if (!${T.name}_filled) { ${T.name}_filled = 1; ${T.name}_fill(); }`), b.get(I)) : "";
+      return T ? (g.has(I) || g.set(I, `        if (!${T.name}_filled) { ${T.name}_filled = 1; ${T.name}_fill(); }`), g.get(I)) : "";
     };
     for (const I of s.pages)
       for (const T of I.items) {
@@ -1223,7 +1223,7 @@ function _t(s, a, n) {
             "    }"
           ]);
           const E = K.chartKind === "point" ? "Point" : K.chartKind === "bar" ? "Bar" : "Line", de = K.min !== void 0 && K.max !== void 0 ? `${ne(K.max)}, ${ne(K.min)}` : "0, 0";
-          v.set(T.id, `    u8g2_MenuDrawItem${E}Chart(&${N}, ${L}, ${de});`);
+          b.set(T.id, `    u8g2_MenuDrawItem${E}Chart(&${N}, ${L}, ${de});`);
         } else {
           const N = `chart_layers_${w++}`;
           f.push(
@@ -1238,7 +1238,7 @@ function _t(s, a, n) {
             K.push(`        u8g2_chart_init(&${_}, ${de.name}, ${_}_dis, ${de.lenMacro});`), K.push(x(E.bufferId));
             const Xe = E.chartKind === "point" ? "u8g2_drawPointChart" : E.chartKind === "bar" ? "u8g2_drawBarChart" : "u8g2_drawLineChart", Ve = E.min !== void 0 && E.max !== void 0 ? `${ne(E.max)}, ${ne(E.min)}` : "0, 0";
             K.push(`        ${N}[${me}].drawChart = ${Xe};`), K.push(`        ${N}[${me}].chart = &${_};`), K.push(`        ${N}[${me}].max = ${Ve.split(", ")[0]};`), K.push(`        ${N}[${me}].min = ${Ve.split(", ")[1]};`);
-          }), K.push("    }"), y.set(T.id, K), v.set(T.id, `    u8g2_MenuDrawItemChart(${N}, ${W.length}, ${L});`);
+          }), K.push("    }"), y.set(T.id, K), b.set(T.id, `    u8g2_MenuDrawItemChart(${N}, ${W.length}, ${L});`);
         }
       }
   }
@@ -1371,7 +1371,7 @@ function _t(s, a, n) {
         break;
       }
       case "chart": {
-        const _ = y.get(c.id), E = v.get(c.id);
+        const _ = y.get(c.id), E = b.get(c.id);
         if (!_ || !E) break;
         x.push(..._), x.push(E);
         break;
@@ -1601,7 +1601,7 @@ class Mt {
         const f = () => {
           const y = h.bind;
           if (y.type === "none") return;
-          const v = y.type === "value" || y.type === "switch", b = v ? (a.variables ?? []).find((S) => S.id === y.varId) : void 0;
+          const b = y.type === "value" || y.type === "switch", g = b ? (a.variables ?? []).find((S) => S.id === y.varId) : void 0;
           n.ccall(
             "em_page_bind",
             null,
@@ -1610,11 +1610,11 @@ class Mt {
               p,
               m,
               o[y.type],
-              v && b ? r[b.type] : 0,
+              b && g ? r[g.type] : 0,
               y.type === "switch" ? i(y.openValue) : 0,
               y.type === "button" ? i(y.buttonId) : 0,
               y.type === "submenu" ? a.pages.findIndex((S) => S.id === y.targetPageId) : -1,
-              v && b ? l(b.id) : -1
+              b && g ? l(g.id) : -1
             ]
           ), y.type === "switch" && n.ccall(
             "em_item_switch_text",
@@ -1667,7 +1667,7 @@ class Mt {
                 [
                   p,
                   m,
-                  (a.chartBuffers ?? []).findIndex((v) => v.id === y.bufferId),
+                  (a.chartBuffers ?? []).findIndex((b) => b.id === y.bufferId),
                   { line: 0, point: 1, bar: 2 }[y.chartKind],
                   y.min !== void 0 && y.max !== void 0 ? 1 : 0,
                   y.max ?? 0,
@@ -1776,6 +1776,11 @@ class Mt {
     var n;
     (n = this.mod) == null || n.ccall("em_nav", null, ["number"], [a]);
   }
+  /** 选中条目：跳到指定页并把预览光标/滚动定位到该行 */
+  selectItem(a, n) {
+    var t;
+    (t = this.mod) == null || t.ccall("em_select", null, ["number", "number"], [a, n]);
+  }
   /** 读取内置字体原始字节（现场取模的源数据） */
   getFontBytes(a) {
     const n = this.mod;
@@ -1821,7 +1826,7 @@ function Tt(s, a, n, t) {
   const i = s.getState(), r = n.label || "text" in n && n.text || le[n.kind], e = n.bind.type !== "none" ? ` · ${he[n.bind.type]}` : "", o = (u) => (l) => {
     l.stopPropagation(), s.getState().moveItem(a.id, n.id, u);
   };
-  return g`<div class="ume-item-row ${t ? "selected" : ""}"
+  return v`<div class="ume-item-row ${t ? "selected" : ""}"
     @click=${() => s.getState().select(a.id, n.id)}>
     <span class="ume-item-icon">${Ge[n.kind]}</span>
     <span class="ume-item-name" title=${r + e}>${r}${e}</span>
@@ -1837,20 +1842,20 @@ function Tt(s, a, n, t) {
 }
 function Nt(s, a) {
   const n = s.getState();
-  return g`<select class="ume-mini" style="width:auto"
+  return v`<select class="ume-mini" style="width:auto"
     title="添加条目"
     @change=${(t) => {
     const i = t.target.value;
     i && n.addItem(i, a.id), t.target.value = "";
   }}>
     <option value="">＋条目</option>
-    ${Ct.map((t) => g`<option value=${t}>${le[t]}</option>`)}
+    ${Ct.map((t) => v`<option value=${t}>${le[t]}</option>`)}
   </select>`;
 }
 function At(s, a) {
   const { project: n, selection: t } = a.getState(), i = (r) => {
     const e = a.getState(), o = t.pageId === r.id;
-    return g`<div class="ume-page">
+    return v`<div class="ume-page">
       <div class="ume-page-head ${o ? "selected" : ""}"
         @click=${() => a.getState().select(r.id, null)}>
         <span style="flex:1;overflow:hidden;text-overflow:ellipsis">${r.name}</span>
@@ -1869,13 +1874,13 @@ function At(s, a) {
       confirm(`删除页面 "${r.name}"？`) && e.removePage(r.id);
     }}>✕</button>
       </div>
-      ${o ? g`<div class="ume-page-items">
-        ${r.items.length ? r.items.map((u) => Tt(a, r, u, t.itemId === u.id)) : g`<div class="ume-empty-hint">暂无条目，点击下方添加</div>`}
+      ${o ? v`<div class="ume-page-items">
+        ${r.items.length ? r.items.map((u) => Tt(a, r, u, t.itemId === u.id)) : v`<div class="ume-empty-hint">暂无条目，点击下方添加</div>`}
         <div style="padding:2px 6px">${Nt(a, r)}</div>
       </div>` : C}
     </div>`;
   };
-  ie(g`
+  ie(v`
     <div class="ume-panel-title">
       页面 / 条目 (${n.pages.length})
       <button class="ume-mini" title="新增页面" @click=${() => Vt(a)}>＋ 页面</button>
@@ -1888,14 +1893,14 @@ function Vt(s) {
   a !== null && s.getState().addPage(a || void 0);
 }
 function q(s, a, n, t = "") {
-  return g`<div class="ume-field">
+  return v`<div class="ume-field">
     <label>${s}</label>
     <input type="text" .value=${a ?? ""} placeholder=${t}
       @change=${(i) => n(i.target.value)} />
   </div>`;
 }
 function D(s, a, n, t = 1) {
-  return g`<div class="ume-field">
+  return v`<div class="ume-field">
     <label>${s}</label>
     <input type="number" .value=${String(a)} step=${String(t)}
       @change=${(i) => {
@@ -1905,22 +1910,22 @@ function D(s, a, n, t = 1) {
   </div>`;
 }
 function G(s, a, n, t) {
-  return g`<div class="ume-field">
+  return v`<div class="ume-field">
     <label>${s}</label>
     <select @change=${(i) => t(i.target.value)}>
-      ${n.map((i) => g`<option value=${i.value} ?selected=${i.value === a}>${i.label}</option>`)}
+      ${n.map((i) => v`<option value=${i.value} ?selected=${i.value === a}>${i.label}</option>`)}
     </select>
   </div>`;
 }
 function Ce(s, a, n) {
-  return g`<div class="ume-checkbox">
+  return v`<div class="ume-checkbox">
     <input type="checkbox" ?checked=${a}
       @change=${(t) => n(t.target.checked)} />
     <span>${s}</span>
   </div>`;
 }
 function Lt(s, a, n, t = !1) {
-  return g`<div class="ume-field wide">
+  return v`<div class="ume-field wide">
     <label>${s}</label>
     <textarea style=${t ? "font-family:Consolas,monospace" : ""}
       @change=${(i) => n(i.target.value)}>${a ?? ""}</textarea>
@@ -1947,14 +1952,14 @@ function ke(s, a, n, t) {
     { value: "", label: "（未绑定）" },
     ...n.map((e) => ({ value: e.id, label: `${e.name} : ${He[e.type] ?? e.type}` }))
   ], r = a ? n.some((e) => e.id === a) : !1;
-  return g`
+  return v`
     ${G(s, a ?? "", i, (e) => t(e || null))}
-    ${a && !r ? g`<div class="ume-warn">绑定的变量已被删除，请重新选择</div>` : C}
-    ${n.length === 0 ? g`<div class="ume-hint">还没有变量——点下方"新建变量"创建一个</div>` : C}
+    ${a && !r ? v`<div class="ume-warn">绑定的变量已被删除，请重新选择</div>` : C}
+    ${n.length === 0 ? v`<div class="ume-hint">还没有变量——点下方"新建变量"创建一个</div>` : C}
   `;
 }
 function Ie(s, a) {
-  return g`<div class="ume-field"><label></label>
+  return v`<div class="ume-field"><label></label>
     <button class="ume-btn sm" @click=${() => {
     const n = s.getState().addVariable();
     a(n);
@@ -1962,36 +1967,36 @@ function Ie(s, a) {
   </div>`;
 }
 function Se(s) {
-  return s ? g`<div class="ume-hint">
+  return s ? v`<div class="ume-hint">
     ${s.name} : ${He[s.type] ?? s.type}，范围 ${s.min}~${s.max}，步长 ${s.step}，初值 ${s.initialValue}
     （在「资源」页修改变量）
-  </div>` : g`${C}`;
+  </div>` : v`${C}`;
 }
 function Pt(s, a, n) {
   const { project: t, selection: i } = a.getState(), r = t.pages.find((m) => m.id === i.pageId) ?? null, e = (r == null ? void 0 : r.items.find((m) => m.id === i.itemId)) ?? null, o = t.variables ?? [], u = t.chartBuffers ?? [], l = (m, f) => a.getState().updateItem(r.id, e.id, m, f), d = (m) => l({ bind: m });
-  let p = g`<div class="ume-empty-hint">在左侧选择页面或条目</div>`, h = "";
+  let p = v`<div class="ume-empty-hint">在左侧选择页面或条目</div>`, h = "";
   if (r && !e)
-    h = "页面属性", p = g`
+    h = "页面属性", p = v`
       ${q("名称", r.name, (m) => a.getState().updatePage(r.id, { name: m }))}
       ${q("C 函数名", r.fnName, (m) => a.getState().updatePage(r.id, { fnName: m }), "留空自动 page_N")}
       <div class="ume-hint">页面内的手写 C 代码请到生成的 menu_pages.c 的 USER CODE 区填写（重新生成时保留），编辑器不提供代码编辑</div>
     `;
   else if (r && e) {
     (e.bind.type === "value" || e.bind.type === "switch") && e.bind.varId && (we = e.bind.varId), h = `${le[e.kind]}${e.bind.type !== "none" ? ` + ${he[e.bind.type]}` : ""}`;
-    let m = g``;
+    let m = v``;
     switch (e.kind) {
       case "text": {
-        const v = e, b = o.find((S) => S.id === v.displayVarId);
-        m = g`
-          ${q("文本/格式", v.text, (S) => l({ text: S }, `text-${v.id}`))}
-          ${G("大小", String(v.scale), [
+        const b = e, g = o.find((S) => S.id === b.displayVarId);
+        m = v`
+          ${q("文本/格式", b.text, (S) => l({ text: S }, `text-${b.id}`))}
+          ${G("大小", String(b.scale), [
           { value: "1", label: "正常" },
           { value: "2", label: "二倍大" }
         ], (S) => l({ scale: Number(S) }))}
-          ${e.bind.type === "none" ? g`
-            ${ke("显示变量", v.displayVarId, o, (S) => l({ displayVarId: S }))}
-            ${b ? C : Ie(a, (S) => l({ displayVarId: S.id }))}
-            ${Se(b)}
+          ${e.bind.type === "none" ? v`
+            ${ke("显示变量", b.displayVarId, o, (S) => l({ displayVarId: S }))}
+            ${g ? C : Ie(a, (S) => l({ displayVarId: S.id }))}
+            ${Se(g)}
             <div class="ume-hint">只读展示变量值（如传感器数据）；有附加值时直接显示被绑定的值</div>` : C}
           <div class="ume-hint">支持 printf 占位符与 \n 多行</div>
         `;
@@ -1999,53 +2004,53 @@ function Pt(s, a, n) {
       }
       case "slider":
       case "progress": {
-        const v = e;
-        m = g`
-          ${e.bind.type === "none" ? g`
-            ${D("静态位置(%)", v.position, (b) => l({ position: Math.min(100, Math.max(0, Math.trunc(b))) }))}
+        const b = e;
+        m = v`
+          ${e.bind.type === "none" ? v`
+            ${D("静态位置(%)", b.position, (g) => l({ position: Math.min(100, Math.max(0, Math.trunc(g))) }))}
             <div class="ume-hint">无附加值时显示静态位置；绑定数值变量后由变量值驱动</div>` : C}
         `;
         break;
       }
       case "chart": {
-        const v = e, b = (M) => l({ sources: M }), S = (M, z) => {
+        const b = e, g = (M) => l({ sources: M }), S = (M, z) => {
           const O = u.find((F) => F.id === M.bufferId), Q = M.min === void 0 || M.max === void 0;
-          return g`<div class="ume-var-item">
+          return v`<div class="ume-var-item">
             <div class="ume-var-row">
               <span class="ume-var-name">${(O == null ? void 0 : O.name) ?? "(无效)"}</span>
               <span class="ume-var-meta">${{ line: "折线", point: "散点", bar: "柱状" }[M.chartKind] ?? M.chartKind}${Q ? " · 自动量程" : ` · ${M.min}~${M.max}`}</span>
-              <button class="ume-mini" title="移除该数据源" @click=${() => b(v.sources.filter((F, V) => V !== z))}>✕</button>
+              <button class="ume-mini" title="移除该数据源" @click=${() => g(b.sources.filter((F, V) => V !== z))}>✕</button>
             </div>
             <div class="ume-var-edit">
-              ${G("缓冲区", M.bufferId, u.map((F) => ({ value: F.id, label: `${F.name} (${F.dataLen}点)` })), (F) => b(v.sources.map((V, k) => k === z ? { ...V, bufferId: F } : V)))}
+              ${G("缓冲区", M.bufferId, u.map((F) => ({ value: F.id, label: `${F.name} (${F.dataLen}点)` })), (F) => g(b.sources.map((V, k) => k === z ? { ...V, bufferId: F } : V)))}
               ${G("绘制", M.chartKind, [
             { value: "line", label: "折线" },
             { value: "point", label: "散点" },
             { value: "bar", label: "柱状" }
-          ], (F) => b(v.sources.map((V, k) => k === z ? { ...V, chartKind: F } : V)))}
-              ${Ce("自动量程", Q, (F) => b(v.sources.map((V, k) => k === z ? { ...V, min: F ? void 0 : 0, max: F ? void 0 : 100 } : V)))}
-              ${Q ? C : g`
-                ${D("量程上限", M.max ?? 100, (F) => b(v.sources.map((V, k) => k === z ? { ...V, max: F } : V)), "any")}
-                ${D("量程下限", M.min ?? 0, (F) => b(v.sources.map((V, k) => k === z ? { ...V, min: F } : V)), "any")}`}
+          ], (F) => g(b.sources.map((V, k) => k === z ? { ...V, chartKind: F } : V)))}
+              ${Ce("自动量程", Q, (F) => g(b.sources.map((V, k) => k === z ? { ...V, min: F ? void 0 : 0, max: F ? void 0 : 100 } : V)))}
+              ${Q ? C : v`
+                ${D("量程上限", M.max ?? 100, (F) => g(b.sources.map((V, k) => k === z ? { ...V, max: F } : V)), "any")}
+                ${D("量程下限", M.min ?? 0, (F) => g(b.sources.map((V, k) => k === z ? { ...V, min: F } : V)), "any")}`}
             </div>
           </div>`;
         };
-        m = g`
-          ${D("高度(px)", v.height, (M) => l({ height: Math.max(4, Math.trunc(M)) }))}
+        m = v`
+          ${D("高度(px)", b.height, (M) => l({ height: Math.max(4, Math.trunc(M)) }))}
           <div class="ume-field wide"><label>数据源</label>
             <div style="flex:1">
-              ${(v.sources ?? []).map(S)}
-              ${(v.sources ?? []).length === 0 ? g`<div class="ume-hint">尚未绑定数据源——点下方按钮创建并绑定</div>` : C}
-              <button class="ume-btn sm" style="margin-top:4px" ?disabled=${(v.sources ?? []).length >= 4}
+              ${(b.sources ?? []).map(S)}
+              ${(b.sources ?? []).length === 0 ? v`<div class="ume-hint">尚未绑定数据源——点下方按钮创建并绑定</div>` : C}
+              <button class="ume-btn sm" style="margin-top:4px" ?disabled=${(b.sources ?? []).length >= 4}
                 @click=${() => {
           if (!u.length) {
             const M = a.getState().addChartBuffer();
-            b([...v.sources ?? [], { bufferId: M.id, chartKind: "line" }]);
+            g([...b.sources ?? [], { bufferId: M.id, chartKind: "line" }]);
             return;
           }
-          b([...v.sources ?? [], { bufferId: u[0].id, chartKind: "line" }]);
-        }}>＋ 添加数据源${(v.sources ?? []).length > 0 ? "（叠加）" : ""}</button>
-              ${u.length ? C : g`<div class="ume-hint">将自动新建数据源缓冲区（在「资源」页可改点名/点数/示例）</div>`}
+          g([...b.sources ?? [], { bufferId: u[0].id, chartKind: "line" }]);
+        }}>＋ 添加数据源${(b.sources ?? []).length > 0 ? "（叠加）" : ""}</button>
+              ${u.length ? C : v`<div class="ume-hint">将自动新建数据源缓冲区（在「资源」页可改点名/点数/示例）</div>`}
             </div>
           </div>
           <div class="ume-hint">多个数据源在同一区域叠加绘制（最多 4 个）；示例/真实数据在生成的 buf_xxx_fill 里填充</div>
@@ -2053,102 +2058,102 @@ function Pt(s, a, n) {
         break;
       }
       case "xbm": {
-        const v = e;
-        m = g`
-          ${q("数组名", v.name, (b) => l({ name: b }))}
-          ${D("宽(px)", v.w, (b) => l({ w: Math.min(128, Math.max(1, Math.trunc(b))) }))}
-          ${D("高(px)", v.h, (b) => l({ h: Math.min(64, Math.max(1, Math.trunc(b))) }))}
+        const b = e;
+        m = v`
+          ${q("数组名", b.name, (g) => l({ name: g }))}
+          ${D("宽(px)", b.w, (g) => l({ w: Math.min(128, Math.max(1, Math.trunc(g))) }))}
+          ${D("高(px)", b.h, (g) => l({ h: Math.min(64, Math.max(1, Math.trunc(g))) }))}
           <div class="ume-field"><label></label>
-            <button class="ume-btn sm" @click=${() => n.openXbmEditor(r.id, v.id)}>编辑位图…</button>
+            <button class="ume-btn sm" @click=${() => n.openXbmEditor(r.id, b.id)}>编辑位图…</button>
           </div>
-          <div class="ume-hint">${v.bits.length} 字节，XBM 行序 LSB</div>
+          <div class="ume-hint">${b.bits.length} 字节，XBM 行序 LSB</div>
         `;
         break;
       }
       case "textarea": {
-        const v = e;
-        m = g`
-          ${Lt("文本内容", v.content, (b) => l({ content: b }))}
-          ${D("高度(px)", v.height, (b) => l({ height: Math.max(10, Math.trunc(b)) }))}
-          ${D("行间距", v.lineSpacing, (b) => l({ lineSpacing: Math.max(0, Math.trunc(b)) }))}
-          ${Ce("上下键滚动 (bind)", v.bindScroll, (b) => l({ bindScroll: b }))}
+        const b = e;
+        m = v`
+          ${Lt("文本内容", b.content, (g) => l({ content: g }))}
+          ${D("高度(px)", b.height, (g) => l({ height: Math.max(10, Math.trunc(g)) }))}
+          ${D("行间距", b.lineSpacing, (g) => l({ lineSpacing: Math.max(0, Math.trunc(g)) }))}
+          ${Ce("上下键滚动 (bind)", b.bindScroll, (g) => l({ bindScroll: g }))}
         `;
         break;
       }
       case "board": {
-        const v = e;
-        m = g`
-          ${D("宽(px)", v.w, (b) => l({ w: Math.max(1, Math.trunc(b)) }))}
-          ${D("高(px)", v.h, (b) => l({ h: Math.max(1, Math.trunc(b)) }))}
-          ${q("回调函数名", v.cbName, (b) => l({ cbName: b }))}
+        const b = e;
+        m = v`
+          ${D("宽(px)", b.w, (g) => l({ w: Math.max(1, Math.trunc(g)) }))}
+          ${D("高(px)", b.h, (g) => l({ h: Math.max(1, Math.trunc(g)) }))}
+          ${q("回调函数名", b.cbName, (g) => l({ cbName: g }))}
           <div class="ume-hint">预览中显示占位框；实际内容由回调函数绘制（USER CODE 区）</div>
         `;
         break;
       }
     }
     const f = e.bind;
-    let y = g``;
+    let y = v``;
     switch (f.type) {
       case "none":
-        y = g`<div class="ume-hint">纯显示行。附加值是绘制前附加的绑定（数值编辑/开关/按钮/子页面跳转/返回），可与任意绘制类型组合。</div>`;
+        y = v`<div class="ume-hint">纯显示行。附加值是绘制前附加的绑定（数值编辑/开关/按钮/子页面跳转/返回），可与任意绘制类型组合。</div>`;
         break;
       case "value": {
-        const v = e.kind === "slider" || e.kind === "progress", b = v ? o.filter((M) => M.type === "int") : o, S = o.find((M) => M.id === f.varId);
-        y = g`
-          ${ke("变量", f.varId, b, (M) => d({ type: "value", varId: M }))}
+        const b = e.kind === "slider" || e.kind === "progress", g = b ? o.filter((M) => M.type === "int") : o, S = o.find((M) => M.id === f.varId);
+        y = v`
+          ${ke("变量", f.varId, g, (M) => d({ type: "value", varId: M }))}
           ${S ? C : Ie(a, (M) => d({ type: "value", varId: M.id }))}
           ${Se(S)}
-          ${v && S && S.type !== "int" ? g`<div class="ume-warn">滑块/进度条附加值需要 int 类型变量（当前 ${S.type}），生成时将按静态显示</div>` : C}
-          ${e.kind === "text" ? g`<div class="ume-hint">显示文本即 printf 格式串（如 音量:%d），确认后用 ＋/－ 键编辑</div>` : C}
+          ${b && S && S.type !== "int" ? v`<div class="ume-warn">滑块/进度条附加值需要 int 类型变量（当前 ${S.type}），生成时将按静态显示</div>` : C}
+          ${e.kind === "text" ? v`<div class="ume-hint">显示文本即 printf 格式串（如 音量:%d），确认后用 ＋/－ 键编辑</div>` : C}
         `;
         break;
       }
       case "switch": {
-        const v = o.filter((b) => b.type === "uint8").find((b) => b.id === f.varId) ?? o.find((b) => b.id === f.varId);
-        y = g`
-          ${ke("变量 (uint8)", f.varId, o.filter((b) => b.type === "uint8"), (b) => d({ type: "switch", varId: b, openValue: f.openValue, onText: f.onText, offText: f.offText }))}
-          ${v ? C : Ie(a, (b) => d({ type: "switch", varId: b.id, openValue: f.openValue, onText: f.onText, offText: f.offText }))}
-          ${Se(v)}
-          ${D("openValue", f.openValue, (b) => d({ type: "switch", varId: f.varId, openValue: Math.max(0, Math.trunc(b)), onText: f.onText, offText: f.offText }))}
-          ${q('"开"文本', f.onText, (b) => d({ type: "switch", varId: f.varId, openValue: f.openValue, onText: b, offText: f.offText }))}
-          ${q('"关"文本', f.offText, (b) => d({ type: "switch", varId: f.varId, openValue: f.openValue, onText: f.onText, offText: b }))}
+        const b = o.filter((g) => g.type === "uint8").find((g) => g.id === f.varId) ?? o.find((g) => g.id === f.varId);
+        y = v`
+          ${ke("变量 (uint8)", f.varId, o.filter((g) => g.type === "uint8"), (g) => d({ type: "switch", varId: g, openValue: f.openValue, onText: f.onText, offText: f.offText }))}
+          ${b ? C : Ie(a, (g) => d({ type: "switch", varId: g.id, openValue: f.openValue, onText: f.onText, offText: f.offText }))}
+          ${Se(b)}
+          ${D("openValue", f.openValue, (g) => d({ type: "switch", varId: f.varId, openValue: Math.max(0, Math.trunc(g)), onText: f.onText, offText: f.offText }))}
+          ${q('"开"文本', f.onText, (g) => d({ type: "switch", varId: f.varId, openValue: f.openValue, onText: g, offText: f.offText }))}
+          ${q('"关"文本', f.offText, (g) => d({ type: "switch", varId: f.varId, openValue: f.openValue, onText: f.onText, offText: g }))}
           <div class="ume-hint">开关需要 uint8 类型变量；显示文本含 %s 用于显示开/关</div>
         `;
         break;
       }
       case "button":
-        y = g`
-          ${q("回调函数名", f.cbName, (v) => d({ type: "button", cbName: v, buttonId: f.buttonId }))}
-          ${D("ID", f.buttonId, (v) => d({ type: "button", cbName: f.cbName, buttonId: Math.max(0, Math.trunc(v)) }))}
+        y = v`
+          ${q("回调函数名", f.cbName, (b) => d({ type: "button", cbName: b, buttonId: f.buttonId }))}
+          ${D("ID", f.buttonId, (b) => d({ type: "button", cbName: f.cbName, buttonId: Math.max(0, Math.trunc(b)) }))}
           <div class="ume-hint">确认键触发回调（骨架生成到 USER CODE 区，逻辑在 IDE 里写）</div>
         `;
         break;
       case "submenu":
-        y = g`
+        y = v`
           ${G("目标页面", f.targetPageId ?? "", [
           { value: "", label: "（未设置）" },
-          ...t.pages.filter((v) => v.id !== r.id).map((v) => ({ value: v.id, label: v.name }))
-        ], (v) => d({ type: "submenu", targetPageId: v || null }))}
+          ...t.pages.filter((b) => b.id !== r.id).map((b) => ({ value: b.id, label: b.name }))
+        ], (b) => d({ type: "submenu", targetPageId: b || null }))}
           <div class="ume-hint">确认键进入目标页面；子页面内加一个「附加值=返回」的条目用于返回</div>
         `;
         break;
       case "back":
-        y = g`<div class="ume-hint">确认键返回上级页面（u8g2_MenuItem_menu_back）</div>`;
+        y = v`<div class="ume-hint">确认键返回上级页面（u8g2_MenuItem_menu_back）</div>`;
         break;
     }
-    p = g`
+    p = v`
       <div class="ume-panel-title">绘制</div>
       ${m}
       <div class="ume-panel-title">附加值</div>
-      ${G("类型", f.type, Object.keys(he).map((v) => ({ value: v, label: he[v] })), (v) => {
-      const b = e.bind;
-      d(v === "value" ? { type: "value", varId: b.type === "value" || b.type === "switch" ? b.varId : we } : v === "switch" ? { type: "switch", varId: b.type === "value" || b.type === "switch" ? b.varId : we, openValue: 1, onText: "on", offText: "off" } : v === "button" ? { type: "button", cbName: "btn_action_cb", buttonId: 1 } : v === "submenu" ? { type: "submenu", targetPageId: b.type === "submenu" ? b.targetPageId : null } : { type: "none" });
+      ${G("类型", f.type, Object.keys(he).map((b) => ({ value: b, label: he[b] })), (b) => {
+      const g = e.bind;
+      d(b === "value" ? { type: "value", varId: g.type === "value" || g.type === "switch" ? g.varId : we } : b === "switch" ? { type: "switch", varId: g.type === "value" || g.type === "switch" ? g.varId : we, openValue: 1, onText: "on", offText: "off" } : b === "button" ? { type: "button", cbName: "btn_action_cb", buttonId: 1 } : b === "submenu" ? { type: "submenu", targetPageId: g.type === "submenu" ? g.targetPageId : null } : { type: "none" });
     })}
       ${y}
     `;
   }
-  ie(g`
-    ${h ? g`<div class="ume-panel-title"><span class="ume-kind-badge">${h}</span></div>` : C}
+  ie(v`
+    ${h ? v`<div class="ume-panel-title"><span class="ume-kind-badge">${h}</span></div>` : C}
     ${p}
   `, s);
 }
@@ -2169,7 +2174,7 @@ function Kt(s, a, n) {
     fe = fe === e ? null : e, n();
   }, r = (e) => {
     const o = fe === e.id, u = (m, f) => s.getState().updateVariable(e.id, m, f), l = e.name && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(e.name), d = e.name && !l && !Ne(e.name), p = t.filter((m) => m.name === e.name).length > 1, h = Dt(a, e.id);
-    return g`<div class="ume-var-item ${o ? "editing" : ""}">
+    return v`<div class="ume-var-item ${o ? "editing" : ""}">
       <div class="ume-var-row" @click=${() => i(e.id)}>
         <span class="ume-var-name" title=${e.name}>${e.name || "(未命名)"}</span>
         <span class="ume-var-meta">${e.type} · ${e.min}~${e.max} · 步${e.step}${h ? ` · ${h} 处引用` : ""}</span>
@@ -2179,11 +2184,11 @@ function Kt(s, a, n) {
       f > 0 && alert(`该变量被 ${f} 个条目绑定，请先在条目里解绑（改为"未绑定"）再删除`);
     }}>✕</button>
       </div>
-      ${o ? g`<div class="ume-var-edit">
+      ${o ? v`<div class="ume-var-edit">
         ${q("变量名", e.name, (m) => u({ name: m.trim() }, `vn-${e.id}`))}
-        ${l ? g`<div class="ume-warn">变量名不是合法的 C 标识符（字母/数字/下划线，不能以数字开头），生成时会自动清洗</div>` : C}
-        ${d ? g`<div class="ume-warn">变量名是 C 关键字，生成的代码会自动改名（如 ${e.name}_），建议换个名字</div>` : C}
-        ${p ? g`<div class="ume-warn">变量名重复，生成时以第一个为准</div>` : C}
+        ${l ? v`<div class="ume-warn">变量名不是合法的 C 标识符（字母/数字/下划线，不能以数字开头），生成时会自动清洗</div>` : C}
+        ${d ? v`<div class="ume-warn">变量名是 C 关键字，生成的代码会自动改名（如 ${e.name}_），建议换个名字</div>` : C}
+        ${p ? v`<div class="ume-warn">变量名重复，生成时以第一个为准</div>` : C}
         ${G("类型", e.type, Bt, (m) => u({ type: m }))}
         ${D("初始值", e.initialValue, (m) => u({ initialValue: m }, `vi-${e.id}`), "any")}
         ${D("最小值", e.min, (m) => u({ min: m }, `vmin-${e.id}`), "any")}
@@ -2193,14 +2198,14 @@ function Kt(s, a, n) {
       </div>` : C}
     </div>`;
   };
-  return g`
+  return v`
     <div class="ume-panel-title">
       变量 (${t.length})
       <button class="ume-mini" title="新建变量" @click=${() => {
     fe = s.getState().addVariable().id;
   }}>＋ 新建</button>
     </div>
-    ${t.length ? t.map(r) : g`<div class="ume-empty-hint">
+    ${t.length ? t.map(r) : v`<div class="ume-empty-hint">
       先在这里创建变量，再在数值/开关/滑块条目的属性里绑定。
       变量保存类型、范围、步长与初始值，可被多个条目共用。
     </div>`}
@@ -2222,7 +2227,7 @@ function Ut(s, a, n) {
     return o;
   }, r = (e) => {
     const o = Ee === e.id, u = (h, m) => s.getState().updateChartBuffer(e.id, h, m), l = e.name && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(e.name), d = e.name && !l && !Ne(e.name), p = i(e.id);
-    return g`<div class="ume-var-item ${o ? "editing" : ""}">
+    return v`<div class="ume-var-item ${o ? "editing" : ""}">
       <div class="ume-var-row" @click=${() => {
       Ee = o ? null : e.id, n();
     }}>
@@ -2234,10 +2239,10 @@ function Ut(s, a, n) {
       m > 0 && alert(`该缓冲区被 ${m} 个图表条目的数据源引用，请先在条目里移除数据源再删除`);
     }}>✕</button>
       </div>
-      ${o ? g`<div class="ume-var-edit">
+      ${o ? v`<div class="ume-var-edit">
         ${q("数组名", e.name, (h) => u({ name: h.trim() }, `bn-${e.id}`))}
-        ${l ? g`<div class="ume-warn">数组名不是合法的 C 标识符，生成时会自动清洗</div>` : C}
-        ${d ? g`<div class="ume-warn">数组名是 C 关键字，生成的代码会自动改名（如 ${e.name}_），建议换个名字</div>` : C}
+        ${l ? v`<div class="ume-warn">数组名不是合法的 C 标识符，生成时会自动清洗</div>` : C}
+        ${d ? v`<div class="ume-warn">数组名是 C 关键字，生成的代码会自动改名（如 ${e.name}_），建议换个名字</div>` : C}
         ${D("点数", e.dataLen, (h) => u({ dataLen: Math.min(512, Math.max(2, Math.trunc(h))) }, `bl-${e.id}`))}
         ${G("示例填充", e.sample, [
       { value: "sine", label: "正弦（演示）" },
@@ -2249,14 +2254,14 @@ function Ut(s, a, n) {
       </div>` : C}
     </div>`;
   };
-  return g`
+  return v`
     <div class="ume-panel-title">
       数据源缓冲区 (${t.length})
       <button class="ume-mini" title="新建缓冲区" @click=${() => {
     Ee = s.getState().addChartBuffer().id;
   }}>＋ 新建</button>
     </div>
-    ${t.length ? t.map(r) : g`<div class="ume-empty-hint">
+    ${t.length ? t.map(r) : v`<div class="ume-empty-hint">
       图表的数据源缓冲区（float 数组）。手动创建后，在图表条目的属性里绑定——
       多个图表条目可共用同一缓冲区，多个缓冲区可叠加显示。
     </div>`}
@@ -2272,29 +2277,29 @@ function Ft(s, a, n) {
     }, `cbname-${Be}`), Me = u);
   }, r = (e) => {
     const o = Me === e.name, u = e.asButton && e.asBoard ? "按钮+画板" : e.asButton ? "按钮" : "画板", l = e.name && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(e.name), d = e.name && !l && !Ne(e.name);
-    return g`<div class="ume-var-item ${o ? "editing" : ""}">
+    return v`<div class="ume-var-item ${o ? "editing" : ""}">
       <div class="ume-var-row" @click=${() => {
       Me = o ? null : e.name, Be = e.name, n();
     }}>
         <span class="ume-var-name" title=${e.name}>${e.name || "(未命名)"}</span>
         <span class="ume-var-meta">${u} · ${e.refs.length} 处引用</span>
       </div>
-      ${o ? g`<div class="ume-var-edit">
+      ${o ? v`<div class="ume-var-edit">
         ${q("回调函数名", e.name, (p) => i(e.name, p))}
-        ${l ? g`<div class="ume-warn">回调名不是合法的 C 标识符，生成时会自动清洗</div>` : C}
-        ${d ? g`<div class="ume-warn">回调名是 C 关键字，生成的代码会自动改名（如 ${e.name}_），建议换个名字</div>` : C}
-        ${e.asButton ? g`<div class="ume-hint">按钮签名：void ${e.name}(u8g2_menu_t *menu, uint8_t ID) —— 选中该条目时任意按键触发</div>` : C}
-        ${e.asBoard ? g`<div class="ume-hint">画板签名：void ${e.name}(u8g2_t *u8g2) —— 在指定宽高内用 u8g2 画图</div>` : C}
+        ${l ? v`<div class="ume-warn">回调名不是合法的 C 标识符，生成时会自动清洗</div>` : C}
+        ${d ? v`<div class="ume-warn">回调名是 C 关键字，生成的代码会自动改名（如 ${e.name}_），建议换个名字</div>` : C}
+        ${e.asButton ? v`<div class="ume-hint">按钮签名：void ${e.name}(u8g2_menu_t *menu, uint8_t ID) —— 选中该条目时任意按键触发</div>` : C}
+        ${e.asBoard ? v`<div class="ume-hint">画板签名：void ${e.name}(u8g2_t *u8g2) —— 在指定宽高内用 u8g2 画图</div>` : C}
         <div class="ume-hint">回调逻辑写在生成的 menu_pages.c 的 cb_${Y(e.name)} USER CODE 区内（重新生成保留）</div>
         <div class="ume-hint">引用此回调的条目（点击定位到属性面板）：</div>
-        ${e.refs.map((p) => g`<div class="ume-cb-ref" title="点击定位"
+        ${e.refs.map((p) => v`<div class="ume-cb-ref" title="点击定位"
           @click=${() => s.getState().select(p.pageId, p.itemId)}>${p.pageName} / ${p.label}</div>`)}
       </div>` : C}
     </div>`;
   };
-  return g`
+  return v`
     <div class="ume-panel-title">回调函数 (${t.length})</div>
-    ${t.length ? t.map(r) : g`<div class="ume-empty-hint">
+    ${t.length ? t.map(r) : v`<div class="ume-empty-hint">
       按钮附加值与画板条目的回调函数会自动收集到这里：
       统一改名、查看 C 签名、点击引用定位到条目。
     </div>`}
@@ -2302,7 +2307,7 @@ function Ft(s, a, n) {
 }
 function We(s, a) {
   const { project: n } = a.getState(), t = () => We(s, a);
-  ie(g`
+  ie(v`
     ${Kt(a, n, t)}
     ${Ut(a, n, t)}
     ${Ft(a, n, t)}
@@ -2316,7 +2321,7 @@ function jt(s, a) {
       const d = l.weakHooks ?? [];
       l.weakHooks = u ? [.../* @__PURE__ */ new Set([...d, o])] : d.filter((p) => p !== o);
     });
-  }, e = g`
+  }, e = v`
     <details class="ume-details">
       <summary>弱定义函数重写（已选 ${i.length}/${se.length}）</summary>
       <div class="ume-weak-list">
@@ -2324,7 +2329,7 @@ function jt(s, a) {
           勾选后，生成的 menu_pages.c 会出现同名函数骨架，链接时替换库的默认行为；
           取消勾选即恢复库默认（手写内容会以 #if 0 保留）。鼠标悬停函数名可看参数说明。
         </div>
-        ${se.map((o) => g`
+        ${se.map((o) => v`
           <div class="ume-weak-item">
             <div class="ume-weak-name" title=${`${o.fn}${o.retNote ? "（返回 1 = 事件已处理 / 0 = 交给库）" : ""}`}>
               <input type="checkbox" ?checked=${i.includes(o.fn)}
@@ -2337,7 +2342,7 @@ function jt(s, a) {
       </div>
     </details>
   `;
-  ie(g`
+  ie(v`
     <div class="ume-panel-title">工程</div>
     ${q("工程名", n.name, (o) => t({ name: o }))}
     <div class="ume-field">
@@ -2356,11 +2361,11 @@ function jt(s, a) {
     (o) => t({ font: o })
   )}
     ${Ce("中文现场取模（仅包含用到的字形）", n.fontSubset, (o) => t({ fontSubset: o }))}
-    ${n.fontSubset ? g`
+    ${n.fontSubset ? v`
       ${q("额外包含字符", n.fontExtra, (o) => t({ fontExtra: o }))}
       ${(() => {
     const o = qe(Ae(n, n.fontExtra));
-    return g`<div class="ume-hint">当前收录 ${o.total} 个字符（ASCII ${o.ascii} + 中文等扩展 ${o.cjk}）；
+    return v`<div class="ume-hint">当前收录 ${o.total} 个字符（ASCII ${o.ascii} + 中文等扩展 ${o.cjk}）；
         运行时输出超出字符集的中文将无法显示，可在上面补充额外字符后重新生成</div>`;
   })()}` : C}
     ${G("选择器", n.selector, [
@@ -2393,10 +2398,10 @@ function Rt(s, a) {
     };
   }, t = (i, r, e) => {
     const o = n(i);
-    return g`<button class="ume-key" title=${e}
+    return v`<button class="ume-key" title=${e}
       @pointerdown=${o.down} @pointerup=${o.up} @pointerleave=${o.up}>${r}</button>`;
   };
-  ie(g`
+  ie(v`
     <div class="ume-preview-wrap" tabindex="0"
       @keydown=${(i) => {
     const e = {
@@ -2434,16 +2439,16 @@ function zt(s, a) {
   const n = document.createElement("div");
   n.className = "ume-modal-mask", n.addEventListener("click", (t) => {
     t.target === n && Ke(n);
-  }), ie(g`
+  }), ie(v`
     <div class="ume-modal wide">
       <div class="ume-modal-head">
         <span>生成 C 代码（单文件 menu_pages.c）</span>
         <button class="ume-mini" @click=${() => Ke(n)}>✕</button>
       </div>
       <div class="ume-modal-body">
-        ${a.warnings.length ? g`
+        ${a.warnings.length ? v`
           <div style="margin-bottom:8px">
-            ${a.warnings.map((t) => g`<div class="ume-warn">⚠ ${t}</div>`)}
+            ${a.warnings.map((t) => v`<div class="ume-warn">⚠ ${t}</div>`)}
           </div>` : C}
         <div class="ume-code-view">${a.c}</div>
       </div>
@@ -2490,25 +2495,25 @@ function qt(s, a, n, t) {
       }
     u = k, l = P, d = ce;
   };
-  let v = !1, b = !0;
+  let b = !1, g = !0;
   const S = (k, P) => (j) => {
-    j.preventDefault(), v = !0, b = !m(k, P), f(k, P, b), O();
+    j.preventDefault(), b = !0, g = !m(k, P), f(k, P, g), O();
   }, M = (k, P) => () => {
-    v && (f(k, P, b), O());
+    b && (f(k, P, g), O());
   }, z = () => {
-    v = !1;
+    b = !1;
   }, O = () => {
     ie(F(), h);
   }, Q = () => {
     const k = [];
     for (let P = 0; P < l; P++)
       for (let j = 0; j < u; j++)
-        k.push(g`<button class="ume-xbm-cell ${m(j, P) ? "on" : ""}"
+        k.push(v`<button class="ume-xbm-cell ${m(j, P) ? "on" : ""}"
           data-x=${j} data-y=${P}
           @pointerdown=${S(j, P)}
           @pointerenter=${M(j, P)}></button>`);
     return k;
-  }, F = () => g`
+  }, F = () => v`
     <div class="ume-modal">
       <div class="ume-modal-head">
         <span>位图编辑器 <span class="ume-kind-badge">${u}×${l}</span></span>
@@ -2634,14 +2639,14 @@ class Zt {
     }), e('[data-role="file"]').addEventListener("change", (m) => {
       var y;
       const f = (y = m.target.files) == null ? void 0 : y[0];
-      f && (f.text().then((v) => {
+      f && (f.text().then((b) => {
         try {
-          const b = ye(v);
+          const g = ye(b);
           this.store.getState().update((S) => {
-            Object.assign(S, b);
+            Object.assign(S, g);
           }), this.scheduleRender();
-        } catch (b) {
-          alert(`导入失败: ${b.message}`);
+        } catch (g) {
+          alert(`导入失败: ${g.message}`);
         }
       }), m.target.value = "");
     }), a.querySelector('[data-act="generate"]').addEventListener("click", () => this.generate());
@@ -2654,8 +2659,13 @@ class Zt {
     let p = null;
     this.store.subscribe(() => {
       this.preview.sync(this.store.getState().project), this.persist(), this.scheduleRender(), this.notifyChange();
-      const m = this.store.getState().selection.itemId;
-      m && m !== p && this.activateRightTab("prop"), p = m;
+      const m = this.store.getState().selection;
+      if (m.itemId && m.itemId !== p) {
+        this.activateRightTab("prop");
+        const f = this.store.getState().project.pages.findIndex((b) => b.id === m.pageId), y = f >= 0 ? this.store.getState().project.pages[f].items.findIndex((b) => b.id === m.itemId) : -1;
+        f >= 0 && y >= 0 && this.preview.selectItem(f, y);
+      }
+      p = m.itemId;
     }), this.scheduleRender(), this.persist(), this.liveTimer = window.setInterval(() => {
       this.destroyed || this.updateLiveInfo();
     }, 300);
@@ -2770,8 +2780,8 @@ class Zt {
     if (a && i >= 0 && t.selection.itemId) {
       const e = t.project.pages[i], o = e.items.findIndex((m) => m.id === t.selection.itemId), u = e.items[o], l = u == null ? void 0 : u.bind, d = (l == null ? void 0 : l.type) === "value" || (l == null ? void 0 : l.type) === "switch" ? l.varId : null, p = (u == null ? void 0 : u.kind) === "text" && (l == null ? void 0 : l.type) === "none" ? u.displayVarId : null, h = d ?? p;
       if (u && h) {
-        const m = (t.project.variables ?? []).findIndex((S) => S.id === h), f = m >= 0 ? m : i * It + o, v = (l == null ? void 0 : l.type) === "switch" ? this.preview.getSwitch(f) : this.preview.getInt(f), b = (r = (t.project.variables ?? []).find((S) => S.id === h)) == null ? void 0 : r.name;
-        a.textContent = `${b ?? u.kind} = ${v}`;
+        const m = (t.project.variables ?? []).findIndex((S) => S.id === h), f = m >= 0 ? m : i * It + o, b = (l == null ? void 0 : l.type) === "switch" ? this.preview.getSwitch(f) : this.preview.getInt(f), g = (r = (t.project.variables ?? []).find((S) => S.id === h)) == null ? void 0 : r.name;
+        a.textContent = `${g ?? u.kind} = ${b}`;
       } else
         a.textContent = "";
     }

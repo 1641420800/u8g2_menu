@@ -53,6 +53,8 @@ export declare class WasmPreview {
     key(k: MenuKey): void;
     /** 预览跳转到指定页（不经过子页面链路） */
     navTo(pageIdx: number): void;
+    /** 选中条目：跳到指定页并把预览光标/滚动定位到该行 */
+    selectItem(pageIdx: number, idx: number): void;
     /** 读取内置字体原始字节（现场取模的源数据） */
     getFontBytes(idx: number): Uint8Array | null;
     /** 字形拉取器：从 WASM 真库逐字获取原始条目（与渲染同一路径） */

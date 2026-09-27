@@ -575,6 +575,16 @@ void em_nav(int page)
         u8g2_MenuReplaceItem(&em_menu, em_page_stubs[page]);
 }
 
+/* 预览跳到指定页并把光标/滚动定位到指定条目（编辑器选中条目时调用，
+ * 让正在编辑的行滚入可视区） */
+void em_select(int page, int idx)
+{
+    em_nav(page);
+    if (!em_menu_ready) return;
+    if (idx < 0 || idx >= (int)em_page_len[page]) return;
+    u8g2_MenuItemMove(&em_menu, (u8g2_uint_t)idx);
+}
+
 /* ===================== 图表数据源缓冲区 ===================== */
 
 /* 定义数据源缓冲区（bufSlot = 缓冲区在池中的下标；sample: 0 sine 1 ramp 2 noise 3 none） */

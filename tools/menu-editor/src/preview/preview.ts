@@ -330,6 +330,11 @@ export class WasmPreview {
     this.mod?.ccall('em_nav', null, ['number'], [pageIdx]);
   }
 
+  /** 选中条目：跳到指定页并把预览光标/滚动定位到该行 */
+  selectItem(pageIdx: number, idx: number): void {
+    this.mod?.ccall('em_select', null, ['number', 'number'], [pageIdx, idx]);
+  }
+
   /** 读取内置字体原始字节（现场取模的源数据） */
   getFontBytes(idx: number): Uint8Array | null {
     const mod = this.mod;

@@ -195,10 +195,17 @@ export class MenuEditor {
       this.persist();
       this.scheduleRender();
       this.notifyChange();
-      // 选中某个条目时自动切到属性 Tab（页面级选中不切，避免预览跳页时被打断）
-      const itemId = this.store.getState().selection.itemId;
-      if (itemId && itemId !== lastSelectedItemId) this.activateRightTab('prop');
-      lastSelectedItemId = itemId;
+      // 选中某个条目时：切到属性 Tab，并把预览滚动定位到该行（正在编辑的行滚入可视区）
+      const sel = this.store.getState().selection;
+      if (sel.itemId && sel.itemId !== lastSelectedItemId) {
+        this.activateRightTab('prop');
+        const pageIdx = this.store.getState().project.pages.findIndex((p) => p.id === sel.pageId);
+        const itemIdx = pageIdx >= 0
+          ? this.store.getState().project.pages[pageIdx].items.findIndex((i) => i.id === sel.itemId)
+          : -1;
+        if (pageIdx >= 0 && itemIdx >= 0) this.preview.selectItem(pageIdx, itemIdx);
+      }
+      lastSelectedItemId = sel.itemId;
     });
 
     this.scheduleRender();
