@@ -1381,7 +1381,7 @@ function _t(s, a, n) {
         break;
       case "textarea": {
         const _ = ee++;
-        x.push(z[_]);
+        c.bindScroll && (c.bind.type === "value" || c.bind.type === "switch") && t.push(`页面 ${I}：文本区的"上下键滚动"会覆盖数值/开关附加值（两者共用同一绑定槽），附加值将不生效`), x.push(z[_]);
         const E = c.bindScroll ? "u8g2_MenuDrawTextArea_bind" : "u8g2_MenuDrawTextArea";
         x.push(`    ${E}(&ta${_}, ${Math.max(10, Math.trunc(c.height))});`);
         break;
@@ -1628,7 +1628,7 @@ class Mt {
             n.ccall(
               "em_page_item",
               null,
-              ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
               [
                 p,
                 m,
@@ -1639,6 +1639,7 @@ class Mt {
                 0,
                 h.displayVarId ? l(h.displayVarId) : -1,
                 -1,
+                0,
                 0
               ]
             ), n.ccall("em_item_text", null, ["number", "number", "string"], [p, m, h.text]), f();
@@ -1648,16 +1649,16 @@ class Mt {
             n.ccall(
               "em_page_item",
               null,
-              ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [p, m, e[h.kind], 1, 0, 0, 0, -1, -1, i("position" in h ? h.position : 0)]
+              ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [p, m, e[h.kind], 1, 0, 0, 0, -1, -1, i("position" in h ? h.position : 0), 0]
             ), f();
             break;
           case "chart":
             n.ccall(
               "em_page_item",
               null,
-              ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [p, m, e.chart, 1, i(h.height), 0, 0, -1, -1, 0]
+              ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [p, m, e.chart, 1, i(h.height), 0, 0, -1, -1, 0, 0]
             );
             for (const y of h.sources ?? [])
               n.ccall(
@@ -1680,8 +1681,8 @@ class Mt {
             n.ccall(
               "em_page_item",
               null,
-              ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [p, m, e.xbm, 1, 0, i(h.w), i(h.h), -1, -1, 0]
+              ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [p, m, e.xbm, 1, 0, i(h.w), i(h.h), -1, -1, 0, 0]
             );
             {
               const y = n._em_scratch(h.bits.length);
@@ -1693,16 +1694,16 @@ class Mt {
             n.ccall(
               "em_page_item",
               null,
-              ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [p, m, e.textarea, 1, i(h.height), 0, 0, -1, -1, i(h.lineSpacing)]
+              ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [p, m, e.textarea, 1, i(h.height), 0, 0, -1, -1, i(h.lineSpacing), h.bindScroll ? 1 : 0]
             ), n.ccall("em_item_text", null, ["number", "number", "string"], [p, m, h.content]), f();
             break;
           case "board":
             n.ccall(
               "em_page_item",
               null,
-              ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
-              [p, m, e.board, 1, 0, i(h.w), i(h.h), -1, -1, 0]
+              ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
+              [p, m, e.board, 1, 0, i(h.w), i(h.h), -1, -1, 0, 0]
             ), f();
             break;
         }

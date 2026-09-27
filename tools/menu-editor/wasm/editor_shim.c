@@ -461,7 +461,7 @@ void em_page_begin(int page)
 /* 设置条目绘制参数（附加值由 em_page_bind 单独设置） */
 void em_page_item(int page, int idx, int kind, int scale,
                   int area_h, int xbm_w, int xbm_h, int dispSlot, int poolSlot,
-                  int aux)
+                  int aux, int bindScroll)
 {
     if (page < 0 || page >= EM_MAX_PAGES || idx < 0 || idx >= EM_MAX_ITEMS) return;
     em_item_t *it = &em_pages[page][idx];
@@ -473,6 +473,7 @@ void em_page_item(int page, int idx, int kind, int scale,
     it->xbm_h = (uint16_t)xbm_h;
     it->dispSlot = (int16_t)dispSlot;
     it->poolSlot = (int16_t)poolSlot;
+    it->bindScroll = (uint8_t)(bindScroll ? 1 : 0);
     it->bindType = EM_BindNone;
     it->target = -1;
     /* aux: 滑条/进度条=静态位置(%)，文本区=行间距，其余忽略 */

@@ -504,6 +504,9 @@ export function generateCode(
         break;
       case 'textarea': {
         const idx = taCursor++;
+        if (it.bindScroll && (it.bind.type === 'value' || it.bind.type === 'switch')) {
+          warnings.push(`页面 ${pgLabel}：文本区的"上下键滚动"会覆盖数值/开关附加值（两者共用同一绑定槽），附加值将不生效`);
+        }
         lines.push(taInits[idx]);
         const call = it.bindScroll ? 'u8g2_MenuDrawTextArea_bind' : 'u8g2_MenuDrawTextArea';
         lines.push(`    ${call}(&ta${idx}, ${Math.max(10, Math.trunc(it.height))});`);
