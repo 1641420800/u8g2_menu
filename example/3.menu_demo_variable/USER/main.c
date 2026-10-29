@@ -41,15 +41,16 @@ uint8_t variable_sw = 0;      // 待编辑的开关量变量（0=关，1=开）
 void menuItem_1()
 {
     /* 以下是菜单库支持的所有数值绑定API（注释仅作参考，实际使用时按需调用）
-    void u8g2_MenuItemValue_uint8(uint8_t *value, int8_t adjValue, uint8_t minValue, uint8_t maxValue);
-    void u8g2_MenuItemValue_uint16(uint16_t *value, int16_t adjValue, uint16_t minValue, uint16_t maxValue);
-    void u8g2_MenuItemValue_uint32(uint32_t *value, int32_t adjValue, uint32_t minValue, uint32_t maxValue);
-    void u8g2_MenuItemValue_int8(int8_t *value, int8_t adjValue, int8_t minValue, int8_t maxValue);
-    void u8g2_MenuItemValue_int16(int16_t *value, int16_t adjValue, int16_t minValue, int16_t maxValue);
-    void u8g2_MenuItemValue_int32(int32_t *value, int32_t adjValue, int32_t minValue, int32_t maxValue);
-    void u8g2_MenuItemValue_int(int *value, int adjValue, int minValue, int maxValue);
-    void u8g2_MenuItemValue_float(float *value, float adjValue, float minValue, float maxValue);
-    void u8g2_MenuItemValue_double(double *value, double adjValue, double minValue, double maxValue);
+       末位mode为边界模式：MENU_CLAMP=到上下限后停在边界 MENU_WRAP=在区间内绕回
+    void u8g2_MenuItemValue_uint8(uint8_t *value, int8_t adjValue, uint8_t minValue, uint8_t maxValue, MENU_LimitMode_t mode);
+    void u8g2_MenuItemValue_uint16(uint16_t *value, int16_t adjValue, uint16_t minValue, uint16_t maxValue, MENU_LimitMode_t mode);
+    void u8g2_MenuItemValue_uint32(uint32_t *value, int32_t adjValue, uint32_t minValue, uint32_t maxValue, MENU_LimitMode_t mode);
+    void u8g2_MenuItemValue_int8(int8_t *value, int8_t adjValue, int8_t minValue, int8_t maxValue, MENU_LimitMode_t mode);
+    void u8g2_MenuItemValue_int16(int16_t *value, int16_t adjValue, int16_t minValue, int16_t maxValue, MENU_LimitMode_t mode);
+    void u8g2_MenuItemValue_int32(int32_t *value, int32_t adjValue, int32_t minValue, int32_t maxValue, MENU_LimitMode_t mode);
+    void u8g2_MenuItemValue_int(int *value, int adjValue, int minValue, int maxValue, MENU_LimitMode_t mode);
+    void u8g2_MenuItemValue_float(float *value, float adjValue, float minValue, float maxValue, MENU_LimitMode_t mode);
+    void u8g2_MenuItemValue_double(double *value, double adjValue, double minValue, double maxValue, MENU_LimitMode_t mode);
     void u8g2_MenuItemValue_switch(uint8_t *value, uint8_t openValue);
     */
 
@@ -59,7 +60,7 @@ void menuItem_1()
     // 2: 每次加减的步长（按Up/Sub键时变量变化量）
     // 0: 变量最小值限制
     // 100: 变量最大值限制
-    u8g2_MenuItemValue_uint32(&variable_uint32, 2, 0, 100);    
+    u8g2_MenuItemValue_uint32(&variable_uint32, 2, 0, 100, MENU_CLAMP);    
     // 显示变量值（功能绑定的载体，必须调用；即使不显示数值，编辑功能仍生效）
     u8g2_MenuUTF8Printf("v:%d", variable_uint32);    
 
@@ -69,7 +70,7 @@ void menuItem_1()
     // 0.1: 每次加减的步长（浮点型步长）
     // 0: 变量最小值限制
     // 100: 变量最大值限制
-    u8g2_MenuItemValue_float(&variable_float, 0.1f, 0.0f, 100.0f);    
+    u8g2_MenuItemValue_float(&variable_float, 0.1f, 0.0f, 100.0f, MENU_CLAMP);    
     // 显示浮点变量（保留1位小数，作为功能绑定载体）
     u8g2_MenuUTF8Printf("f:%.1f", variable_float);    
 
@@ -92,7 +93,7 @@ void oled_display(u8g2_t * u8g2)
 {
     // 绘制菜单核心函数
     // 参数：菜单实例 | 绘制起始X坐标 | 绘制起始Y坐标 | 菜单宽度 | 菜单高度
-    u8g2_DrawMenu(&u8g2_menu, 0, 0, 128, 64);
+    u8g2_DrawMenu(u8g2, &u8g2_menu, 0, 0, 128, 64);
 }
 
 /**
@@ -144,7 +145,7 @@ int main(void)
     
     // 创建菜单（核心初始化）
     // 参数：U8g2实例 | 菜单实例 | 默认显示的菜单页面回调函数
-    u8g2_CreateMenu(&u8g2, &u8g2_menu, menuItem_1);
+    u8g2_CreateMenu(&u8g2_menu, menuItem_1);
     
     // 初始化定时器2（定时1ms中断）
     // 参数说明：1000-1: 自动重装值，72-1: 预分频值（72MHz时钟→1ms中断）

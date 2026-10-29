@@ -20,7 +20,7 @@ describe('codegen', () => {
     expect(c).toContain('u8g2_MenuItem_menu_enter(page_1);');
     expect(c).toContain('u8g2_MenuItem_button(btn_about_cb, 1);');
     // 数值附加值：绑定在显示之前
-    expect(c).toMatch(/u8g2_MenuItemValue_int32\(&var_value, 1, 0, 100\);[\s\S]*?u8g2_MenuUTF8Printf\("音量:%d", var_value\);/);
+    expect(c).toMatch(/u8g2_MenuItemValue_int32\(&var_value, 1, 0, 100, MENU_CLAMP\);[\s\S]*?u8g2_MenuUTF8Printf\("音量:%d", var_value\);/);
     // 开关附加值
     expect(c).toContain('u8g2_MenuItemValue_switch(&var_switch, 1);');
     expect(c).toContain('var_switch ? "on" : "off"');
@@ -72,7 +72,7 @@ describe('codegen', () => {
     proj.pages.push(pg);
     const { c } = generateCode(proj);
     expect(c).toContain('float var_f = 12.5f;');
-    expect(c).toContain('u8g2_MenuItemValue_float(&var_f, 0.1f, 0.0f, 100.0f);');
+    expect(c).toContain('u8g2_MenuItemValue_float(&var_f, 0.1f, 0.0f, 100.0f, MENU_CLAMP);');
   });
 
   it('只显示条目（无附加值 + 显示变量）不生成绑定调用', () => {
@@ -246,7 +246,7 @@ describe('codegen', () => {
     proj.pages.push(pg);
     const { c, warnings } = generateCode(proj);
     expect(c).toContain('int switch_ = 1;');
-    expect(c).toContain('u8g2_MenuItemValue_int(&switch_, 1, 0, 9);');
+    expect(c).toContain('u8g2_MenuItemValue_int(&switch_, 1, 0, 9, MENU_CLAMP);');
     expect(c).toContain('u8g2_MenuUTF8Printf("k:%d", switch_);');
     expect(warnings.some((w) => w.includes('C 关键字') && w.includes('switch_'))).toBe(true);
   });
@@ -384,7 +384,7 @@ describe('schema roundtrip & migration', () => {
     // 迁移后生成的绑定参数来自变量
     const { c } = generateCode(proj);
     expect(c).toMatch(/uint16_t vol = 66;/);
-    expect(c).toContain('u8g2_MenuItemValue_uint16(&vol, 5, 10, 200);');
+    expect(c).toContain('u8g2_MenuItemValue_uint16(&vol, 5, 10, 200, MENU_CLAMP);');
     expect(c).toContain('u8g2_MenuDrawItemSlider_bind(&pos, 3, 0, 90);');
   });
 });

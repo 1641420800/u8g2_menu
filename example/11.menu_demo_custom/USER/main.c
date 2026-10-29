@@ -60,7 +60,7 @@ void menuItem_1()
 {
     // 绑定可调整数值项：关联quantity变量，步长10，最小值0，最大值10000
     // Up键：quantity+10 | Down键：quantity-10 | 自动限制在0~10000范围内
-    u8g2_MenuItemValue_uint16(&quantity, 10, 0, 10000);
+    u8g2_MenuItemValue_uint16(&quantity, 10, 0, 10000, MENU_CLAMP);
     
     // 显示当前菜单项数量（实时更新，直观看到quantity变化）
     u8g2_MenuUTF8Printf("quantity %d", quantity);
@@ -85,7 +85,7 @@ void oled_display(u8g2_t * u8g2)
 {
     // 绘制菜单：起始坐标(0,0)，尺寸128x64（匹配OLED屏幕分辨率）
     // 内部逻辑：先绘制所有菜单项，再调用选择器函数绘制选中标识
-    u8g2_DrawMenu(&u8g2_menu, 0, 0, 128, 64);
+    u8g2_DrawMenu(u8g2, &u8g2_menu, 0, 0, 128, 64);
 }
 
 /**
@@ -158,11 +158,11 @@ int main(void)
 
     /* 菜单创建API对比：
     // 方式1：使用内置方形选择器（注释下方自定义选择器，启用此行）
-    // u8g2_CreateMenu_Selector(&u8g2,&u8g2_menu,menuItem_1,u8g2_MenuSelectorSquare);
+    // u8g2_CreateMenu_Selector(&u8g2_menu,menuItem_1,u8g2_MenuSelectorSquare);
     
     // 方式2：使用自定义圆形选择器（核心演示）
     */
-    u8g2_CreateMenu_Selector(&u8g2,&u8g2_menu,menuItem_1,u8g2_MenuSelector_User);
+    u8g2_CreateMenu_Selector(&u8g2_menu,menuItem_1,u8g2_MenuSelector_User);
     
     // 3. 定时器初始化（1ms中断）
     // 参数：自动重装值(1000-1)，预分频值(72-1) → 72MHz/72=1MHz → 1MHz/1000=1kHz（1ms中断）

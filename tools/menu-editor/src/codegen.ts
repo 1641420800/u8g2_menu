@@ -391,8 +391,8 @@ export function generateCode(
         if (v) {
           bindValueVar = v;
           const bindLine = v.isFloat
-            ? `u8g2_MenuItemValue_${v.srcType}(&${v.name}, ${floatLit(v.step)}, ${floatLit(v.min)}, ${floatLit(v.max)});`
-            : `u8g2_MenuItemValue_${v.srcType}(&${v.name}, ${Math.trunc(v.step)}, ${Math.trunc(v.min)}, ${Math.trunc(v.max)});`;
+            ? `u8g2_MenuItemValue_${v.srcType}(&${v.name}, ${floatLit(v.step)}, ${floatLit(v.min)}, ${floatLit(v.max)}, MENU_CLAMP);`
+            : `u8g2_MenuItemValue_${v.srcType}(&${v.name}, ${Math.trunc(v.step)}, ${Math.trunc(v.min)}, ${Math.trunc(v.max)}, MENU_CLAMP);`;
           lines.push(`    ${bindLine}`);
         }
         break;

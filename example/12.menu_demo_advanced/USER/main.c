@@ -87,7 +87,7 @@ void oled_display(u8g2_t * u8g2)
 {
     // 绘制菜单：起始坐标(0,0)，尺寸128x64（匹配OLED屏幕）
     // 内部自动处理快捷跳转后的菜单项定位、选中标识渲染
-    u8g2_DrawMenu(&u8g2_menu, 0, 0, 128, 64);
+    u8g2_DrawMenu(u8g2, &u8g2_menu, 0, 0, 128, 64);
 }
 
 /**
@@ -143,7 +143,7 @@ int main(void)
     // 2. OLED及菜单初始化
     oled_u8g2_init(&u8g2);                    // 初始化OLED硬件
     u8g2_SetFont(&u8g2, u8g2_font_10x20_tf);  // 设置菜单默认字体（10x20像素）
-    u8g2_CreateMenu(&u8g2, &u8g2_menu, menuItem_1); // 创建菜单，绑定默认菜单项函数
+    u8g2_CreateMenu(&u8g2_menu, menuItem_1); // 创建菜单，绑定默认菜单项函数
     
     /* ==================== 菜单控制核心API全解析 ====================
      * 【菜单项切换/管理】

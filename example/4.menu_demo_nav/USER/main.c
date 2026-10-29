@@ -149,7 +149,7 @@ void oled_display(u8g2_t * u8g2)
 {
     // 绘制当前激活的菜单页面
     // 参数：菜单实例 | 绘制起始X/Y | 菜单宽度/高度（适配128x64屏）
-    u8g2_DrawMenu(&u8g2_menu, 0, 0, 128, 64);
+    u8g2_DrawMenu(u8g2, &u8g2_menu, 0, 0, 128, 64);
 }
 
 /**
@@ -201,7 +201,7 @@ int main(void)
     
     // 创建菜单（核心初始化）
     // 参数：U8g2实例 | 菜单实例 | 默认显示的菜单页面（menuItem_1为主菜单）
-    u8g2_CreateMenu(&u8g2, &u8g2_menu, menuItem_1);
+    u8g2_CreateMenu(&u8g2_menu, menuItem_1);
     
     // 初始化定时器2（1ms中断）：72MHz时钟，预分频72-1，自动重装1000-1 → 1ms中断
     tim2_init(1000-1, 72-1);

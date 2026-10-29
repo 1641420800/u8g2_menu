@@ -120,7 +120,7 @@ void oled_display(u8g2_t * u8g2)
 {
     // 绘制菜单（包含自定义画板、滑块条、进度条）
     // 参数：菜单实例 | 起始X/Y | 菜单宽度/高度（128x64适配OLED）
-    u8g2_DrawMenu(&u8g2_menu, 0, 0, 128, 64);
+    u8g2_DrawMenu(u8g2, &u8g2_menu, 0, 0, 128, 64);
 }
 
 /**
@@ -166,7 +166,7 @@ int main(void)
     // 2. OLED及菜单初始化
     oled_u8g2_init(&u8g2);                    // 初始化OLED硬件
     u8g2_SetFont(&u8g2, u8g2_font_10x20_tf);  // 设置菜单默认字体
-    u8g2_CreateMenu(&u8g2, &u8g2_menu, menuItem_1); // 创建菜单，默认显示画板+滑块/进度条页面
+    u8g2_CreateMenu(&u8g2_menu, menuItem_1); // 创建菜单，默认显示画板+滑块/进度条页面
     
     // 3. 定时器初始化（1ms中断）
     // 参数：自动重装值(1000-1)，预分频值(72-1) → 72MHz时钟 → 1ms中断

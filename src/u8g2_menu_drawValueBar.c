@@ -96,7 +96,7 @@ void u8g2_MenuDrawItemSlider_bind(int *value, int adjValue, int minValue, int ma
 {
     float schedule = 0.0f;
 
-    u8g2_MenuItemValue_int(value, adjValue, minValue, maxValue);
+    u8g2_MenuItemValue_int(value, adjValue, minValue, maxValue, MENU_CLAMP);
     if(maxValue > minValue) // 区间为零时不做除法 防止NaN
         schedule = (float)(*value - minValue) / (maxValue - minValue);
     u8g2_MenuDrawItemSliderProportion(schedule, 0.1);
@@ -142,7 +142,7 @@ void u8g2_MenuDrawItemProgressBar_bind(int *value, int adjValue, int minValue, i
 {
     float schedule = 0.0f;
 
-    u8g2_MenuItemValue_int(value, adjValue, minValue, maxValue);
+    u8g2_MenuItemValue_int(value, adjValue, minValue, maxValue, MENU_CLAMP);
     if(maxValue > minValue) // 区间为零时不做除法 防止NaN
         schedule = (float)(*value - minValue) / (maxValue - minValue);
     u8g2_MenuDrawItemProgressBar(schedule);

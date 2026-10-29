@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <math.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,6 +34,10 @@ extern "C" {
  * 附加记录功能：
  * - 启用记录功能，允许用户记录菜单本次绘制的内容。
  * - 记录功能可用于以文本形式展示菜单内容。
+ *
+ * 使用限制：
+ * - 本库不支持并发与重入 不建议在中断中直接调用绘制类接口
+ * - 图层的 Start/End 必须严格配对 不支持嵌套
  */
 
 
@@ -130,6 +135,11 @@ typedef enum
     MENU_Writable,        // 可编辑
     MENU_WritableSelect   // 可编辑+选择
 } MENU_Attribute_t;
+typedef enum
+{
+    MENU_CLAMP = 0,       // 到上下限后停在边界
+    MENU_WRAP             // 到上下限后在区间内绕回
+} MENU_LimitMode_t;
 typedef enum
 {
     MENU_V_uint8 = 0,
@@ -325,6 +335,8 @@ struct u8g2_menu_struct
     u8g2_menu_effect_t menuEffect;                          // 绘制效果
     MENU_V_type_t u8g2_menuValueType;                       // 菜单附加值类型
     MENU_V_type_t _u8g2_menuValueType;                      // 菜单附加值类型
+    MENU_LimitMode_t u8g2_menuValueLimitMode;               // 菜单附加值边界模式
+    MENU_LimitMode_t _u8g2_menuValueLimitMode;              // 菜单附加值边界模式
     u8g2_menu_value_t u8g2_menuValue;                       // 菜单附加值
     u8g2_int_t currentSetValue;                             // 当前选中状态 -1 表示未选中
     u8g2_int_t currentItem;                                 // 当前选中的项
@@ -415,10 +427,10 @@ uint8_t menuEventKey_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuK
 void menuEventKeyPre_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t *u8g2_menuKeyValue);
 /* =============================== | u8g2_menu.c | =============================== */
 // 创建菜单 自定义选择展示器
-void u8g2_CreateMenu_Selector(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem, menuSelector_cb menuSelector);
+void u8g2_CreateMenu_Selector(u8g2_menu_t *u8g2_menu, menuItem_cb menuItem, menuSelector_cb menuSelector);
 
 // 创建菜单 用默认选择展示器
-void u8g2_CreateMenu(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, menuItem_cb menuItem);
+void u8g2_CreateMenu(u8g2_menu_t *u8g2_menu, menuItem_cb menuItem);
 
 // 切换表项
 void u8g2_MenuReplaceItem(u8g2_menu_t *u8g2_menu, menuItem_cb menuItem);
@@ -450,7 +462,7 @@ void u8g2_MenuSelectorCall(u8g2_menu_t *u8g2_menu);
 void u8g2_DrawVSliderBar(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, float schedule, float proportion);
 
 // 绘制菜单
-void u8g2_DrawMenu(u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h);
+void u8g2_DrawMenu(u8g2_t *u8g2, u8g2_menu_t *u8g2_menu, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h);
 
 // 菜单时间接口
 void u8g2_MenuTime_ISR(u8g2_menu_t *u8g2_menu, uint16_t ms);
@@ -517,6 +529,9 @@ u8g2_menu_t *u8g2_getMenuItemValue(MENU_Attribute_t MENU_Attribute);
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 // 获取当前选中项
 u8g2_uint_t u8g2_MenuGetCurrentSelection(u8g2_menu_t *u8g2_menu);
+
+// 获取菜单项总数(绘制一帧后有效)
+u8g2_uint_t u8g2_MenuGetItemCount(u8g2_menu_t *u8g2_menu);
 
 // 获取当前绘制的菜单
 u8g2_menu_t *u8g2_MenuGetCurrentMenu(void);
@@ -717,16 +732,32 @@ void u8g2_MenuItemSubS(u8g2_menu_t *u8g2_menu, u8g2_uint_t k);
 void u8g2_MenuItemSub(u8g2_menu_t *u8g2_menu);
 
 // 追加附加值
-void u8g2_MenuItemValue_uint8(uint8_t *value, int8_t adjValue, uint8_t minValue, uint8_t maxValue);
-void u8g2_MenuItemValue_uint16(uint16_t *value, int16_t adjValue, uint16_t minValue, uint16_t maxValue);
-void u8g2_MenuItemValue_uint32(uint32_t *value, int32_t adjValue, uint32_t minValue, uint32_t maxValue);
-void u8g2_MenuItemValue_int8(int8_t *value, int8_t adjValue, int8_t minValue, int8_t maxValue);
-void u8g2_MenuItemValue_int16(int16_t *value, int16_t adjValue, int16_t minValue, int16_t maxValue);
-void u8g2_MenuItemValue_int32(int32_t *value, int32_t adjValue, int32_t minValue, int32_t maxValue);
+void u8g2_MenuItemValue_uint8(uint8_t *value, int8_t adjValue, uint8_t minValue, uint8_t maxValue, MENU_LimitMode_t mode);
+void u8g2_MenuItemValue_uint16(uint16_t *value, int16_t adjValue, uint16_t minValue, uint16_t maxValue, MENU_LimitMode_t mode);
+void u8g2_MenuItemValue_uint32(uint32_t *value, int32_t adjValue, uint32_t minValue, uint32_t maxValue, MENU_LimitMode_t mode);
+void u8g2_MenuItemValue_int8(int8_t *value, int8_t adjValue, int8_t minValue, int8_t maxValue, MENU_LimitMode_t mode);
+void u8g2_MenuItemValue_int16(int16_t *value, int16_t adjValue, int16_t minValue, int16_t maxValue, MENU_LimitMode_t mode);
+void u8g2_MenuItemValue_int32(int32_t *value, int32_t adjValue, int32_t minValue, int32_t maxValue, MENU_LimitMode_t mode);
 
-void u8g2_MenuItemValue_int(int *value, int adjValue, int minValue, int maxValue);
-void u8g2_MenuItemValue_float(float *value, float adjValue, float minValue, float maxValue);
-void u8g2_MenuItemValue_double(double *value, double adjValue, double minValue, double maxValue);
+void u8g2_MenuItemValue_int(int *value, int adjValue, int minValue, int maxValue, MENU_LimitMode_t mode);
+void u8g2_MenuItemValue_float(float *value, float adjValue, float minValue, float maxValue, MENU_LimitMode_t mode);
+void u8g2_MenuItemValue_double(double *value, double adjValue, double minValue, double maxValue, MENU_LimitMode_t mode);
+
+#if defined(__GNUC__) || (defined(__ARMCC_VERSION) && __ARMCC_VERSION >= 6000000)
+// 菜单附加值绑定 按第一参数的指针类型自动分发(需C11或GNU扩展编译器 armcc5.06等老编译器请使用上面的显式类型接口)
+// 注: 32位平台上int与int32_t为同一类型 故只列出其一
+#define u8g2_MenuItemValue(value, adjValue, minValue, maxValue, mode)\
+    _Generic((value),\
+        uint8_t  *: u8g2_MenuItemValue_uint8,\
+        uint16_t *: u8g2_MenuItemValue_uint16,\
+        uint32_t *: u8g2_MenuItemValue_uint32,\
+        int8_t   *: u8g2_MenuItemValue_int8,\
+        int16_t  *: u8g2_MenuItemValue_int16,\
+        int32_t  *: u8g2_MenuItemValue_int32,\
+        float    *: u8g2_MenuItemValue_float,\
+        double   *: u8g2_MenuItemValue_double\
+    )(value, adjValue, minValue, maxValue, mode)
+#endif
 
 void u8g2_MenuItemValue_switch(uint8_t *value, uint8_t openValue);
 

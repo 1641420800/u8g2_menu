@@ -125,7 +125,7 @@ void oled_display(u8g2_t * u8g2)
 {
     // 绘制当前菜单页面（包含按钮项、字符串输入项）
     // 参数：菜单实例 | 绘制起始X/Y | 菜单宽度/高度（适配128x64屏）
-    u8g2_DrawMenu(&u8g2_menu, 0, 0, 128, 64);
+    u8g2_DrawMenu(u8g2, &u8g2_menu, 0, 0, 128, 64);
 }
 
 void menuEventUserKey_weak(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue)
@@ -193,7 +193,7 @@ int main(void)
     
     // 创建菜单（核心初始化）
     // 参数：U8g2实例 | 菜单实例 | 默认显示的菜单页面（menuItem_1）
-    u8g2_CreateMenu(&u8g2, &u8g2_menu, menuItem_1);
+    u8g2_CreateMenu(&u8g2_menu, menuItem_1);
     
     // 初始化矩阵按键（默认配置，需matrixKey驱动实现）
     matrixKey_init_def();

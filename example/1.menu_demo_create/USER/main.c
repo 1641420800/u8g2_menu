@@ -51,7 +51,7 @@ void oled_display(u8g2_t * u8g2)
     // &u8g2_menu: 要绘制的菜单实例
     // 0, 0: 菜单绘制区域左上角坐标（X=0, Y=0）
     // 128, 64: 菜单绘制区域的宽度和高度（适配128x64分辨率的OLED屏）
-    u8g2_DrawMenu(&u8g2_menu, 0, 0, 128, 64);
+    u8g2_DrawMenu(u8g2, &u8g2_menu, 0, 0, 128, 64);
 }
 
 /**
@@ -76,7 +76,7 @@ int main(void)
     // &u8g2: 绑定的U8g2图形库实例
     // &u8g2_menu: 要初始化的菜单实例
     // menuItem_1: 默认显示的菜单页面绘制回调函数
-    u8g2_CreateMenu(&u8g2, &u8g2_menu, menuItem_1);
+    u8g2_CreateMenu(&u8g2_menu, menuItem_1);
   
     // 主循环（程序常驻）
     while(1)

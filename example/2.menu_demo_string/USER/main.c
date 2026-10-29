@@ -92,7 +92,7 @@ void oled_display(u8g2_t * u8g2)
 {
     // 绘制菜单核心函数
     // 参数：菜单实例 | 绘制起始X坐标 | 绘制起始Y坐标 | 菜单宽度 | 菜单高度
-    u8g2_DrawMenu(&u8g2_menu,0,0,128,64);
+    u8g2_DrawMenu(u8g2, &u8g2_menu,0,0,128,64);
 }
 
 /**
@@ -143,7 +143,7 @@ int main(void)
     
     // 创建菜单（核心初始化）
     // 参数：U8g2实例 | 菜单实例 | 默认显示的菜单页面回调函数
-    u8g2_CreateMenu(&u8g2,&u8g2_menu,menuItem_1);
+    u8g2_CreateMenu(&u8g2_menu,menuItem_1);
     
     // 初始化多行文本控制块
     u8g2_textArea_init(&textArea,text);

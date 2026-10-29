@@ -32,7 +32,7 @@
  *        u8g2_menu: U8g2菜单库实例，管理菜单状态/记录缓冲区/按键交互
  */
 u8g2_t u8g2;                  // U8g2图形库实例
-u8g2_Menu_t u8g2_menu;        // U8g2菜单库实例（含记录功能缓冲区）
+u8g2_menu_t u8g2_menu;        // U8g2菜单库实例（含记录功能缓冲区）
 
 /**
  * @brief  菜单页面1 - 多行字符串显示（测试记录功能）
@@ -61,7 +61,7 @@ void oled_display(u8g2_t * u8g2)
 {
     // 绘制菜单：起始坐标(0,0)，尺寸128x64（匹配OLED屏幕分辨率）
     // 绘制过程中，菜单库会自动将显示内容写入记录缓冲区
-    u8g2_DrawMenu(&u8g2_menu, 0, 0, 128, 64);
+    u8g2_DrawMenu(u8g2, &u8g2_menu, 0, 0, 128, 64);
 }
 
 /**
@@ -109,7 +109,7 @@ int main(void)
     // 2. OLED及菜单初始化
     oled_u8g2_init(&u8g2);                    // 初始化OLED硬件
     u8g2_SetFont(&u8g2, u8g2_font_10x20_tf);  // 设置菜单显示字体（10x20像素）
-    u8g2_CreateMenu(&u8g2, &u8g2_menu, menuItem_1); // 创建菜单，默认显示menuItem_1
+    u8g2_CreateMenu(&u8g2_menu, menuItem_1); // 创建菜单，默认显示menuItem_1
     
     // 3. 定时器初始化（1ms中断）
     tim2_init(1000-1, 72-1);                  // 72MHz时钟 → 1ms中断（预分频72-1，自动重装1000-1）
@@ -129,6 +129,6 @@ int main(void)
         */
         // 获取菜单记录的字符串，并通过串口1发送（长度由strlen计算）
         // 注：可优化为先缓存指针，避免重复调用u8g2_MenuRecord
-        USART_sendBuf(USART1, u8g2_MenuRecord(&u8g2_menu), strlen(u8g2_MenuRecord(&u8g2_menu)));
+        USART_sendBuf(USART1, (uint8_t *)u8g2_MenuRecord(&u8g2_menu), strlen(u8g2_MenuRecord(&u8g2_menu)));
     }
 }

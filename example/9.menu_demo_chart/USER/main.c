@@ -102,7 +102,7 @@ void oled_display(u8g2_t * u8g2)
 {
     // 绘制菜单（含图表，图表自动填充菜单可用区域）
     // 参数：菜单实例 | 起始X/Y | 菜单宽度/高度（128x64适配OLED）
-    u8g2_DrawMenu(&u8g2_menu, 0, 0, 128, 64);
+    u8g2_DrawMenu(u8g2, &u8g2_menu, 0, 0, 128, 64);
 }
 
 /**
@@ -150,7 +150,7 @@ int main(void)
     // 2. OLED及菜单初始化
     oled_u8g2_init(&u8g2);                    // 初始化OLED硬件
     u8g2_SetFont(&u8g2, u8g2_font_10x20_tf);  // 设置菜单字体（图表不依赖此字体）
-    u8g2_CreateMenu(&u8g2, &u8g2_menu, menuItem_1); // 创建菜单，默认显示图表页面
+    u8g2_CreateMenu(&u8g2_menu, menuItem_1); // 创建菜单，默认显示图表页面
     
     // 3. 图表初始化（关联双缓冲+数据长度）
     // 参数：图表实例 | 数据缓冲 | 显示缓冲 | 数据长度（缓冲数组大小）

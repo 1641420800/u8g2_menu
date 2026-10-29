@@ -119,7 +119,7 @@ void page_main(void)
 {
     /* USER CODE BEGIN page_page_main_pre */    /* USER CODE END page_page_main_pre */
     u8g2_MenuUTF8Printf("TEXT %d", var_only_display);
-    u8g2_MenuItemValue_float(&var_f, 0.5f, 0.0f, 10.0f);
+    u8g2_MenuItemValue_float(&var_f, 0.5f, 0.0f, 10.0f, MENU_CLAMP);
     u8g2_MenuUTF8Printf("数值:%d", var_f);
     u8g2_MenuItemValue_switch(&register_, 1);
     u8g2_MenuUTF8Printf("开关:%s", register_ ? "ON" : "OFF");
@@ -127,7 +127,7 @@ void page_main(void)
     u8g2_MenuUTF8Printf("进入");
     u8g2_MenuItem_button(register__2, 3);
     u8g2_MenuUTF8Printf("按钮");
-    u8g2_MenuItemValue_int(&var_pos, 5, 0, 100);
+    u8g2_MenuItemValue_int(&var_pos, 5, 0, 100, MENU_CLAMP);
     u8g2_MenuDrawItemSlider_bind(&var_pos, 5, 0, 100);
     u8g2_MenuDrawItemProgressBar(0.60f);
     if (!chart0_inited) {
@@ -169,7 +169,7 @@ void page_1(void)
     u8g2_MenuUTF8Printf("设置页");
     u8g2_MenuItem_menu_back();
     u8g2_MenuUTF8Printf("返回");
-    u8g2_MenuItemValue_int32(&page_0, 1, 0, 9);
+    u8g2_MenuItemValue_int32(&page_0, 1, 0, 9, MENU_CLAMP);
     u8g2_MenuDrawItemSlider(0.50f);
 }
 

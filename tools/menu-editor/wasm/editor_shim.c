@@ -225,15 +225,15 @@ static void em_apply_bind(const em_item_t *it, uint32_t slot)
         switch (em_vars[slot].type) {
         case MENU_V_float:
             u8g2_MenuItemValue_float(&em_fpool[slot], (float)em_vars[slot].step,
-                                     (float)em_vars[slot].min, (float)em_vars[slot].max);
+                                     (float)em_vars[slot].min, (float)em_vars[slot].max, MENU_CLAMP);
             break;
         case MENU_V_double:
             u8g2_MenuItemValue_double(&em_dpool[slot], (double)em_vars[slot].step,
-                                      (double)em_vars[slot].min, (double)em_vars[slot].max);
+                                      (double)em_vars[slot].min, (double)em_vars[slot].max, MENU_CLAMP);
             break;
         default: /* 整数族统一用 int32 路径，视觉行为一致 */
             u8g2_MenuItemValue_int32(&em_ipool[slot], em_vars[slot].step,
-                                     em_vars[slot].min, em_vars[slot].max);
+                                     em_vars[slot].min, em_vars[slot].max, MENU_CLAMP);
             break;
         }
         break;
@@ -384,7 +384,7 @@ int em_init(int width, int height)
     u8g2_InitDisplay(&em_u8g2);
     u8g2_SetPowerSave(&em_u8g2, 0);
 
-    u8g2_CreateMenu_Selector(&em_u8g2, &em_menu, em_page_0, u8g2_MenuSelectorRotundity);
+    u8g2_CreateMenu_Selector(&em_menu, em_page_0, u8g2_MenuSelectorRotundity);
     em_menu_ready = 1;
     em_current_page = 0;
     return 0;
@@ -645,7 +645,7 @@ uint8_t *em_frame(uint16_t ms)
 {
     if (!em_menu_ready) return NULL;
     u8g2_ClearBuffer(&em_u8g2);
-    u8g2_DrawMenu(&em_menu, 0, 0,
+    u8g2_DrawMenu(&em_u8g2, &em_menu, 0, 0,
                   u8g2_GetDisplayWidth(&em_u8g2), u8g2_GetDisplayHeight(&em_u8g2));
     u8g2_SendBuffer(&em_u8g2);
     u8g2_MenuTime_ISR(&em_menu, ms);

@@ -363,7 +363,7 @@ void u8g2_MenuDrawTextArea_bind(u8g2_menu_textArea_t *text, u8g2_uint_t h)
 {
     if (!text)
         return;
-    u8g2_MenuItemValue_int16(&text->targetLocation,-1,0,text->totalNumberOfLines);
+    u8g2_MenuItemValue_int16(&text->targetLocation,-1,0,text->totalNumberOfLines, MENU_CLAMP);
     u8g2_MenuDrawTextArea(text,h);
 }
 
