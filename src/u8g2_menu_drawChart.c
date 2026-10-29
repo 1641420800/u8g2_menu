@@ -29,6 +29,8 @@ void u8g2_chart_init(u8g2_chart_t *chart, float *data, float *data_dis, uint16_t
  */
 void u8g2_chart_addData(u8g2_chart_t *chart, float d)
 {
+    if(!chart || !chart->data || chart->data_len == 0)
+        return;
     for (int i = 0; i < chart->data_len - 1; i++)
     {
         chart->data[i] = chart->data[i + 1];
@@ -113,14 +115,20 @@ void u8g2_chart_autoRange(u8g2_chart_t *chart)
 void u8g2_drawLineChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h)
 {
     int x1, y1, x2, y2;
+    float data_max = chart->data_max;
+    float data_min = chart->data_min;
 
     u8g2_DrawFrame(u8g2, x, y, w, h);
     if (w < 3 || chart->data_len == 0)
         return;
+    if (data_max - data_min <= 0.0f) // 幅值为零 防除零
+    {
+        data_max = data_min + 1.0f;
+    }
     x = x + 1;
     w = w - 2;
     if (chart->data_len == 1) {
-        y1 = y + h - map(chart->data_dis[0], chart->data_min, chart->data_max, 0, h - 1);
+        y1 = y + h - map(chart->data_dis[0], data_min, data_max, 0, h - 1);
         y1 = limit(y1, y, y + h - 1);
         int left  = limit(x, x, x + w - 1);
         int right = limit(x + w - 1, x, x + w - 1);
@@ -128,12 +136,12 @@ void u8g2_drawLineChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_in
         return;
     }
     x1 = x;
-    y1 = y + h - map(chart->data_dis[0], chart->data_min, chart->data_max, 0, h - 1);
+    y1 = y + h - map(chart->data_dis[0], data_min, data_max, 0, h - 1);
     y1 = limit(y1, y, y + h - 1);
     for (int i = 1; i < chart->data_len; i++)
     {
         x2 = x + i * w / chart->data_len;
-        y2 = y + h - map(chart->data_dis[i], chart->data_min, chart->data_max, 0, h - 1);
+        y2 = y + h - map(chart->data_dis[i], data_min, data_max, 0, h - 1);
         y2 = limit(y2, y, y + h - 1);
 
         if (x1 >= 0 && y1 >= 0 && x2 >= 0 && y2 >= 0)
@@ -160,15 +168,23 @@ void u8g2_drawLineChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_in
 void u8g2_drawPointChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h)
 {
     int X, Y;
+    float data_max = chart->data_max;
+    float data_min = chart->data_min;
 
     u8g2_DrawFrame(u8g2, x, y, w, h);
+    if (chart->data_len == 0 || w < 2)
+        return;
 
+    if (data_max - data_min <= 0.0f) // 幅值为零 防除零
+    {
+        data_max = data_min + 1.0f;
+    }
     x = x + 1;
     w = w - 2;
     for (int i = 0; i < chart->data_len; i++)
     {
         X = x + i * w / chart->data_len;
-        Y = y + h - map(chart->data_dis[i], chart->data_min, chart->data_max, 0, h - 1);
+        Y = y + h - map(chart->data_dis[i], data_min, data_max, 0, h - 1);
         Y = limit(Y, y, y + h - 1);
         u8g2_DrawPixel(u8g2, X, Y);
     }
@@ -193,8 +209,15 @@ void u8g2_drawBarChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int
     int total_width, offset_x;
 
     u8g2_DrawFrame(u8g2, x, y, w, h);
-    if (chart->data_len == 0) return;
-    
+    if (chart->data_len == 0 || w < 2 || h < 2) return;
+
+    float data_max = chart->data_max;
+    float data_min = chart->data_min;
+    if (data_max - data_min <= 0.0f) // 幅值为零 防除零
+    {
+        data_max = data_min + 1.0f;
+    }
+
     x += 1; y += 1; w -= 2; h -= 2;
 
     int N = chart->data_len;
@@ -228,7 +251,7 @@ void u8g2_drawBarChart(u8g2_t *u8g2, u8g2_chart_t *chart, u8g2_int_t x, u8g2_int
     for (int i = 0; i < draw_count; i++) {
         X = x + offset_x + bar_width * i + bar_spacing * i;
 
-        Y = y + h - map(chart->data_dis[i], chart->data_min, chart->data_max, 0, h);
+        Y = y + h - map(chart->data_dis[i], data_min, data_max, 0, h);
         Y = limit(Y, y, y + h);
         bar_height = (y + h) - Y;
 

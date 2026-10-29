@@ -94,8 +94,12 @@ void u8g2_MenuDrawItemSlider(float position)
  */
 void u8g2_MenuDrawItemSlider_bind(int *value, int adjValue, int minValue, int maxValue)
 {
+    float schedule = 0.0f;
+
     u8g2_MenuItemValue_int(value, adjValue, minValue, maxValue);
-    u8g2_MenuDrawItemSliderProportion((float)(*value - minValue) / (maxValue - minValue), 0.1);
+    if(maxValue > minValue) // 区间为零时不做除法 防止NaN
+        schedule = (float)(*value - minValue) / (maxValue - minValue);
+    u8g2_MenuDrawItemSliderProportion(schedule, 0.1);
 }
 
 /**
@@ -136,6 +140,10 @@ void u8g2_MenuDrawItemProgressBar(float position)
  */
 void u8g2_MenuDrawItemProgressBar_bind(int *value, int adjValue, int minValue, int maxValue)
 {
+    float schedule = 0.0f;
+
     u8g2_MenuItemValue_int(value, adjValue, minValue, maxValue);
-    u8g2_MenuDrawItemProgressBar((float)(*value - minValue) / (maxValue - minValue));
+    if(maxValue > minValue) // 区间为零时不做除法 防止NaN
+        schedule = (float)(*value - minValue) / (maxValue - minValue);
+    u8g2_MenuDrawItemProgressBar(schedule);
 }

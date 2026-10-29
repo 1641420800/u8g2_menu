@@ -605,7 +605,7 @@ void u8g2_MenuItemBack(u8g2_menu_t *u8g2_menu)
 
 void u8g2_MenuEvent_itemBindChar_itemMove(u8g2_menu_t *u8g2_menu, void* value)
 {
-    u8g2_MenuItemMove(u8g2_menu,(uint8_t)(uint32_t)value);
+    u8g2_MenuItemMove(u8g2_menu,(u8g2_uint_t)(uint32_t)value);
 }
 void u8g2_MenuEvent_itemBindChar_itemSelect(u8g2_menu_t *u8g2_menu, void* value)
 {
@@ -714,8 +714,6 @@ u8g2_menu_t *u8g2_getMenuItemValue(MENU_Attribute_t MENU_Attribute)
     if (menu->currentItem != menu->currentDrawItem)
         return NULL;
     menu->currentAttribute = MENU_Attribute;
-    if (menu->currentItem != menu->currentDrawItem)
-        return NULL;
     return menu;
 }
 

@@ -2,7 +2,7 @@
 
 typedef struct
 {
-    uint8_t line;
+    uint16_t line;
     const char *text[];
 } MessageBox_drawStr_t;
 typedef struct
@@ -208,7 +208,7 @@ void u8g2_MenuDrawMessageBox_str(u8g2_menu_t *u8g2_menu, const char * str, uint3
     const char *original_str = str;
 
     // 1. 计算行数
-    uint8_t num_lines = 1;
+    uint16_t num_lines = 1;
     while (*str) {
         if (*str == '\n') {
             num_lines++;
@@ -291,6 +291,8 @@ void u8g2_MenuDrawMessageBox_xbm(u8g2_menu_t *u8g2_menu, u8g2_uint_t w, u8g2_uin
     if (!bitmap || !u8g2_menu) return;
 #if U8G2_MENU_MESSAGEBOX
     MessageBox_drawXbm_t *p = (MessageBox_drawXbm_t*)malloc(sizeof(MessageBox_drawXbm_t));
+    if(!p)
+        return;
     p->w = w;
     p->h = h;
     p->bitmap = bitmap;

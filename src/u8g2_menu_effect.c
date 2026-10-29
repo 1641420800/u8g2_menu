@@ -11,6 +11,9 @@
 u8g2_int_t u8g2_Menu_init(u8g2_menu_t *u8g2_menu)
 {
     u8g2_menu->menuEffect._rowHeight = ROW_HEIGHT_INCREMENT;
+#if U8G2_MENU_EFFECT_RESET_POS
+    u8g2_menu->menuEffect._position = 0;
+#endif
     return 0;
 }
 

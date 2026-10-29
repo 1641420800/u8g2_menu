@@ -220,6 +220,8 @@ void u8g2_DrawTextArea(u8g2_t *u8g2, u8g2_menu_textArea_t *text, u8g2_int_t x, u
     u8g2_uint_t line_h = font_h + text->lineSpacing;
 
     // 目标值限制在 0 ~ totalNumberOfLines-1
+    if (text->targetLocation < 0)
+        text->targetLocation = 0;
     if (text->totalNumberOfLines > 0 && text->targetLocation >= text->totalNumberOfLines)
         text->targetLocation = text->totalNumberOfLines - 1;
     text->currentLocation += (text->targetLocation - text->currentLocation) * scroll_speed;
@@ -248,7 +250,7 @@ void u8g2_DrawTextArea(u8g2_t *u8g2, u8g2_menu_textArea_t *text, u8g2_int_t x, u
         if (line_len == 0)
         {
             text->totalNumberOfLines++;
-            p++;
+            p += u8g2_utf8_char_len(*p); // 按整字符跳过 防止切断UTF-8序列
             continue;
         }
         text->totalNumberOfLines++;
@@ -280,7 +282,7 @@ void u8g2_DrawTextArea(u8g2_t *u8g2, u8g2_menu_textArea_t *text, u8g2_int_t x, u
         if (line_len == 0)
         {
             draw_line_y += line_h;
-            p++;
+            p += u8g2_utf8_char_len(*p); // 按整字符跳过 防止切断UTF-8序列
             continue;
         }
 
@@ -393,79 +395,104 @@ void u8g2_MenuDrawItemStr(u8g2_uint_t (*u8g2_Draw)(u8g2_t *u8g2, u8g2_uint_t x, 
 }
 
 /**
+ * @brief 按换行符拆分字符串逐行显示 内部实现
+ * @note 只读扫描 不修改调用者的字符串 连续换行按空行跳过与原strtok行为一致
+ *       单行超过 U8G2_MENU_STR_LINE_MAX-1 字节将被截断
+ *
+ * @param u8g2_Draw 绘制函数
+ * @param str 字符串
+ * @param multiple 放大倍数
+ *
+ * @return void
+ */
+static void u8g2_draw_str_lines(u8g2_uint_t (*u8g2_Draw)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str), const char *str, u8g2_uint_t multiple)
+{
+    char line[U8G2_MENU_STR_LINE_MAX];
+    const char *start;
+    const char *end;
+    u8g2_uint_t len;
+
+    if(!str)
+        return;
+    if(strchr(str, '\n') == NULL)
+    {
+        u8g2_MenuDrawItemStr(u8g2_Draw, str, multiple);
+        return;
+    }
+    start = str;
+    while(*start != '\0')
+    {
+        end = start;
+        while(*end != '\0' && *end != '\n')
+            ++end;
+        len = (u8g2_uint_t)(end - start);
+        if(len > U8G2_MENU_STR_LINE_MAX - 1)
+            len = U8G2_MENU_STR_LINE_MAX - 1;
+        if(len != 0)
+        {
+            memcpy(line, start, len);
+            line[len] = '\0';
+            u8g2_MenuDrawItemStr(u8g2_Draw, line, multiple);
+        }
+        if(*end == '\0')
+            break;
+        ++end;
+        while(*end == '\n')
+            ++end;
+        start = end;
+    }
+}
+
+/**
  * @brief 字符串项显示函数
- * @note 在菜单项绘制函数中调用本函数来显示字符串
+ * @note 在菜单项绘制函数中调用本函数来显示字符串 支持换行拆分多行显示
  *
  * @param str 要显示的字符串
  *
  * @return void
  */
-void u8g2_MenuDrawStr(char *str)
+void u8g2_MenuDrawStr(const char *str)
 {
-    char *token;
-    token = strtok(str, "\n");
-    while (token != NULL)
-    {
-        u8g2_MenuDrawItemStr(u8g2_DrawStr, token, 1);
-        token = strtok(NULL, "\n");
-    }
+    u8g2_draw_str_lines(u8g2_DrawStr, str, 1);
 }
 
 /**
  * @brief 字符串项显示函数 2倍大
- * @note 在菜单项绘制函数中调用本函数来显示字符串 2倍大
+ * @note 在菜单项绘制函数中调用本函数来显示字符串 2倍大 支持换行拆分多行显示
  *
  * @param str 要显示的字符串
  *
  * @return void
  */
-void u8g2_MenuDrawStrX2(char *str)
+void u8g2_MenuDrawStrX2(const char *str)
 {
-    char *token;
-    token = strtok(str, "\n");
-    while (token != NULL)
-    {
-        u8g2_MenuDrawItemStr(u8g2_DrawStrX2, token, 2);
-        token = strtok(NULL, "\n");
-    }
+    u8g2_draw_str_lines(u8g2_DrawStrX2, str, 2);
 }
 
 /**
  * @brief 字符串项显示函数 UTF-8
- * @note 在菜单项绘制函数中调用本函数来显示字符串 UTF-8
+ * @note 在菜单项绘制函数中调用本函数来显示字符串 UTF-8 支持换行拆分多行显示
  *
  * @param str 要显示的字符串
  *
  * @return void
  */
-void u8g2_MenuDrawUTF8(char *str)
+void u8g2_MenuDrawUTF8(const char *str)
 {
-    char *token;
-    token = strtok(str, "\n");
-    while (token != NULL)
-    {
-        u8g2_MenuDrawItemStr(u8g2_DrawUTF8, token, 1);
-        token = strtok(NULL, "\n");
-    }
+    u8g2_draw_str_lines(u8g2_DrawUTF8, str, 1);
 }
 
 /**
  * @brief 字符串项显示函数 2倍大 UTF-8
- * @note 在菜单项绘制函数中调用本函数来显示字符串 2倍大 UTF-8
+ * @note 在菜单项绘制函数中调用本函数来显示字符串 2倍大 UTF-8 支持换行拆分多行显示
  *
  * @param str 要显示的字符串
  *
  * @return void
  */
-void u8g2_MenuDrawUTF8X2(char *str)
+void u8g2_MenuDrawUTF8X2(const char *str)
 {
-    char *token;
-    token = strtok(str, "\n");
-    while (token != NULL)
-    {
-        u8g2_MenuDrawItemStr(u8g2_DrawUTF8X2, token, 2);
-        token = strtok(NULL, "\n");
-    }
+    u8g2_draw_str_lines(u8g2_DrawUTF8X2, str, 2);
 }
 
 /**
@@ -531,6 +558,8 @@ void u8g2_MenuPrintf(u8g2_MenuDraw_cb u8g2_MenuDraw, const char *fmt, ...)
 {
     char buffer[256];
     va_list arg_ptr;
+    if(!u8g2_MenuDraw)
+        return;
     va_start(arg_ptr, fmt);
     vsnprintf(buffer, 256, fmt, arg_ptr);
     va_end(arg_ptr);

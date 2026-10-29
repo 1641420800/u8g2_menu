@@ -351,7 +351,7 @@ void u8g2_MenuItem_menu_back(void)
 void u8g2_MenuItem_str(char *str, uint16_t len)
 {
     u8g2_menu_t *menu = u8g2_getMenuItemValue(MENU_Writable);
-    if (!menu)
+    if (!menu || !str)
         return;
     menu->_u8g2_menuValueType = MENU_str;
     menu->u8g2_menuValue.str.s = str;

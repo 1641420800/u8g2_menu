@@ -1,7 +1,5 @@
 #include "u8g2_menu.h"
 
-#define nonNegative(d) ((d) < 0 ? 0 : (d))
-
 void u8g2_MenuSelector_Record(u8g2_menu_t *u8g2_menu)
 {
     if(!u8g2_menu)

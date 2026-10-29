@@ -56,6 +56,7 @@ extern "C" {
 #define ROW_HEIGHT_INCREMENT            0.2f        // 定义行高度增加量
 #define MAX_ROW_HEIGHT                  1.0f        // 定义最大行高度
 #define SPE_ADJUSTMENT                  2.0f        // 定义SPE调整量
+#define U8G2_MENU_EFFECT_RESET_POS      0           // 效果器初始化时是否复位纵向位置(0=保留上一次的滚动位置 1=复位到顶部)
 // 菜单父子项调用链 / 追溯功能
 #define U8G2_MENU_TRACE_MAX_DEPTH       16          // 菜单父子项最大追溯长度
 // 记录功能相关
@@ -68,6 +69,8 @@ extern "C" {
 #define U8G2_MENU_EVENT_Capacity        30          // 菜单事件最大容量
 // 多行文本相关
 #define U8G2_TEXTAREA_MAX_LINE_BYTES    64          // 单行最大字节数
+// 多行字符串项相关
+#define U8G2_MENU_STR_LINE_MAX          128         // 多行字符串项单行最大字节数(超出截断)
 #define U8G2_TEXTAREA_LINE_SPACE        0           // 默认行间距
 #define U8G2_TEXTAREA_BORDER_SIZE       2           // 边框大小
 #define U8G2_TEXTAREA_PROGRESS_HEIGHT   5           // 进度条高度
@@ -600,16 +603,16 @@ char * u8g2_textArea_getText(u8g2_menu_textArea_t *text);
 void u8g2_DrawTextArea(u8g2_t *u8g2, u8g2_menu_textArea_t *text, u8g2_int_t x, u8g2_int_t y, u8g2_uint_t w, u8g2_uint_t h);
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 // 菜单显示字符串
-void u8g2_MenuDrawStr(char *str);
+void u8g2_MenuDrawStr(const char *str);
 
 // 菜单显示字符串 二倍大
-void u8g2_MenuDrawStrX2(char *str);
+void u8g2_MenuDrawStrX2(const char *str);
 
 // 菜单显示UTF-8字符集
-void u8g2_MenuDrawUTF8(char *str);
+void u8g2_MenuDrawUTF8(const char *str);
 
 // 菜单显示UTF-8字符集 二倍大
-void u8g2_MenuDrawUTF8X2(char *str);
+void u8g2_MenuDrawUTF8X2(const char *str);
 
 // 菜单显示密码
 void u8g2_MenuDrawPassword(char *str, char mask);

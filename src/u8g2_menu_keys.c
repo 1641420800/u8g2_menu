@@ -12,7 +12,7 @@
  */
 void u8g2_MenuKeyScannDebounce(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue, uint8_t key, uint16_t time)
 {
-    if(!u8g2_menu)
+    if(!u8g2_menu || u8g2_menuKeyValue >= MENU_Key_Num)
         return;
     if(u8g2_menu->key_shakeFree[u8g2_menuKeyValue] < MenuKey_debouncePeriod && key)
     {
@@ -20,7 +20,11 @@ void u8g2_MenuKeyScannDebounce(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_
     }
     if(u8g2_menu->key_shakeFree[u8g2_menuKeyValue] > 0 && !key)
     {
-        u8g2_menu->key_shakeFree[u8g2_menuKeyValue] -= time;
+        // 计数不足以再减时直接清零 防止下溢
+        if(u8g2_menu->key_shakeFree[u8g2_menuKeyValue] > time)
+            u8g2_menu->key_shakeFree[u8g2_menuKeyValue] -= time;
+        else
+            u8g2_menu->key_shakeFree[u8g2_menuKeyValue] = 0;
     }
 
 
@@ -114,7 +118,10 @@ void u8g2_MenuKeys(u8g2_menu_t *u8g2_menu, u8g2_menuKeyValue_t u8g2_menuKeyValue
         menuEventUserKey_weak(u8g2_menu,u8g2_menuKeyValue);
         break;
     }
-    if (u8g2_menu->u8g2_menuValueType == MENU_button)
+    // Enter/Return 已在 Select/DeSelect 内触发过一次回调 此处跳过 防止重复触发
+    if (u8g2_menu->u8g2_menuValueType == MENU_button
+        && u8g2_menuKeyValue != MENU_Key_Enter
+        && u8g2_menuKeyValue != MENU_Key_Return)
     {
         u8g2_menu->u8g2_menuValue.button.but(u8g2_menu, u8g2_menu->u8g2_menuValue.button.ID, u8g2_menuKeyValue);
     }
@@ -146,7 +153,7 @@ void u8g2_MenuInChar(u8g2_menu_t *u8g2_menu, char c)
         {
             u8g2_menu->u8g2_menuValue.str.s[0] = '\0';
         }
-        else if (len + 1 < u8g2_menu->u8g2_menuValue.str.s_len && isprint(c))
+        else if (len + 1 < u8g2_menu->u8g2_menuValue.str.s_len && isprint((unsigned char)c))
         {
             u8g2_menu->u8g2_menuValue.str.s[len] = c;
             u8g2_menu->u8g2_menuValue.str.s[len + 1] = '\0';
